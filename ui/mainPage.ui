@@ -6,12 +6,100 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>935</width>
+    <width>943</width>
     <height>621</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">/* 整体窗口背景 */
+QWidget#Form{
+        background:qlineargradient(
+        x1:0, y1:0,
+        x2:1, y2:1,
+        stop:0 #727272,
+        stop:1 #ffd6e0
+    );
+    font-family: &quot;Segoe UI&quot;,&quot;Microsoft YaHei&quot;;
+}
+
+
+/* 左侧侧边栏 */
+QWidget#horizontalLayoutWidget{
+    background-color: transparent;
+}
+
+
+/* Logo */
+QLabel#label{
+    font-size: 26px;
+    font-weight: bold;
+    color: #ff6b81;
+    padding: 20px;
+}
+
+
+/* 左侧按钮统一样式 */
+QPushButton{
+    background-color: transparent;
+    border: none;
+
+    font-family: &quot;Segoe UI Semibold&quot;,&quot;Microsoft YaHei&quot;;
+    font-size: 15px;
+    font-weight: bold;
+
+    padding: 12px 20px;
+    margin-left: 10px;
+    margin-right: 10px;
+
+    text-align: left;
+    color: #444;
+
+    border-radius: 10px;
+}
+
+
+QPushButton:hover{
+    background-color: #ffe4ea;
+    color: #ff4f70;
+}
+
+
+QPushButton:pressed{
+    background-color: #ffd2dc;
+}
+
+
+/* 当前选中按钮（可手动加）*/
+QPushButton:checked{
+    background-color: #ffccd5;
+    color: #d6336c;
+}
+
+
+/* 右侧页面区域 */
+QWidget#PageArea{
+    background-color: #ffffff;
+    border-radius: 12px;
+    margin: 10px;
+}
+
+
+/* 页面文字 */
+QLabel#label_2,
+QLabel#label_3,
+QLabel#label_4{
+    font-size: 22px;
+    color: #444;
+}
+
+
+/* stackedWidget背景 */
+QStackedWidget{
+    background-color: transparent;
+}</string>
   </property>
   <widget class="QWidget" name="horizontalLayoutWidget">
    <property name="geometry">
@@ -24,11 +112,20 @@
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,4">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="2,2,2,1,2,1,2,1,2,3">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="2,2,2,1,2,1,2,1,0,0,2,3">
       <item>
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>TextLabel</string>
+         <string>DIICSU</string>
+        </property>
+        <property name="scaledContents">
+         <bool>true</bool>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+        <property name="indent">
+         <number>0</number>
         </property>
        </widget>
       </item>
@@ -46,9 +143,13 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_3">
+       <widget class="QPushButton" name="Recite_button">
         <property name="text">
-         <string>PushButton</string>
+         <string>Word List</string>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>C:/Users/Administrator/.designer/resources/icons/star.png</normaloff>C:/Users/Administrator/.designer/resources/icons/star.png</iconset>
         </property>
        </widget>
       </item>
@@ -66,9 +167,9 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_4">
+       <widget class="QPushButton" name="Favourite_button">
         <property name="text">
-         <string>PushButton</string>
+         <string>Listening</string>
         </property>
        </widget>
       </item>
@@ -86,9 +187,9 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_2">
+       <widget class="QPushButton" name="Profile_button">
         <property name="text">
-         <string>PushButton</string>
+         <string>Speaking</string>
         </property>
        </widget>
       </item>
@@ -106,9 +207,29 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_5">
+       <widget class="QPushButton" name="Discussion_button">
         <property name="text">
-         <string>PushButton</string>
+         <string>Discussion</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="verticalSpacer_8">
+        <property name="orientation">
+         <enum>Qt::Orientation::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="Exit_button">
+        <property name="text">
+         <string>Exit</string>
         </property>
        </widget>
       </item>
@@ -128,7 +249,174 @@
      </layout>
     </item>
     <item>
-     <widget class="QWidget" name="widget" native="true"/>
+     <widget class="QWidget" name="PageArea" native="true">
+      <widget class="QStackedWidget" name="stackedWidget">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>10</y>
+         <width>741</width>
+         <height>541</height>
+        </rect>
+       </property>
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="Recite_page">
+        <widget class="QWidget" name="verticalLayoutWidget">
+         <property name="geometry">
+          <rect>
+           <x>-1</x>
+           <y>-1</y>
+           <width>741</width>
+           <height>541</height>
+          </rect>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2" stretch="2,6,1,1">
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Common Used Word List</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QFrame" name="frame_2">
+            <property name="frameShape">
+             <enum>QFrame::Shape::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Shadow::Raised</enum>
+            </property>
+            <layout class="QGridLayout" name="gridLayout">
+             <item row="0" column="0">
+              <widget class="QPushButton" name="pushButton">
+               <property name="text">
+                <string>Email to lecturer</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QPushButton" name="pushButton_2">
+               <property name="text">
+                <string>STEM subject</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QPushButton" name="pushButton_3">
+               <property name="text">
+                <string>Group discussion</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QPushButton" name="pushButton_4">
+               <property name="text">
+                <string>Presentation</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QPushButton" name="pushButton_5">
+              <property name="text">
+               <string>Add to favourite</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_6">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_6">
+              <property name="text">
+               <string>Check favourite list</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="favourite_page">
+        <widget class="QLabel" name="label_3">
+         <property name="geometry">
+          <rect>
+           <x>274</x>
+           <y>200</y>
+           <width>91</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>第二个界面</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="Profile_page">
+        <widget class="QLabel" name="label_4">
+         <property name="geometry">
+          <rect>
+           <x>304</x>
+           <y>240</y>
+           <width>91</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>第三个界面</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="discussion_page">
+        <widget class="QLabel" name="label_6">
+         <property name="geometry">
+          <rect>
+           <x>200</x>
+           <y>240</y>
+           <width>111</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Discussion 界面</string>
+         </property>
+        </widget>
+       </widget>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>
