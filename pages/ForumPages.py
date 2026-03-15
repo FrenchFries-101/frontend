@@ -50,29 +50,26 @@ class MockForumData:
 class ForumWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setStyleSheet("""
-        QWidget{
-            background:#f8f9fb;
-        }""")
 
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        # # 2. 取消最小/最大尺寸限制
-        # self.setMinimumSize(0, 0)
-        # self.setMaximumSize(16777215, 16777215)
-
-
-
-        # 3. 创建主布局并绑定到自身
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setSpacing(0)
-        # 4. 清除布局边距，消除与父容器的间隙
         self.main_layout.setContentsMargins(0, 0, 0, 0)
 
         self.load_full_ui()
         #这个加了才能显示出来
-        # self.init_scroll_area()
         self.init_pages()
         self.bind_all_events()
+
+
+        self.setStyleSheet("""
+        #singlePost{
+            background: white;
+            border-radius: 12px;
+            border:1px solid #E0E0E0;
+            padding:10px;
+        }
+        """)
 
         print(self.ui.size())
         print(self.size())
@@ -87,7 +84,7 @@ class ForumWindow(QWidget):
         )
         ui_file = QFile(ui_path)
         if not ui_file.open(QFile.ReadOnly):
-            print(f"❌ 无法打开UI文件: {ui_path}")
+            print(f"无法打开UI文件: {ui_path}")
             return
         self.ui = loader.load(ui_file, self)
         ui_file.close()
@@ -165,13 +162,6 @@ class ForumWindow(QWidget):
 
         # 设置滚动区域
         self.post_scroll.setWidgetResizable(True)
-        #
-        # # 获取已有布局，如果没有再创建
-        # self.post_layout = self.post_scroll.layout()
-        # if self.post_layout is None:
-        #     self.post_layout = QVBoxLayout(self.post_container)
-        # self.post_layout.setAlignment(Qt.AlignTop)
-        # self.post_layout.setSpacing(10)
 
         # 获取已有布局，如果没有就创建
         self.post_layout = self.post_container.layout()

@@ -5,18 +5,24 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QPixmap, QIcon, QColor
+import os
 
 
 class RecitePage(QWidget):
     def __init__(self):
         super().__init__()
-
+        # 获取当前脚本所在目录
+        self.BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # 上一级 project_root
+        self.ICON_RETURN = os.path.join(self.BASE_DIR, "resources", "icons", "return_black.png")
+        self.ICON_CHINESE_OFF = os.path.join(self.BASE_DIR, "resources", "icons", "chinese.png")
+        self.ICON_CHINESE_ON = os.path.join(self.BASE_DIR, "resources", "icons", "chinese1.png")
         # 全局中文显示开关状态
         self.show_chinese_global = False
 
         self.init_ui()
         self.init_data()
         self.show_categories()
+
 
     def init_ui(self):
         self.setStyleSheet("""
@@ -67,11 +73,18 @@ class RecitePage(QWidget):
             padding:14px;
             border-radius:8px;
             font-size:16px;
-            margin:5px;
         }
-
+        
         QPushButton.category:hover{
-            background:#f3f4f6;
+            background:#f7d6d0;
+        }
+        
+        QPushButton.category:pressed{
+            background:#ffb6c1;   /* 按下瞬间 */
+        }
+        
+        QPushButton.category:checked{
+            background:#f4c8c2;   /* 点击后保持选中 */
         }
 
         QListWidget{
@@ -106,6 +119,7 @@ class RecitePage(QWidget):
             color:#666;
             padding-right:12px;
         }
+        
         """)
 
         main = QVBoxLayout(self)
@@ -125,7 +139,7 @@ class RecitePage(QWidget):
 
         # 加载返回图标
         try:
-            pixmap = QPixmap(r"D:\AgileProject\resources\icons\return_black.png")
+            pixmap = QPixmap(self.ICON_RETURN)
             scaled_pixmap = pixmap.scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.title_back_btn.setIcon(QIcon(scaled_pixmap))
             self.title_back_btn.setIconSize(QSize(24, 24))
@@ -143,30 +157,57 @@ class RecitePage(QWidget):
         self.title.setObjectName("title")
         self.title.setAlignment(Qt.AlignCenter)
 
-        # 4. 右侧弹性空间
+        #右侧弹性空间
         spacer_right = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        # 5. 中文显示开关容器（纯图片切换，无动画）
+        # 中文显示开关容器
         self.switch_widget = QWidget()
-        self.switch_widget.setVisible(False)  # 初始隐藏（一级分类不显示）
+        self.switch_widget.setVisible(False)
         switch_container = QHBoxLayout(self.switch_widget)
         switch_container.setSpacing(5)
         switch_container.setContentsMargins(0, 0, 0, 0)
         switch_container.setAlignment(Qt.AlignVCenter)
 
-        # 开关标签
-        # # self.switch_label = QLabel("显示中文")
-        # self.switch_label.setObjectName("switch_label")
 
+        # self.chinese_btn = QPushButton()
+        # self.chinese_btn.setFixedSize(30, 30)
+        # self.chinese_btn.setStyleSheet("border:none;background:transparent;")
+        #
+        # # 加载两张图片
+        # self.icon_chinese_off = QIcon(self.ICON_CHINESE_OFF)
+        # self.icon_chinese_on = QIcon(self.ICON_CHINESE_ON)
+        # # 默认状态
+        # self.chinese_btn.setIcon(self.icon_chinese_off)
+        # self.chinese_btn.setIconSize(QSize(24, 24))
+        #
+        # # 点击事件
+        # self.chinese_btn.clicked.connect(self.toggle_chinese)
+
+        # 中文按钮
         self.chinese_btn = QPushButton()
         self.chinese_btn.setFixedSize(30, 30)
         self.chinese_btn.setStyleSheet("border:none;background:transparent;")
 
-        # 加载两张图片
-        self.icon_chinese_off = QIcon(r"D:\AgileProject\resources\icons\chinese.png")
-        self.icon_chinese_on = QIcon(r"D:\AgileProject\resources\icons\chinese1.png")
+        # 加载两张图片，和返回按钮同款
+        pixmap_off = QPixmap(self.ICON_CHINESE_OFF)
+        if not pixmap_off.isNull():
+            scaled_off = pixmap_off.scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self.icon_chinese_off = QIcon(scaled_off)
+            print("ICON_CHINESE_OFF成功！！")
+        else:
+            print("ICON_CHINESE_OFF记载失败")
+            self.icon_chinese_off = QIcon()  # 失败就空
 
-        # 默认状态（不显示中文）
+        pixmap_on = QPixmap(self.ICON_CHINESE_ON)
+        if not pixmap_on.isNull():
+            scaled_on = pixmap_on.scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self.icon_chinese_on = QIcon(scaled_on)
+            print("ICON_CHINESE_ON记载成功！")
+        else:
+            print("ICON_CHINESE_ON加载失败")
+            self.icon_chinese_on = QIcon()
+
+        # 默认状态
         self.chinese_btn.setIcon(self.icon_chinese_off)
         self.chinese_btn.setIconSize(QSize(24, 24))
 
@@ -334,6 +375,8 @@ class RecitePage(QWidget):
         self.current_sub = sub_list[0] if sub_list else ""
         for sub in sub_list:
             btn = QPushButton(sub)
+            btn.setCheckable(True)
+            btn.setAutoExclusive(True)
             btn.setProperty("class", "category")
             btn.clicked.connect(lambda _, s=sub: self.switch_subcategory(s))
             self.tab_layout.addWidget(btn)
