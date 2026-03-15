@@ -1,0 +1,58 @@
+QPushButton#test_card {
+
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    text-align: left;
+    padding: 16px;
+
+    font-size: 15px;
+}
+
+QPushButton#test_card:hover {
+
+    border: 1px solid #3b82f6;
+    background-color: #f8fafc;
+}
+
+QPushButton#test_card:pressed {
+
+    background-color: #eff6ff;
+}
+
+QFrame#section_card {
+
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+QFrame#section_card:hover {
+
+    border: 1px solid #10b981;
+}
+
+QProgressBar {
+
+    border: none;
+    background-color: #e5e7eb;
+    border-radius: 6px;
+    height: 8px;
+}
+
+QProgressBar::chunk {
+
+    background-color: #3b82f6;
+    border-radius: 6px;
+}
+
+QFrame#section_card QLabel:first-child {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+QFrame#section_card QLabel:last-child {
+    color: #6b7280;
+    font-size: 12px;
+}
