@@ -17,7 +17,7 @@ from components.SingleDetailedPost import SingleDetailedPost
 # ======================== 假数据（内置） ========================
 class MockForumData:
     _posts = [
-        {"id": 1, "title": "关于中南大学Andy的瓜", "contents": "这是第一条帖子的详细内容", "author": "用户1", "time": "2026-03-12", "likes": 12},
+        {"id": 1, "title": "关于**的瓜", "contents": "这是第一条帖子的详细内容", "author": "用户1", "time": "2026-03-12", "likes": 12},
         {"id": 2, "title": "Python Qt开发经验分享", "contents": "这是第二条帖子的详细内容", "author": "用户2", "time": "2026-03-13", "likes": 28}
     ]
     _replies = {
@@ -63,15 +63,57 @@ class ForumWindow(QWidget):
         #这个加了才能显示出来
         self.init_pages()
         self.bind_all_events()
+        self.ui.setObjectName("ForumPage")
+        self.setAttribute(Qt.WA_StyledBackground, True)
 
+        self.ui.setStyleSheet("""
 
-        self.setStyleSheet("""
-        #singlePost{
-            background: white;
-            border-radius: 12px;
-            border:1px solid #E0E0E0;
-            padding:10px;
-        }
+        
+ /* 外层保持透明，和 main 融合 */
+#ForumPage{
+    background:transparent;
+}
+
+/* 页面主体 */
+QScrollArea{
+    border:none;
+    background:white;
+}
+
+/* 内容区域 */
+#post_contents,
+#detail_content{
+    background:white;
+}
+
+/* 输入框 */
+QLineEdit,
+QTextEdit{
+    background:white;
+    border:1px solid #ddd;
+    border-radius:6px;
+}
+
+/* 按钮 */
+QPushButton{
+    background:white;
+    border:1px solid #eee;
+    border-radius:8px;
+}
+
+QPushButton:hover{
+    background:#fff0f3;
+}
+
+QPushButton:pressed{
+    background:#ffd6e0;
+}
+
+QPushButton:checked{
+    background:#ffccd5;
+}
+
+      
         """)
 
         # print(self.ui.size())

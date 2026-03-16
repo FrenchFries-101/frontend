@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>558</width>
-    <height>493</height>
+    <height>488</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -35,26 +35,160 @@
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="forum_main">
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Policy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>15</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
         <widget class="QLabel" name="title_main">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::FocusPolicy::NoFocus</enum>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">/*font: 16pt &quot;Papyrus&quot;;*/
+font: 700 15pt &quot;Terminal&quot;;
+color: rgb(50, 43, 43);</string>
+         </property>
          <property name="text">
-          <string>DIICSU Forum</string>
+          <string>  DIICSU Forum</string>
          </property>
         </widget>
        </item>
        <item>
         <layout class="QHBoxLayout" name="Search">
          <item>
-          <widget class="QLineEdit" name="search_input"/>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Policy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>15</width>
+             <height>10</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="search_input">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">/* ================= 搜索框 ================= */
+
+QLineEdit#search_input {
+
+    background-color: white;
+
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+
+    padding: 6px 12px;
+
+    font-size: 14px;
+    color: #333;
+
+}
+
+
+/* 鼠标悬停 */
+
+QLineEdit#search_input:hover {
+
+    border: 1px solid #ffb3c1;
+
+}
+
+
+/* 输入时 */
+
+QLineEdit#search_input:focus {
+
+    border: 1px solid #ff6b81;
+}
+
+
+/* placeholder 颜色 */
+
+QLineEdit#search_input::placeholder {
+
+    color: #aaaaaa;
+}</string>
+           </property>
+           <property name="placeholderText">
+            <string>search posts ...</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="search_button">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton#search_button {
+	font: 9pt &quot;Terminal&quot;;
+
+    background-color: #ffc2bc;
+    color: white;
+
+    border-radius: 8px;
+    border: none;
+
+    padding: 6px 14px;
+
+    font-size: 9px;
+}</string>
+           </property>
            <property name="text">
-            <string>Search</string>
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset theme="QIcon::ThemeIcon::EditFind"/>
            </property>
           </widget>
          </item>
@@ -71,7 +205,7 @@
             <x>0</x>
             <y>0</y>
             <width>536</width>
-            <height>374</height>
+            <height>330</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -103,8 +237,40 @@
        </item>
        <item>
         <widget class="QPushButton" name="to_create_botton">
+         <property name="layoutDirection">
+          <enum>Qt::LayoutDirection::LeftToRight</enum>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton#to_create_botton {
+
+    background-color: white;
+
+    border-radius: 8px;
+    border: 1px solid #dddddd;
+
+    padding: 6px 14px;
+    font-size: 14px;
+
+    text-align: center;
+    font-size: 14px;
+	font: 9pt &quot;Terminal&quot;;
+}
+
+
+/* 鼠标悬停 */
+QPushButton#to_create_botton:hover {
+
+    background-color: #fff7f9;
+    border: 1px solid #ff8fa3;
+}
+
+QPushButton#to_create_botton:pressed {
+
+    background-color: #ffe5ec;
+}</string>
+         </property>
          <property name="text">
-          <string>Create a New Post</string>
+          <string>Create Post    +</string>
          </property>
         </widget>
        </item>
@@ -138,7 +304,7 @@
           <item>
            <widget class="QLabel" name="detail_title">
             <property name="text">
-             <string>帖子详情</string>
+             <string>Post Details</string>
             </property>
            </widget>
           </item>
@@ -157,6 +323,9 @@
           </item>
           <item>
            <widget class="QPushButton" name="up_button">
+            <property name="layoutDirection">
+             <enum>Qt::LayoutDirection::LeftToRight</enum>
+            </property>
             <property name="text">
              <string>up</string>
             </property>
@@ -175,8 +344,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>536</width>
-            <height>351</height>
+            <width>78</width>
+            <height>16</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -235,8 +404,14 @@
               <height>16777215</height>
              </size>
             </property>
+            <property name="layoutDirection">
+             <enum>Qt::LayoutDirection::LeftToRight</enum>
+            </property>
             <property name="text">
-             <string>PushButton</string>
+             <string>reply</string>
+            </property>
+            <property name="icon">
+             <iconset theme="QIcon::ThemeIcon::ListAdd"/>
             </property>
            </widget>
           </item>
