@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>943</width>
-    <height>600</height>
+    <width>1148</width>
+    <height>604</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -361,121 +361,20 @@ QFrame#test_card:hover {
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>10</y>
-         <width>741</width>
-         <height>541</height>
+         <y>0</y>
+         <width>751</width>
+         <height>551</height>
         </rect>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="Recite_page">
-        <widget class="QWidget" name="verticalLayoutWidget">
-         <property name="geometry">
-          <rect>
-           <x>-1</x>
-           <y>-1</y>
-           <width>741</width>
-           <height>541</height>
-          </rect>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_2" stretch="2,6,1,1">
-          <item>
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>Common Used Word List</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QFrame" name="frame_2">
-            <property name="frameShape">
-             <enum>QFrame::Shape::StyledPanel</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Shadow::Raised</enum>
-            </property>
-            <layout class="QGridLayout" name="gridLayout">
-             <item row="0" column="0">
-              <widget class="QPushButton" name="pushButton">
-               <property name="text">
-                <string>Email to lecturer</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QPushButton" name="pushButton_2">
-               <property name="text">
-                <string>STEM subject</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QPushButton" name="pushButton_3">
-               <property name="text">
-                <string>Group discussion</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QPushButton" name="pushButton_4">
-               <property name="text">
-                <string>Presentation</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Orientation::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_2">
-            <item>
-             <widget class="QPushButton" name="pushButton_5">
-              <property name="text">
-               <string>Add to favourite</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="verticalSpacer_6">
-              <property name="orientation">
-               <enum>Qt::Orientation::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QPushButton" name="pushButton_6">
-              <property name="text">
-               <string>Check favourite list</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
+        <layout class="QVBoxLayout" name="verticalLayout_10">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_2" stretch=""/>
+         </item>
+        </layout>
        </widget>
        <widget class="QWidget" name="favourite_page">
         <widget class="QWidget" name="verticalLayoutWidget_2">
@@ -982,19 +881,15 @@ QFrame#test_card:hover {
         </widget>
        </widget>
        <widget class="QWidget" name="discussion_page">
-        <widget class="QLabel" name="label_6">
-         <property name="geometry">
-          <rect>
-           <x>200</x>
-           <y>240</y>
-           <width>111</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Discussion 界面</string>
-         </property>
-        </widget>
+        <layout class="QVBoxLayout" name="verticalLayout_11">
+         <item>
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>Discussion 界面</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </widget>
      </widget>

@@ -17,7 +17,7 @@ from components.SingleDetailedPost import SingleDetailedPost
 # ======================== 假数据（内置） ========================
 class MockForumData:
     _posts = [
-        {"id": 1, "title": "关于中南大学周*萌的瓜", "contents": "这是第一条帖子的详细内容", "author": "用户1", "time": "2026-03-12", "likes": 12},
+        {"id": 1, "title": "关于中南大学Andy的瓜", "contents": "这是第一条帖子的详细内容", "author": "用户1", "time": "2026-03-12", "likes": 12},
         {"id": 2, "title": "Python Qt开发经验分享", "contents": "这是第二条帖子的详细内容", "author": "用户2", "time": "2026-03-13", "likes": 28}
     ]
     _replies = {
@@ -56,6 +56,9 @@ class ForumWindow(QWidget):
         self.main_layout.setSpacing(0)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
 
+
+
+
         self.load_full_ui()
         #这个加了才能显示出来
         self.init_pages()
@@ -71,8 +74,8 @@ class ForumWindow(QWidget):
         }
         """)
 
-        print(self.ui.size())
-        print(self.size())
+        # print(self.ui.size())
+        # print(self.size())
 
     def load_full_ui(self):
         # 一次性加载整个postPage.ui
@@ -184,11 +187,8 @@ class ForumWindow(QWidget):
 
         for post in posts:
             post_widget = SinglePost(post)
-            # 用 partial 绑定 post_id，避免 lambda 捕获变量问题
             post_widget.clicked.connect(lambda p=post: self.go_to_detail(p["id"]))
             self.post_layout.addWidget(post_widget)
-            # self.post_layout.addWidget(QLabel(post["title"]))
-            #self.post_widgets.append(post_widget)
 
         print("posts loaded:", [p["title"] for p in posts])
 
@@ -214,7 +214,7 @@ class ForumWindow(QWidget):
         title = self.title_input.text().strip()
         content = self.content_input.toPlainText().strip()
         if not title or not content:
-            print("⚠️ 标题和内容不能为空")
+            print("标题和内容不能为空")
             return
 
         MockForumData.create_post(title, content)

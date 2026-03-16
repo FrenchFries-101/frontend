@@ -34,11 +34,16 @@ class RecitePage(QWidget):
 
         QLabel#title{
             font-size:20px;
+            background:transparent;
             font-weight:600;
             margin:0;
             padding:20px 0;
         }
-
+        QPushButton#title_chinese_btn {
+            min-width: 24px !important;  /* 强制按钮至少占24px宽度，不能被压缩 */
+            margin-right: 5px !important; /* 按钮右边留5px空隙，不贴到窗口边缘 */
+            padding: 0 !important; /* 把按钮的内边距清零，只显示图标 */
+        }
         /* 标题栏返回按钮样式 */
         QPushButton#title_back_btn {
             background:transparent;
@@ -51,21 +56,6 @@ class RecitePage(QWidget):
             opacity: 0.8;
         }
 
-        /* 开关相关样式 */
-        QLabel#switch_label {
-            font-size:14px;
-            color:#666;
-            margin-right:8px;
-        }
-
-        QPushButton#lang_switch_btn {
-            border:none;
-            background:transparent;
-            padding:0;
-            margin:0;
-            width:30px;
-            height:30px;
-        }
 
         QPushButton.category{
             background:white;
@@ -124,7 +114,7 @@ class RecitePage(QWidget):
 
         main = QVBoxLayout(self)
         main.setSpacing(0)
-        main.setContentsMargins(20, 0, 20, 0)
+        main.setContentsMargins(20, 0, 30, 0)
 
         # ---------------- 标题栏（返回按钮 + 标题 + 中文开关） ----------------
         title_bar_layout = QHBoxLayout()
@@ -137,12 +127,17 @@ class RecitePage(QWidget):
         self.title_back_btn.setFixedSize(24, 24)
         self.title_back_btn.setVisible(False)
 
-        # 加载返回图标
+        # 加载返回图标  self.ICON_CHINESE_ON  self.ICON_RETURN
         try:
             pixmap = QPixmap(self.ICON_RETURN)
             scaled_pixmap = pixmap.scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.title_back_btn.setIcon(QIcon(scaled_pixmap))
             self.title_back_btn.setIconSize(QSize(24, 24))
+
+            # pixmap = QPixmap(self.ICON_CHINESE_ON)
+            # scaled_pixmap = pixmap.scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            # self.title_back_btn.setIcon(QIcon(scaled_pixmap))
+            # # self.title_back_btn.setIconSize(QSize(24, 24))
         except:
             self.title_back_btn.setText("←")
             self.title_back_btn.setStyleSheet("font-size:20px; font-weight:bold;")
@@ -162,67 +157,87 @@ class RecitePage(QWidget):
 
         # 中文显示开关容器
         self.switch_widget = QWidget()
-        self.switch_widget.setVisible(False)
+        self.switch_widget.setVisible(True)
         switch_container = QHBoxLayout(self.switch_widget)
         switch_container.setSpacing(5)
         switch_container.setContentsMargins(0, 0, 0, 0)
         switch_container.setAlignment(Qt.AlignVCenter)
 
-
-        # self.chinese_btn = QPushButton()
-        # self.chinese_btn.setFixedSize(30, 30)
-        # self.chinese_btn.setStyleSheet("border:none;background:transparent;")
-        #
-        # # 加载两张图片
-        # self.icon_chinese_off = QIcon(self.ICON_CHINESE_OFF)
-        # self.icon_chinese_on = QIcon(self.ICON_CHINESE_ON)
-        # # 默认状态
-        # self.chinese_btn.setIcon(self.icon_chinese_off)
-        # self.chinese_btn.setIconSize(QSize(24, 24))
-        #
-        # # 点击事件
-        # self.chinese_btn.clicked.connect(self.toggle_chinese)
-
         # 中文按钮
         self.chinese_btn = QPushButton()
-        self.chinese_btn.setFixedSize(30, 30)
+        # self.chinese_btn.setFixedSize(30, 30)
+        self.chinese_btn.setObjectName("title_chinese_btn")
+        self.chinese_btn.setFixedSize(24, 24)
+        # self.chinese_btn.setVisible(False)
         self.chinese_btn.setStyleSheet("border:none;background:transparent;")
 
         # 加载两张图片，和返回按钮同款
-        pixmap_off = QPixmap(self.ICON_CHINESE_OFF)
+        pixmap_off = QPixmap(self.ICON_CHINESE_OFF)#记载为土
+        if pixmap_off.isNull():
+            print("pixmap_off 加载失败")
+        else:
+            print("pixmap_off 加载成功")
         if not pixmap_off.isNull():
             scaled_off = pixmap_off.scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.icon_chinese_off = QIcon(scaled_off)
+            # self.chinese_btn.setIcon(QIcon(scaled_off))
             print("ICON_CHINESE_OFF成功！！")
+            if self.icon_chinese_off.isNull():
+                print("self.icon_chinese_off 创建失败")
+            else:
+                print("self.icon_chinese_off 创建成功")
         else:
             print("ICON_CHINESE_OFF记载失败")
             self.icon_chinese_off = QIcon()  # 失败就空
 
         pixmap_on = QPixmap(self.ICON_CHINESE_ON)
+        if pixmap_on.isNull():
+            print("pixmap_on 加载失败")
+        else:
+            print("pixmap_on 加载成功")
         if not pixmap_on.isNull():
             scaled_on = pixmap_on.scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.icon_chinese_on = QIcon(scaled_on)
             print("ICON_CHINESE_ON记载成功！")
+            if self.icon_chinese_on.isNull():
+                print("self.icon_chinese_on创建失败")
+            else:
+                print("self.icon_chinese_on创建成功")
         else:
             print("ICON_CHINESE_ON加载失败")
             self.icon_chinese_on = QIcon()
 
+
         # 默认状态
-        self.chinese_btn.setIcon(self.icon_chinese_off)
-        self.chinese_btn.setIconSize(QSize(24, 24))
+        try:
+            self.chinese_btn.setIcon(self.icon_chinese_off)
+            self.chinese_btn.setIconSize(QSize(24, 24))
+            self.chinese_btn.setFixedSize(30,30)
+            print(self.chinese_btn.icon().isNull())
+        except:
+            self.chinese_btn.setText("--")
+            self.chinese_btn.setStyleSheet("font-size:20px; font-weight:bold;")
 
         # 点击事件
         self.chinese_btn.clicked.connect(self.toggle_chinese)
 
         # switch_container.addWidget(self.switch_label)
         switch_container.addWidget(self.chinese_btn)
+        # switch_container.addWidget(QLabel("Test"))
+        # switch_container.addWidget(self.title_back_btn1)
 
         # 组装标题栏
         title_bar_layout.addWidget(self.title_back_btn, alignment=Qt.AlignVCenter)
         title_bar_layout.addItem(spacer_left)
         title_bar_layout.addWidget(self.title, alignment=Qt.AlignVCenter)
         title_bar_layout.addItem(spacer_right)
+        # title_bar_layout.addWidget(self.chinese_btn, alignment=Qt.AlignVCenter)
         title_bar_layout.addWidget(self.switch_widget, alignment=Qt.AlignVCenter)
+        self.chinese_btn.setVisible(True)
+        self.switch_widget.setVisible(True)
+        print(self.chinese_btn.icon().isNull())
+        print(self.chinese_btn.isVisible())
+        print(self.switch_widget.isVisible())
 
         main.addLayout(title_bar_layout)
 
@@ -264,38 +279,6 @@ class RecitePage(QWidget):
                 {"english": "I agree with you", "chinese": "我同意你的观点"},
             ]
         }
-
-    # ---------------- 核心方法：更新语言图标（无动画，即时切换） ----------------
-    def update_lang_icon(self):
-        """更新语言图标"""
-
-        if self.show_chinese_global:
-            icon_path = r"D:\AgileProject\resources\icons\zh_icon.png"
-        else:
-            icon_path = r"D:\AgileProject\resources\icons\en_icon.png"
-
-        pixmap = QPixmap(icon_path)
-
-        if not pixmap.isNull():
-            scaled = pixmap.scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            self.lang_switch_btn.setIcon(QIcon(scaled))
-            self.lang_switch_btn.setIconSize(QSize(24, 24))
-
-    # ---------------- 图片点击事件：切换中英文显示 ----------------
-    def on_lang_icon_clicked(self):
-        """点击语言图标切换中英文显示状态（无动画，即时生效）"""
-        self.show_chinese_global = not self.show_chinese_global
-
-        # 即时更新图标和标签
-        self.update_lang_icon()
-
-        # 更新单词列表的中文显示状态
-        if self.word_list and self.word_list.count() > 0:
-            for i in range(self.word_list.count()):
-                item = self.word_list.item(i)
-                cn_label = item.data(Qt.UserRole)
-                if cn_label:
-                    cn_label.setVisible(self.show_chinese_global)
 
     # ---------------- 单词点击单独切换（可选保留） ----------------
     def toggle_word_meaning(self, item):
