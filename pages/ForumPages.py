@@ -2,6 +2,7 @@ import os
 import sys
 from functools import partial
 
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout,
     QScrollArea, QLabel, QPushButton, QLineEdit, QTextEdit, QStackedWidget, QSizePolicy
@@ -57,14 +58,14 @@ class ForumWindow(QWidget):
         self.main_layout.setContentsMargins(0, 0, 0, 0)
 
 
-
-
         self.load_full_ui()
         #这个加了才能显示出来
         self.init_pages()
         self.bind_all_events()
         self.ui.setObjectName("ForumPage")
         self.setAttribute(Qt.WA_StyledBackground, True)
+
+
 
         self.ui.setStyleSheet("""
 
@@ -162,9 +163,6 @@ QPushButton:checked{
         layout.addWidget(self.ui)
 
     def init_scroll_area(self):
-        # 确保 scroll area 可自适应大小
-        # self.post_scroll.setWidgetResizable(True)
-        # self.post_scroll.setWidget(self.post_container)
 
         # 获取已有布局，如果没有就创建
         self.post_layout = self.post_container.layout()
@@ -195,6 +193,11 @@ QPushButton:checked{
         label.setAlignment(Qt.AlignCenter)
         self.post_layout.addWidget(label)
 
+    #获取icon图片函数
+    def get_icon(self, name):
+        base_dir = os.path.dirname(__file__)
+        return os.path.join(base_dir, "..","resources", "icons", name)
+
     # ------------------------ 主页面逻辑 ------------------------
     def init_main_page(self):
         # 查找主页面控件
@@ -204,6 +207,11 @@ QPushButton:checked{
         self.post_scroll = self.ui.findChild(QScrollArea, "post_scrollArea")
         self.post_container = self.ui.findChild(QWidget, "post_contents")
 
+        #按钮图片-搜索帖子
+        self.search_btn.setIcon(QIcon(self.get_icon("search.png")))
+        # path = self.get_icon("search.png")
+        # print("icon path:", path)
+        # print("exists:", os.path.exists(path))
 
         # 设置滚动区域
         self.post_scroll.setWidgetResizable(True)
@@ -275,6 +283,13 @@ QPushButton:checked{
         self.detail_scroll = self.forum_detail.findChild(QScrollArea, "detail_scrollArea")
         self.detail_container = self.forum_detail.findChild(QWidget, "detail_content")
 
+        #按钮图片-回复
+        self.reply_btn.setIcon(QIcon(self.get_icon("pen.png")))
+        #按钮图片-返回键
+        self.return_btn2.setIcon(QIcon(self.get_icon("return_black.png")))
+        #按钮图片-刷新
+        self.up_btn.setIcon(QIcon(self.get_icon("refresh.png")))
+
         self.detail_layout = self.detail_container.layout()
         if self.detail_layout is None:
             self.detail_layout = QVBoxLayout(self.detail_container)
@@ -301,7 +316,7 @@ QPushButton:checked{
             print("mei you post")
             return
         print(post)
-        self.detail_title.setText(f"帖子详情：{post['title']}")
+        self.detail_title.setText(f"Post Details：{post['title']}")
         # 添加帖子组件
         post_widget = SingleDetailedPost(post)
         self.detail_layout.addWidget(post_widget)
@@ -310,7 +325,7 @@ QPushButton:checked{
         line.setStyleSheet("background-color: #E0E0E0; height: 1px;")
         self.detail_layout.addWidget(line)
         # 添加回复标题
-        reply_title = QLabel("评论区jhh")
+        reply_title = QLabel("Comments")
         reply_title.setStyleSheet("font-size: 14px; font-weight: bold; margin: 10px 0;")
         self.detail_layout.addWidget(reply_title)
 
