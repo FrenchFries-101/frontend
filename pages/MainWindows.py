@@ -7,11 +7,15 @@ from pages.ForumPages import ForumWindow
 from PySide6.QtWidgets import QPushButton
 from PySide6.QtWidgets import QFrame, QLabel, QHBoxLayout
 from PySide6.QtWidgets import QProgressBar
+from service.api import get_cambridge_list, get_tests, get_sections
 
 
 class MainWindow(QWidget):
     exit_signal = Signal()  # 新增信号
     start_test_signal = Signal()
+    current_cam=0
+    current_test=0
+    current_section=0
 
     def __init__(self):
         super().__init__()
@@ -82,18 +86,24 @@ class MainWindow(QWidget):
             if item.widget():
                 item.widget().deleteLater()
 
-        for i in range(5, 21):
-            button = QPushButton(f"Cambridge {i}")
+        cambridge_list = get_cambridge_list()
 
+        for cam in cambridge_list:
+            button = QPushButton(f"Cambridge {cam}")
             button.setMinimumHeight(40)
 
             button.clicked.connect(
-                lambda checked=False, cam=i: self.show_tests(cam)
+                lambda checked=False, c=cam: self.show_tests(c)
             )
 
             layout.addWidget(button)
+
         layout.addStretch()
-        self.show_tests(5)
+
+        print(cambridge_list)
+        # 默认加载第一个
+        # if cambridge_list:
+        #     self.show_tests(cambridge_list[0])
 
     def show_tests(self, cam):
 
@@ -105,35 +115,39 @@ class MainWindow(QWidget):
             if item.widget():
                 item.widget().deleteLater()
 
-        for test in range(1, 5):
+        user_id = 1  # 你可以后面改成登录用户
+        tests = get_tests(cam, user_id)
+
+        for t in tests:
+            test_id = t["test_id"]
+            total_sections = t["total_sections"]
+            completed = t["completed_sections"]
+
             card = QFrame()
             card.setObjectName("test_card")
             card.setMinimumHeight(80)
 
             card_layout = QHBoxLayout(card)
 
-            # 左侧布局（标题 + 进度条）
             left_layout = QVBoxLayout()
 
-            title = QLabel(f"Cambridge {cam} Test {test}")
+            title = QLabel(f"Cambridge {cam} Test {test_id}")
 
             progress = QProgressBar()
-            progress.setMaximum(4)
-            progress.setValue(1)  # 示例进度（后面可以改成数据库读取）
+            progress.setMaximum(total_sections)
+            progress.setValue(completed)
             progress.setTextVisible(False)
             progress.setFixedWidth(150)
 
             left_layout.addWidget(title)
             left_layout.addWidget(progress)
 
-            # 右侧按钮
             enter_btn = QPushButton("Open")
 
             enter_btn.clicked.connect(
-                lambda checked=False, c=cam, t=test: self.show_sections(c, t)
+                lambda checked=False, c=cam, t=test_id: self.show_sections(c, t)
             )
 
-            # 添加到卡片
             card_layout.addLayout(left_layout)
             card_layout.addStretch()
             card_layout.addWidget(enter_btn)
@@ -152,36 +166,30 @@ class MainWindow(QWidget):
             if item.widget():
                 item.widget().deleteLater()
 
-        # 示例 Section 名称
-        section_names = [
-            "Multiple Choice",
-            "Matching Information",
-            "True / False / Not Given",
-            "Sentence Completion"
-        ]
+        sections = get_sections(cam, test)
 
-        # 生成 Section
-        for section in range(1, 5):
+        for sec in sections:
+            section_number = sec["section_number"]
+            section_name = sec["section_name"]
+
             card = QFrame()
             card.setObjectName("section_card")
             card.setMinimumHeight(80)
 
             card_layout = QHBoxLayout(card)
 
-            # 左侧（标题 + section name）
             left_layout = QVBoxLayout()
 
-            title = QLabel(f"Section {section}")
-            section_name = QLabel(section_names[section - 1])
+            title = QLabel(f"Section {section_number}")
+            name_label = QLabel(section_name)
 
             left_layout.addWidget(title)
-            left_layout.addWidget(section_name)
+            left_layout.addWidget(name_label)
 
-            # 右侧按钮
             start_btn = QPushButton("Begin Training")
 
             start_btn.clicked.connect(
-                lambda _, c=cam, t=test, s=section:
+                lambda _, c=cam, t=test, s=section_number:
                 self.start_section(c, t, s)
             )
 
@@ -194,6 +202,10 @@ class MainWindow(QWidget):
         layout.addStretch()
 
     def start_section(self, cam, test, section):
+
+        self.current_cam = cam
+        self.current_test = test
+        self.current_section = section
 
         print(cam, test, section)
 

@@ -3,13 +3,13 @@ import requests
 BASE_URL = "http://127.0.0.1:8000"
 
 def get_cambridge_list():
-    res = requests.get(f"{BASE_URL}/get_cambridge_list")
+    res = requests.get(f"{BASE_URL}/listening/cambridge")
     return res.json()
 
 
 def get_tests(cambridge_id, user_id):
     res = requests.get(
-        f"{BASE_URL}/get_tests",
+        f"{BASE_URL}/listening/test",
         params={
             "cambridge_id": cambridge_id,
             "user_id": user_id
@@ -20,7 +20,7 @@ def get_tests(cambridge_id, user_id):
 
 def get_sections(cambridge_id, test_id):
     res = requests.get(
-        f"{BASE_URL}/get_sections",
+        f"{BASE_URL}/listening/sections",
         params={
             "cambridge_id": cambridge_id,
             "test_id": test_id
@@ -31,7 +31,7 @@ def get_sections(cambridge_id, test_id):
 
 def get_listening_material(cambridge_id, test_id, section_id):
     res = requests.get(
-        f"{BASE_URL}/get_listening_material",
+        f"{BASE_URL}/listening/material",
         params={
             "cambridge_id": cambridge_id,
             "test_id": test_id,
@@ -43,7 +43,7 @@ def get_listening_material(cambridge_id, test_id, section_id):
 
 def submit_score(data):
     res = requests.post(
-        f"{BASE_URL}/submit_score",
+        f"{BASE_URL}/listening/submit",
         json=data
     )
     return res.json()
@@ -54,7 +54,7 @@ def get_categories():
     return: ["Academic Subject", "Academic English"]
     """
     try:
-        res = requests.get(f"{BASE_URL}/get_categories")
+        res = requests.get(f"{BASE_URL}/word/categories")
         res.raise_for_status()
         return res.json()
     except Exception as e:
@@ -69,7 +69,7 @@ def get_subcategories(category):
     """
     try:
         res = requests.get(
-            f"{BASE_URL}/get_subcategories",
+            f"{BASE_URL}/word/subcategories",
             params={"category": category}
         )
         res.raise_for_status()
@@ -90,7 +90,7 @@ def get_words(category, subcategory):
     """
     try:
         res = requests.get(
-            f"{BASE_URL}/get_words",
+            f"{BASE_URL}/word/words",
             params={
                 "category": category,
                 "subcategory": subcategory
