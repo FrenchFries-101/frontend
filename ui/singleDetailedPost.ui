@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>546</width>
+    <width>489</width>
     <height>216</height>
    </rect>
   </property>
@@ -26,10 +26,61 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QWidget {
-    background-color: white;
-    padding: 8px;
-}</string>
+   <string notr="true">QWidget#post_simple QLabel#post_title {
+    font-size: 19px;
+    font-weight: 600;
+	color: rgb(255, 107, 129);
+}
+/* ================= 时间 ================= */
+
+QWidget#post_simple QLabel#auther_time {
+
+    font-size: 11px;
+    color: #999999;
+}
+
+
+/* ================= 回复内容 ================= */
+
+QWidget#post_simple QLabel#contents {
+
+    font-size: 15px;
+    color: #444444;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+
+/* ================= 点赞 ================= */
+
+QWidget#post_simple QLabel#post_likes {
+
+    font-size: 12px;
+    color: #ff6b81;
+}
+
+
+/* ================= Like 按钮 ================= */
+
+QWidget#post_simple QPushButton {
+
+    border: none;
+    background: transparent;
+
+    font-size: 12px;
+    color: #999999;
+}
+
+
+/* hover 点赞按钮 */
+
+QWidget#post_simple QPushButton:hover {
+
+    color: #ff6b81;
+}
+
+
+</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
@@ -37,9 +88,7 @@
      <item>
       <widget class="QLabel" name="post_title">
        <property name="styleSheet">
-        <string notr="true">font-size: 16px;
-font-weight: bold;
-color: black;</string>
+        <string notr="true"/>
        </property>
        <property name="text">
         <string>TextLabel</string>
@@ -62,6 +111,31 @@ color: black;</string>
      <item>
       <widget class="QWidget" name="widget" native="true">
        <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>35</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>35</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
         <item>
          <widget class="QLabel" name="auther_time">
           <property name="minimumSize">

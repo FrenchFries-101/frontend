@@ -1,8 +1,9 @@
 import os
 
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QFile, Signal
+from PySide6.QtCore import QFile, Signal, Qt
 
 
 class SingleDetailedPost(QWidget):
@@ -39,9 +40,22 @@ class SingleDetailedPost(QWidget):
         self.author = self.findChild(QLabel, "auther_time")
         self.likes = self.findChild(QLabel, "post_likes")
         self.contents = self.findChild(QLabel, "contents")
+        self.avatar_image = self.findChild(QLabel, "label")
+
+        pixmap = QPixmap(self.get_icon("writer.png"))
+        print(self.avatar_image)
+        pixmap = pixmap.scaled(20, 20, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.avatar_image.setPixmap(pixmap)
+
+
 
 
         self.load_data()
+
+
+    def get_icon(self, name):
+        base_dir = os.path.dirname(__file__)
+        return os.path.join(base_dir, "..","resources", "icons", name)
 
     def load_data(self):
 
