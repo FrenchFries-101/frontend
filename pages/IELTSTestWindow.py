@@ -4,9 +4,9 @@ from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtCore import QFile,QUrl,QTimer
 
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import QLabel, QVBoxLayout
+from PySide6.QtWidgets import QLabel, QVBoxLayout,QPushButton
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal,QEvent
 from PySide6.QtWidgets import QMessageBox
 
 from pages.ExitDialog import ExitDialog
@@ -34,7 +34,9 @@ class IELTSTestWindow(QWidget):
 
         self.player.setAudioOutput(self.audio)
 
-        self.player.setSource(QUrl.fromLocalFile("audio/listening.m4a"))
+        #这里后期直接从接口获取url 地址
+        url = "http://124.223.33.28:7777/Listening/5/test1/01_section1-1.m4a"
+        self.player.setSource(QUrl(url))
         self.ui.pushButton.clicked.connect(self.play_audio)
 
         self.player.positionChanged.connect(self.update_slider)
@@ -49,26 +51,62 @@ class IELTSTestWindow(QWidget):
 
         layout = QVBoxLayout(question_widget)
 
+        self.image_list=[
+            "resources/images/IELTSTest.png",
+            "resources/images/IELTSTest2.jpg"
+        ]
+        self.current_image_index = 0
         self.question_image = QLabel()
-        pixmap = QPixmap("resources/images/IELTSTest.png")
-
-        self.question_image.setPixmap(pixmap)
         self.question_image.setScaledContents(True)
 
         layout.addWidget(self.question_image)
+        self.show_image(0)
+
+        #创建按钮
+
+        self.prev_btn = QPushButton("◀", self.ui.scrollArea)
+        self.next_btn = QPushButton("▶", self.ui.scrollArea)
+
+        self.prev_btn.setFixedSize(40, 60)
+        self.next_btn.setFixedSize(40, 60)
+
+        self.prev_btn.hide()
+        self.next_btn.hide()
+
+        style = """
+        QPushButton{
+            background-color: rgba(0,0,0,120);
+            color:white;
+            border:none;
+            border-radius:8px;
+            font-size:20px;
+        }
+        QPushButton:hover{
+            background-color: rgba(0,0,0,180);
+        }
+        """
+
+        self.prev_btn.setStyleSheet(style)
+        self.next_btn.setStyleSheet(style)
+
+        self.prev_btn.clicked.connect(self.prev_image)
+        self.next_btn.clicked.connect(self.next_image)
 
         self.seconds = 0  # 已经过了多少秒
-        self.total_seconds = 270  # 4分30秒 = 270秒
+        self.total_seconds = 600  # 4分30秒 = 270秒
+        self.ui.Timer_label.setText("00:00")
 
         # 创建计时器
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_timer)
-        self.timer.start(1000)  # 每1000ms = 1秒触发
+       # self.reset_timer()
 
         self.total_duration = 0
 
         self.ui.Exit_button.clicked.connect(self.confirm_exit)
         self.ui.pushButton_3.clicked.connect(self.submit_answers)
+        self.ui.scrollArea.installEventFilter(self)
+
 
     def submit_answers(self):
 
@@ -99,8 +137,9 @@ class IELTSTestWindow(QWidget):
                 line_edit.setStyleSheet("border:2px solid #ef4444;")
 
             grid.addWidget(answer_label, i, 2)
+            line_edit.setReadOnly(True)
 
-        line_edit.setReadOnly(True)
+
 
         # 显示总分
         self.ui.Score_label.setText(f"Correct {correct_count}/10")
@@ -170,10 +209,70 @@ class IELTSTestWindow(QWidget):
         if dialog.exec():
             self.player.stop()
 
+            self.reset_timer()
+
             self.exit_test_signal.emit()
 
     def exit_direct(self):
 
         self.player.stop()
 
+        self.reset_timer()
+
         self.exit_test_signal.emit()
+
+    def resizeEvent(self, event):
+
+        w = self.ui.scrollArea.width()
+        h = self.ui.scrollArea.height()
+
+        self.prev_btn.move(10, h // 2 - 30)
+        self.next_btn.move(w - 50, h // 2 - 30)
+
+    def eventFilter(self, obj, event):
+
+        if obj == self.ui.scrollArea:
+
+            if event.type() == QEvent.Enter:
+                self.prev_btn.show()
+                self.next_btn.show()
+
+            elif event.type() == QEvent.Leave:
+                self.prev_btn.hide()
+                self.next_btn.hide()
+
+        return super().eventFilter(obj, event)
+
+    def show_image(self, index):
+
+        if 0 <= index < len(self.image_list):
+            pixmap = QPixmap(self.image_list[index])
+            self.question_image.setPixmap(pixmap)
+            self.current_image_index = index
+
+    def next_image(self):
+
+        if self.current_image_index < len(self.image_list) - 1:
+            self.show_image(self.current_image_index + 1)
+
+    def prev_image(self):
+
+        if self.current_image_index > 0:
+            self.show_image(self.current_image_index - 1)
+
+    def reset_timer(self):
+
+        self.seconds = 0
+
+        self.ui.Timer_label.setText("00:00")
+
+        self.timer.stop()
+        #self.timer.start(1000)
+
+    def showEvent(self, event):
+
+        super().showEvent(event)
+
+        self.reset_timer()
+
+        self.timer.start(1000)

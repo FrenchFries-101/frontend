@@ -73,6 +73,7 @@ class MainWindow(QWidget):
     def start_test(self):
         self.start_test_signal.emit()
 
+    #这里要不再加上一个清空原本的卡片界面，直接生成剑20的界面
     def generate_cambridge_buttons(self):
         layout = self.ui.scrollAreaWidgetContents_2.layout()
 
@@ -92,6 +93,7 @@ class MainWindow(QWidget):
 
             layout.addWidget(button)
         layout.addStretch()
+        self.show_tests(5)
 
     def show_tests(self, cam):
 

@@ -206,6 +206,30 @@ QFrame#test_card:hover {
     background-color: #f9fafb;
 }
 
+QPushButton#Recite_button {
+    qproperty-icon: url(resources/icons/book-alt.png);
+    qproperty-iconSize: 20px 20px;
+}
+
+QPushButton#Favourite_button {
+    qproperty-icon: url(resources/icons/headphones.png);
+    qproperty-iconSize: 20px 20px;
+}
+
+QPushButton#Profile_button {
+    qproperty-icon: url(resources/icons/user-speaking.png);
+    qproperty-iconSize: 20px 20px;
+}
+
+QPushButton#Discussion_button {
+    qproperty-icon: url(resources/icons/bank.png);
+    qproperty-iconSize: 20px 20px;
+}
+
+QPushButton#Exit_button{
+	qproperty-icon:url(resources/icons/exit.png);
+	qproperty-iconSize:20px 20px;
+}
 </string>
   </property>
   <widget class="QWidget" name="horizontalLayoutWidget">

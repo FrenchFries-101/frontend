@@ -41,6 +41,8 @@ QLabel#Timer_label {
     font-size: 18px;
     font-weight: 600;
     color: #ef4444;
+	qproperty-icon: url(resources/icons/alarm-clock.png);
+	qproperty-iconsize:24px 24px;
 }
 
 

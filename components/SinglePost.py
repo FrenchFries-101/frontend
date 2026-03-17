@@ -61,10 +61,10 @@ if __name__ == "__main__":
 
     # 假数据
     fake_post = {
-        "title": "关于中南大学周*萌的瓜",
-        "author": "Alice",
+        "title": "关于中南大学23级朱*柔的瓜",
+        "author": "Andy",
         "time": "2026-03-12",
-        "likes": 12
+        "likes": 100
     }
 
     # 创建组件

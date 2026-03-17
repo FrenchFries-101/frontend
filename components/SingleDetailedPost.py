@@ -65,9 +65,9 @@ if __name__ == "__main__":
 
     # 假数据
     fake_post = {
-        "title": "关于中南大学周*萌的瓜",
+        "title": "关于中南大学23级朱*柔的瓜",
         "contents":"njkdsbnfajkdbnfjk",
-        "author": "Alice",
+        "author": "Andy",
         "time": "2026-03-12",
         "likes": 12
     }
