@@ -209,9 +209,7 @@ QPushButton:checked{
 
         #按钮图片-搜索帖子
         self.search_btn.setIcon(QIcon(self.get_icon("search.png")))
-        # path = self.get_icon("search.png")
-        # print("icon path:", path)
-        # print("exists:", os.path.exists(path))
+        self.search_btn.setToolTip("Search")
 
         # 设置滚动区域
         self.post_scroll.setWidgetResizable(True)
@@ -251,6 +249,19 @@ QPushButton:checked{
         self.create_btn = self.forum_create.findChild(QPushButton, "create_button")
         self.title_input = self.forum_create.findChild(QLineEdit, "title_input")
         self.content_input = self.forum_create.findChild(QTextEdit, "content_input")
+
+        # 按钮图片-发布
+        self.create_btn.setIcon(QIcon(self.get_icon("plane.png")))
+        self.create_btn.setToolTip("Publish your post")
+
+        # 按钮图片-清空
+        self.clear_btn.setIcon(QIcon(self.get_icon("broom.png")))
+        self.clear_btn.setToolTip("Clear the input content")
+
+        # 按钮图片-返回
+        self.return_btn.setIcon(QIcon(self.get_icon("bank.png")))
+        self.return_btn.setToolTip("Return to the forum homepage")
+
         # 设置标题
         title_label = self.forum_create.findChild(QLabel, "create_title_label")
         if title_label:
@@ -285,10 +296,13 @@ QPushButton:checked{
 
         #按钮图片-回复
         self.reply_btn.setIcon(QIcon(self.get_icon("pen.png")))
+        self.reply_btn.setToolTip("Post a reply")
         #按钮图片-返回键
-        self.return_btn2.setIcon(QIcon(self.get_icon("return_black.png")))
+        self.return_btn2.setIcon(QIcon(self.get_icon("bank.png")))
+        self.return_btn2.setToolTip("Return to the forum homepage")
         #按钮图片-刷新
         self.up_btn.setIcon(QIcon(self.get_icon("refresh.png")))
+        self.up_btn.setToolTip("Refresh this page")
 
         self.detail_layout = self.detail_container.layout()
         if self.detail_layout is None:
@@ -326,7 +340,13 @@ QPushButton:checked{
         self.detail_layout.addWidget(line)
         # 添加回复标题
         reply_title = QLabel("Comments")
-        reply_title.setStyleSheet("font-size: 14px; font-weight: bold; margin: 10px 0;")
+        reply_title.setStyleSheet("""
+            color: #888888;                 /* 灰色字体 */
+            font-size: 14px;
+            font-weight: bold;
+            font-family: Consolas, "Courier New", monospace;  /* terminal风 */
+            margin: 10px 0 10px 20px;       /* 上 右 下 左（左边更大） */
+        """)
         self.detail_layout.addWidget(reply_title)
 
         # 添加回复
