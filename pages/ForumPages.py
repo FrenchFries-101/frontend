@@ -290,7 +290,7 @@ QPushButton:checked{
         # 设置标题
         title_label = self.forum_create.findChild(QLabel, "create_title_label")
         if title_label:
-            title_label.setText("发布新帖子")
+            title_label.setText("Release a new post")
 
     def clear_inputs(self):
         self.title_input.clear()
@@ -382,6 +382,8 @@ QPushButton:checked{
         # 添加帖子组件
         post_widget = SingleDetailedPost(fixed_post)
         self.detail_layout.addWidget(post_widget)
+        #连接点赞逻辑？
+        post_widget.liked.connect(self.handle_like_post)
 
         # style: 添加分割线
         line = QLabel()
@@ -407,6 +409,8 @@ QPushButton:checked{
             #测试
             print(reply)
             reply_widget = SingleReply(reply)
+            #点赞信号！！连接？
+            reply_widget.liked.connect(self.handle_like_reply)
             self.detail_layout.addWidget(reply_widget)
 
 
@@ -436,12 +440,17 @@ QPushButton:checked{
 
         # 创建页面事件
         self.clear_btn.clicked.connect(self.clear_inputs)
-        self.return_btn.clicked.connect(lambda: self.stack.setCurrentIndex(0))
+        self.return_btn.clicked.connect(self.back_to_main)
         self.create_btn.clicked.connect(self.create_post)
         # 详情页面事件
-        self.return_btn2.clicked.connect(lambda: self.stack.setCurrentIndex(0))
+        self.return_btn2.clicked.connect(self.back_to_main)
         self.up_btn.clicked.connect(self.scroll_to_top)
         self.reply_btn.clicked.connect(self.create_reply)
+
+    # 新增方法
+    def back_to_main(self):
+        self.stack.setCurrentIndex(0)  # 切回主页
+        self.load_posts()  # 重新加载帖子
 
     #inner function change pages
     def go_to_detail(self, post_id):
@@ -458,6 +467,44 @@ QPushButton:checked{
         self.detail_scroll.verticalScrollBar().setValue(0)
         self.load_post_detail(self.current_post_id)
 
+    #点赞帖子
+    # def handle_like_post(self, post_id):
+    #     res = like_post(post_id, 1)
+    #
+    #     if res:
+    #         QMessageBox.information(self, "Success", "点赞成功")
+    #         self.load_post_detail(post_id)  # 或局部更新
+    #     else:
+    #         QMessageBox.warning(self, "Error", "点赞失败")
+
+
+    # 点赞帖子
+    def handle_like_post(self, post_id):
+        # 调接口点赞
+        res = like_post(post_id, 1)  # 后端接口返回最新点赞数
+        if res is not None:
+            # 立即刷新数字
+            widget = self.detail_container.findChild(SingleDetailedPost)  # 找到当前帖子widget
+            if widget:
+                widget.likes_count = res["likes"]  # 后端返回的最新值
+                widget.likes_label.setText(f"{widget.likes_count}")
+            # QMessageBox.information(self, "Success", "点赞成功")
+        else:
+            QMessageBox.warning(self, "Error", "Error")
+
+
+
+
+    #点赞评论
+    def handle_like_reply(self, reply_id):
+        print(f"点赞 reply_id: {reply_id}")
+
+        res = like_reply(reply_id, 1)  #记得改user_id
+        if res:
+            print("点赞成功:", res)
+        else:
+            QMessageBox.warning(self, "Error", "点赞失败")
+            self.load_post_detail(self.current_post_id)
 
 # ======================== 运行 ========================
 if __name__ == "__main__":

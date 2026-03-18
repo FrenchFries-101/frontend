@@ -1,39 +1,48 @@
 import os
-from PySide6.QtWidgets import (QWidget, QLabel, QApplication, QVBoxLayout,
-                               QScrollArea, QSizePolicy)
-from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QFile, Qt
-from PySide6.QtGui import QPixmap
-import sys
 import random
+import sys
+
+from PySide6.QtWidgets import (
+    QWidget, QLabel, QVBoxLayout, QSizePolicy, QPushButton, QApplication, QScrollArea
+)
+from PySide6.QtUiTools import QUiLoader
+from PySide6.QtCore import QFile, Qt, Signal
+from PySide6.QtGui import QPixmap
 
 
 class SingleReply(QWidget):
+
+    liked = Signal(int)   # ⭐ 发出 reply_id
+
     def __init__(self, data):
         super().__init__()
 
+        self.liked_by_user = False  # 初始状态：未点赞
+        self.data = data
+        self.reply_id = data["reply_id"]   # ⭐ 必须是 reply_id
+        self.likes_count = data.get("likes", 0)
+
         # 随机头像
         avatar_id = random.randint(1, 10)
-
         self.avatar_path = os.path.join(
             os.path.dirname(os.path.dirname(__file__)),
-            "resources",
-            "icons",
+            "resources", "icons",
             f"avatar{avatar_id}.png"
         )
 
-        # 1. 主布局（关键：设置布局方向和边距）
+        # 主布局
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(10, 10, 10, 10)  # 保留少量内边距
-        self.main_layout.setAlignment(Qt.AlignTop)  # 控件向上对齐，避免垂直拉伸
+        self.main_layout.setContentsMargins(10, 10, 10, 10)
+        self.main_layout.setAlignment(Qt.AlignTop)
 
-        # 2. 加载UI文件
+        # 加载UI
         loader = QUiLoader()
         ui_path = os.path.join(
             os.path.dirname(os.path.dirname(__file__)),
             "ui",
             "single_reply.ui"
         )
+
         ui_file = QFile(ui_path)
         if not ui_file.open(QFile.ReadOnly):
             print(f"无法打开UI文件: {ui_path}")
@@ -41,60 +50,82 @@ class SingleReply(QWidget):
 
         self.ui = loader.load(ui_file, self)
         ui_file.close()
+
         self.main_layout.addWidget(self.ui)
 
-        # layout = self.layout()
-        # if layout is None:
-        #     layout = QVBoxLayout(self)
-        # layout.addWidget(self.ui)
-
-        # 3. 查找子控件（从self.ui中找）
+        # 找控件
         self.name = self.ui.findChild(QLabel, "name")
         self.content = self.ui.findChild(QLabel, "label_content")
         self.time = self.ui.findChild(QLabel, "time")
-        self.like = self.ui.findChild(QLabel, "like")
+        self.like_label = self.ui.findChild(QLabel, "like")
         self.avatar = self.ui.findChild(QLabel, "avatar")
 
+        # ⭐ 点赞按钮（UI里必须有）
+        self.like_btn = self.ui.findChild(QPushButton, "like_button")
+        self.like_btn.setText("❤")
 
-        # 4. 关键：设置文字区域的尺寸策略，防止被压缩
+        if not self.like_btn:
+            print("❌ 没找到 like_button，请检查 UI objectName")
+
+        # 内容样式优化
         if self.content:
-            # 设置水平可扩展、垂直最小尺寸（根据内容自适应高度）
-            self.content.setSizePolicy(
-                QSizePolicy.Expanding,  # 水平方向：尽可能占满可用空间
-                QSizePolicy.Minimum  # 垂直方向：至少显示内容所需的最小高度
-            )
-            # 允许文字换行（避免单行文字被截断）
+            self.content.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
             self.content.setWordWrap(True)
-            # 可选：设置最小宽度，保证文字区域不被挤太窄
             self.content.setMinimumWidth(200)
 
-        # 其他文字控件也优化尺寸策略
-        for label in [self.name, self.time, self.like]:
+        for label in [self.name, self.time, self.like_label]:
             if label:
-                label.setSizePolicy(
-                    QSizePolicy.Expanding,
-                    QSizePolicy.Fixed  # 固定高度，不被拉伸/压缩
-                )
+                label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
-        # 5. 加载数据
-        self.load_data(data)
+        # 绑定点赞
+        if self.like_btn:
+            self.like_btn.clicked.connect(self.handle_like)
 
-    def load_data(self, data):
-        if all([self.name, self.content, self.time, self.like, self.avatar]):
-            self.name.setText(data["author"])
-            self.content.setText(data["content"])
-            self.time.setText(data["time"])
-            self.like.setText(f"❤ {data['likes']}")
+        self.load_data()
 
-            pix = QPixmap(self.avatar_path)
-            if not pix.isNull():
-                self.avatar.setPixmap(
-                    pix.scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-                )
-                self.avatar.setScaledContents(True)
+    def load_data(self):
+        self.name.setText(self.data.get("author", ""))
+        self.content.setText(self.data.get("content", ""))
+        self.time.setText(self.data.get("time", ""))
+        self.like_label.setText(f"{self.likes_count}")
+
+        # 初始化点赞按钮颜色
+        self.like_btn.setStyleSheet("color: #555555;")  # 默认深灰
+
+        pix = QPixmap(self.avatar_path)
+        if not pix.isNull():
+            self.avatar.setPixmap(
+                pix.scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            )
+            self.avatar.setScaledContents(True)
+
+    # def handle_like(self):
+    #     # ⭐ 发信号给外部
+    #     self.liked.emit(self.reply_id)
+    #
+    #     # ⭐ UI立即更新
+    #     self.likes_count += 1
+    #     self.like_label.setText(f"❤ {self.likes_count}")
+    #
+    #     # ⭐ 防止连点
+    #     self.like_btn.setEnabled(False)
+
+    def handle_like(self):
+        # 切换状态
+        self.liked_by_user = not self.liked_by_user
+
+        # 更新 UI
+        if self.liked_by_user:
+            self.like_label.setText(f"{self.likes_count + 1}")  # 点赞
+            self.like_btn.setStyleSheet("color: red;")  # 红色心
+        else:
+            self.like_label.setText(f"{self.likes_count}")  # 取消点赞
+            self.like_btn.setStyleSheet("color: #555555;")  # 深灰色心
+
+        # 发信号给外层，外层再调用接口
+        self.liked.emit(self.reply_id)
 
     def sizeHint(self):
-        # 可选：自定义控件的默认大小提示，避免整体被压缩
         return self.ui.sizeHint() if hasattr(self, 'ui') else super().sizeHint()
 
 
@@ -135,6 +166,7 @@ if __name__ == "__main__":
             "content": f"第{i + 1}条评论：哈哈哈哈哈哈，这是一段比较长的评论内容，用来测试文字是否会被压缩或者截断，确保能正常换行显示！",
             "time": f"2026-03-13 1{i}:00",
             "likes": i * 2,
+            "reply_id":1
             # "avatar": avatar_path
         }
         reply = SingleReply(data)

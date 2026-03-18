@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>574</width>
-    <height>219</height>
+    <height>241</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -353,7 +353,7 @@ QWidget#Form * {
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton_2">
+          <widget class="QPushButton" name="like_button">
            <property name="minimumSize">
             <size>
              <width>30</width>
