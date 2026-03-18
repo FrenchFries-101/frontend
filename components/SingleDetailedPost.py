@@ -60,7 +60,7 @@ class SingleDetailedPost(QWidget):
     def load_data(self):
 
         self.title.setText(self.post["title"])
-        self.contents.setText(self.post["contents"])
+        self.contents.setText(self.post["content"])
         self.author.setText(f'{self.post["author"]}  {self.post["time"]}')
         self.likes.setText(f'❤ {self.post["likes"]}')
 

@@ -43,10 +43,10 @@ class SingleReply(QWidget):
         ui_file.close()
         self.main_layout.addWidget(self.ui)
 
-        layout = self.layout()
-        if layout is None:
-            layout = QVBoxLayout(self)
-        layout.addWidget(self.ui)
+        # layout = self.layout()
+        # if layout is None:
+        #     layout = QVBoxLayout(self)
+        # layout.addWidget(self.ui)
 
         # 3. 查找子控件（从self.ui中找）
         self.name = self.ui.findChild(QLabel, "name")
@@ -81,7 +81,7 @@ class SingleReply(QWidget):
 
     def load_data(self, data):
         if all([self.name, self.content, self.time, self.like, self.avatar]):
-            self.name.setText(data["name"])
+            self.name.setText(data["author"])
             self.content.setText(data["content"])
             self.time.setText(data["time"])
             self.like.setText(f"❤ {data['likes']}")
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     # 创建测试评论（包含长文本，验证换行）
     for i in range(10):
         data = {
-            "name": f"用户{i + 1}",
+            "author": f"用户{i + 1}",
             "content": f"第{i + 1}条评论：哈哈哈哈哈哈，这是一段比较长的评论内容，用来测试文字是否会被压缩或者截断，确保能正常换行显示！",
             "time": f"2026-03-13 1{i}:00",
             "likes": i * 2,

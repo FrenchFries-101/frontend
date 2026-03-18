@@ -1,7 +1,6 @@
 import os
 import sys
-from functools import partial
-
+from PySide6.QtWidgets import QMessageBox
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout,
@@ -9,13 +8,13 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt
-
-# 导入你的组件
 from components.SinglePost import SinglePost
 from components.SingleReply import SingleReply
 from components.SingleDetailedPost import SingleDetailedPost
+from service.api_forum import get_posts,get_post_detail,search_posts,get_replies,create_post,reply_post,like_post,like_reply
 
-# ======================== 假数据（内置） ========================
+
+# ========================假数据========================
 class MockForumData:
     _posts = [
         {"id": 1, "title": "关于**的瓜", "contents": "这是第一条帖子的详细内容", "author": "用户1", "time": "2026-03-12", "likes": 12},
@@ -59,7 +58,6 @@ class ForumWindow(QWidget):
 
 
         self.load_full_ui()
-        #这个加了才能显示出来
         self.init_pages()
         self.bind_all_events()
         self.ui.setObjectName("ForumPage")
@@ -117,8 +115,6 @@ QPushButton:checked{
       
         """)
 
-        # print(self.ui.size())
-        # print(self.size())
 
     def load_full_ui(self):
         # 一次性加载整个postPage.ui
@@ -130,7 +126,7 @@ QPushButton:checked{
         )
         ui_file = QFile(ui_path)
         if not ui_file.open(QFile.ReadOnly):
-            print(f"无法打开UI文件: {ui_path}")
+            print(f"Can't open ui file(ForumPages): {ui_path}")
             return
         self.ui = loader.load(ui_file, self)
         ui_file.close()
@@ -139,21 +135,17 @@ QPushButton:checked{
         self.post_scroll = self.ui.findChild(QScrollArea, "post_scrollArea")
         self.post_container = self.ui.findChild(QWidget, "post_contents")
 
-        # 获取已有布局，如果没有就创建
+        #获取已有布局，如果没有就创建
         self.post_layout = self.post_container.layout()
         if self.post_layout is None:
             self.post_layout = QVBoxLayout(self.post_container)
         self.post_layout.setAlignment(Qt.AlignTop)
 
-        # 添加一个按钮，用来动态添加控件
-        add_btn = QPushButton("添加新控件")
-        add_btn.clicked.connect(self.add_new_label)
-        self.post_layout.addWidget(add_btn)
 
-        # 取出stackedWidget（三个页面都在里面）
+        #取出stackedWidget（三个页面都在里面）
         self.stack = self.ui.findChild(QStackedWidget, "stackedWidget")
 
-        # 取出三个子页面
+        #取出三个子页面
         self.forum_main = self.stack.findChild(QWidget, "forum_main")
         self.forum_create = self.stack.findChild(QWidget, "forum_create")
         self.forum_detail = self.stack.findChild(QWidget, "forum_detail")
@@ -162,18 +154,17 @@ QPushButton:checked{
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.ui)
 
-    def init_scroll_area(self):
 
+
+    def init_scroll_area(self):
         # 获取已有布局，如果没有就创建
         self.post_layout = self.post_container.layout()
         if self.post_layout is None:
             self.post_layout = QVBoxLayout(self.post_container)
         self.post_layout.setAlignment(Qt.AlignTop)
 
-        # 添加一个按钮，用来动态添加控件
-        add_btn = QPushButton("添加新控件")
-        add_btn.clicked.connect(self.add_new_label)
-        self.post_layout.addWidget(add_btn)
+
+
 
     def init_pages(self):
         # 初始化主页面
@@ -185,18 +176,7 @@ QPushButton:checked{
         # 默认显示主页面
         self.stack.setCurrentIndex(0)
 
-    def add_new_label(self):
-        # 每点击一次就添加一个新的 QLabel
-        count = self.post_layout.count()
-        label = QLabel(f"新控件 {count}")
-        label.setStyleSheet("background-color: #C0FFC0; padding: 5px;")
-        label.setAlignment(Qt.AlignCenter)
-        self.post_layout.addWidget(label)
 
-    #获取icon图片函数
-    def get_icon(self, name):
-        base_dir = os.path.dirname(__file__)
-        return os.path.join(base_dir, "..","resources", "icons", name)
 
     # ------------------------ 主页面逻辑 ------------------------
     def init_main_page(self):
@@ -220,25 +200,70 @@ QPushButton:checked{
             self.post_layout = QVBoxLayout(self.post_container)
         self.post_layout.setAlignment(Qt.AlignTop)
 
-
         # 初始化帖子列表
         self.load_posts()
 
+    # def load_posts(self, keyword=""):
+    #     # 清空旧内容
+    #     while self.post_layout.count():
+    #         child = self.post_layout.takeAt(0)
+    #         if child.widget():
+    #             child.widget().deleteLater()
+    #
+    #     #替换1: 这里要替换成 get_posts
+    #     # posts = MockForumData.get_posts(keyword)
+    #     posts = get_posts()
+    #     print(posts)
+    #
+    #     for post in posts:
+    #         post_widget = SinglePost(post)
+    #         post_widget.clicked.connect(lambda p=post: self.go_to_detail(p["id"]))
+    #         self.post_layout.addWidget(post_widget)
+    #
+    #     print("posts loaded:", [p["title"] for p in posts])
+
     def load_posts(self, keyword=""):
+
         # 清空旧内容
         while self.post_layout.count():
             child = self.post_layout.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
 
-        posts = MockForumData.get_posts(keyword)
+        # 接口1/2：调接口&search 接口合并
+        if keyword:
+            response = search_posts(keyword)
+        else:
+            response = get_posts()
+
+        print("RAW:", response)
+
+        #只取posts
+        posts = response.get("posts", [])
+
+        #存起来（后面详情页用）
+        self.posts_cache = {p["id"]: p for p in posts}
 
         for post in posts:
-            post_widget = SinglePost(post)
-            post_widget.clicked.connect(lambda p=post: self.go_to_detail(p["id"]))
+            #处理 None（你数据里有）
+            fixed_post = {
+                "id": post["id"],
+                "title": post.get("title", ""),
+                "author": post.get("author") or "Unknown",
+                "time": post.get("time", ""),
+                "likes": post.get("likes", 0)
+            }
+
+            post_widget = SinglePost(fixed_post)
+
+            # 直接传 id（改了 Signal）
+            post_widget.clicked.connect(
+                lambda _, pid=fixed_post["id"]: self.go_to_detail(pid)
+            )
+
             self.post_layout.addWidget(post_widget)
 
-        print("posts loaded:", [p["title"] for p in posts])
+        print("loaded:", len(posts))
 
 
     # ------------------------ 创建页面逻辑 ------------------------
@@ -271,14 +296,20 @@ QPushButton:checked{
         self.title_input.clear()
         self.content_input.clear()
 
+    #替换5:创建帖子
     def create_post(self):
         title = self.title_input.text().strip()
         content = self.content_input.toPlainText().strip()
         if not title or not content:
-            print("标题和内容不能为空")
+            print("title and contents cannot be vacant")
+            QMessageBox.warning(self, "Failed", " Unable to submit blank content")
             return
 
-        MockForumData.create_post(title, content)
+
+        # MockForumData.create_post(title, content)
+        #创建create的接口！
+        create_post(title, content, 1)#记得改用户id
+        QMessageBox.information(self, "Success", "Release successful!")
         self.clear_inputs()
         self.stack.setCurrentIndex(0)
         self.load_posts()  # 刷新主页
@@ -315,49 +346,71 @@ QPushButton:checked{
 
 
 
+    #显示帖子内容
     def load_post_detail(self, post_id):
         self.current_post_id = post_id
         print(f"post_id{post_id}")
-        # 清空旧内容
+
+        #清空旧内容
         while self.detail_layout.count():
             child = self.detail_layout.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
 
         # 加载帖子详情
-        post = MockForumData.get_post_detail(post_id)
+        #替换3: get_post_detail(post_id)
+        # post = MockForumData.get_post_detail(post_id)
+        post = get_post_detail(post_id)
         if not post:
-            print("mei you post")
+            print("post do not exsit")
             return
-        print(post)
-        self.detail_title.setText(f"Post Details：{post['title']}")
+        print(f"post raw detail information：{post}")
+
+        #字段匹配清洗
+        fixed_post = {
+            "id": post.get("id"),
+            "title": post.get("title", ""),
+            "author": post.get("author") or "Unknown",
+            "time": post.get("time", ""),
+            "content": post.get("content", ""),
+            "likes": post.get("likes", 0)
+        }
+
+
+        self.detail_title.setText(f"Post Details：{fixed_post['title']}")
+
         # 添加帖子组件
-        post_widget = SingleDetailedPost(post)
+        post_widget = SingleDetailedPost(fixed_post)
         self.detail_layout.addWidget(post_widget)
-        # 添加分割线
+
+        # style: 添加分割线
         line = QLabel()
         line.setStyleSheet("background-color: #E0E0E0; height: 1px;")
         self.detail_layout.addWidget(line)
-        # 添加回复标题
+        # style: 添加回复标题
         reply_title = QLabel("Comments")
         reply_title.setStyleSheet("""
-            color: #888888;                 /* 灰色字体 */
+            color: #888888;                 
             font-size: 14px;
             font-weight: bold;
-            font-family: Consolas, "Courier New", monospace;  /* terminal风 */
-            margin: 10px 0 10px 20px;       /* 上 右 下 左（左边更大） */
+            font-family: Consolas, "Courier New", monospace;  
+            margin: 10px 0 10px 20px;       
         """)
         self.detail_layout.addWidget(reply_title)
 
-        # 添加回复
-        replies = MockForumData.get_replies(post_id)
+        # 替换4：get_replies(post_id)
+        # replies = MockForumData.get_replies(post_id)
+        replies = get_replies(fixed_post['id'])
         print(replies)
 
         for reply in replies:
+            #测试
             print(reply)
             reply_widget = SingleReply(reply)
             self.detail_layout.addWidget(reply_widget)
 
+
+    #创建回复
     def create_reply(self):
         if not self.current_post_id:
             return
@@ -365,19 +418,22 @@ QPushButton:checked{
         if not content:
             print("容不能为空")
             return
-        MockForumData.create_reply(self.current_post_id, content)
+
+        #替换6: def reply_post(post_id, content, user_id)
+        # MockForumData.create_reply(self.current_post_id, content)\
+        reply_post(self.current_post_id, content, 1)#记得改用户id
+        QMessageBox.information(self, "Success", "Release successful!")
         self.reply_input.clear()
         self.load_post_detail(self.current_post_id)
 
-    def scroll_to_top(self):
-        self.detail_scroll.verticalScrollBar().setValue(0)
-        self.load_post_detail(self.current_post_id)
 
-    # ------------------------ 页面切换与事件绑定 ------------------------
+    #button们 和 their events
     def bind_all_events(self):
-        # 主页面事件
+
+        #替换2 改成search_posts(keyword, page=1, page_size=20):
         self.search_btn.clicked.connect(lambda: self.load_posts(self.search_input.text()))
         self.to_create_btn.clicked.connect(lambda: self.stack.setCurrentIndex(2))
+
         # 创建页面事件
         self.clear_btn.clicked.connect(self.clear_inputs)
         self.return_btn.clicked.connect(lambda: self.stack.setCurrentIndex(0))
@@ -387,9 +443,21 @@ QPushButton:checked{
         self.up_btn.clicked.connect(self.scroll_to_top)
         self.reply_btn.clicked.connect(self.create_reply)
 
+    #inner function change pages
     def go_to_detail(self, post_id):
         self.load_post_detail(post_id)
         self.stack.setCurrentIndex(1)
+
+    #inner function: get icon images
+    def get_icon(self, name):
+        base_dir = os.path.dirname(__file__)
+        return os.path.join(base_dir, "..","resources", "icons", name)
+
+    #inner function
+    def scroll_to_top(self):
+        self.detail_scroll.verticalScrollBar().setValue(0)
+        self.load_post_detail(self.current_post_id)
+
 
 # ======================== 运行 ========================
 if __name__ == "__main__":

@@ -7,7 +7,9 @@ from PySide6.QtCore import QFile, Signal
 
 class SinglePost(QWidget):
 
-    clicked = Signal(dict)
+    # clicked = Signal(dict)
+    clicked = Signal(int)
+
 
     def __init__(self, post_data):
         super().__init__()
