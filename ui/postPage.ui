@@ -204,8 +204,8 @@ QLineEdit#search_input::placeholder {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>536</width>
-            <height>330</height>
+            <width>96</width>
+            <height>26</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -394,14 +394,14 @@ QLabel#detail_title {
            <widget class="QTextEdit" name="reply_input">
             <property name="minimumSize">
              <size>
-              <width>0</width>
-              <height>40</height>
+              <width>450</width>
+              <height>45</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>16777215</width>
-              <height>40</height>
+              <width>1100</width>
+              <height>45</height>
              </size>
             </property>
             <property name="styleSheet">
@@ -451,16 +451,22 @@ QTextEdit#reply_input::placeholder {
           </item>
           <item>
            <widget class="QPushButton" name="reply_button">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="minimumSize">
              <size>
-              <width>25</width>
-              <height>40</height>
+              <width>45</width>
+              <height>45</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>40</width>
-              <height>40</height>
+              <width>45</width>
+              <height>45</height>
              </size>
             </property>
             <property name="layoutDirection">
@@ -474,8 +480,6 @@ QTextEdit#reply_input::placeholder {
 
     border: 1px solid #ffb3c1;
     border-radius: 8px;
-
-    padding: 6px 14px;
 }
 
 

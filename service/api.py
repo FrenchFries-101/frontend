@@ -9,7 +9,7 @@ def get_cambridge_list():
 
 def get_tests(cambridge_id, user_id):
     res = requests.get(
-        f"{BASE_URL}/listening/test",
+        f"{BASE_URL}/listening/tests",
         params={
             "cambridge_id": cambridge_id,
             "user_id": user_id

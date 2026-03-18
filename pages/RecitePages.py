@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QPixmap, QIcon, QColor
+from service.api import get_categories, get_subcategories, get_words #接口
 import os
 
 
@@ -14,13 +15,13 @@ class RecitePage(QWidget):
         # 获取当前脚本所在目录
         self.BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # 上一级 project_root
         self.ICON_RETURN = os.path.join(self.BASE_DIR, "resources", "icons", "return_black.png")
-        self.ICON_CHINESE_OFF = os.path.join(self.BASE_DIR, "resources", "icons", "chinese.png")
-        self.ICON_CHINESE_ON = os.path.join(self.BASE_DIR, "resources", "icons", "chinese1.png")
+        self.ICON_CHINESE_OFF = os.path.join(self.BASE_DIR, "resources", "icons", "book.png")
+        self.ICON_CHINESE_ON = os.path.join(self.BASE_DIR, "resources", "icons", "bookopen.png")
         # 全局中文显示开关状态
         self.show_chinese_global = False
 
         self.init_ui()
-        self.init_data()
+        # self.init_data()
         self.show_categories()
 
 
@@ -167,9 +168,11 @@ class RecitePage(QWidget):
         self.chinese_btn = QPushButton()
         # self.chinese_btn.setFixedSize(30, 30)
         self.chinese_btn.setObjectName("title_chinese_btn")
-        self.chinese_btn.setFixedSize(24, 24)
+        self.chinese_btn.setFixedSize(30, 30)
         # self.chinese_btn.setVisible(False)
         self.chinese_btn.setStyleSheet("border:none;background:transparent;")
+        # self.chinese_btn.setToolTip("Show meaning")
+        # print(f"点击显示的浮窗：{self.chinese_btn.toolTip()}")
 
         # 加载两张图片，和返回按钮同款
         pixmap_off = QPixmap(self.ICON_CHINESE_OFF)#记载为土
@@ -178,7 +181,7 @@ class RecitePage(QWidget):
         else:
             print("pixmap_off 加载成功")
         if not pixmap_off.isNull():
-            scaled_off = pixmap_off.scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            scaled_off = pixmap_off.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.icon_chinese_off = QIcon(scaled_off)
             # self.chinese_btn.setIcon(QIcon(scaled_off))
             print("ICON_CHINESE_OFF成功！！")
@@ -196,7 +199,7 @@ class RecitePage(QWidget):
         else:
             print("pixmap_on 加载成功")
         if not pixmap_on.isNull():
-            scaled_on = pixmap_on.scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            scaled_on = pixmap_on.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.icon_chinese_on = QIcon(scaled_on)
             print("ICON_CHINESE_ON记载成功！")
             if self.icon_chinese_on.isNull():
@@ -211,7 +214,7 @@ class RecitePage(QWidget):
         # 默认状态
         try:
             self.chinese_btn.setIcon(self.icon_chinese_off)
-            self.chinese_btn.setIconSize(QSize(24, 24))
+            self.chinese_btn.setIconSize(QSize(30, 30))
             self.chinese_btn.setFixedSize(30,30)
             print(self.chinese_btn.icon().isNull())
         except:
@@ -251,34 +254,34 @@ class RecitePage(QWidget):
         self.page_state = "category"
         self.word_list = None
 
-    def init_data(self):
-        # 单词数据
-        self.word_data = {
-            ("学科单词", "数学"): [
-                {"english": "derivative", "chinese": "导数"},
-                {"english": "matrix", "chinese": "矩阵"},
-                {"english": "integral", "chinese": "积分"},
-            ],
-            ("学科单词", "计算机"): [
-                {"english": "algorithm", "chinese": "算法"},
-                {"english": "recursion", "chinese": "递归"},
-                {"english": "compiler", "chinese": "编译器"},
-            ],
-            ("学术英语", "演讲用语"): [
-                {"english": "hello", "chinese": "打招呼"},
-            ],
-            ("学术英语", "学术写作"): [
-                {"english": "Next", "chinese": "下一个"},
-            ],
-            ("学术英语", "小组讨论用语"): [
-                {"english": "In my opinion", "chinese": "我认为"},
-                {"english": "I agree with you", "chinese": "我同意你的观点"},
-            ],
-            ("学术英语", "邮件用语"): [
-                {"english": "In my opinion", "chinese": "我认为"},
-                {"english": "I agree with you", "chinese": "我同意你的观点"},
-            ]
-        }
+    # def init_data(self):
+    #     # 单词数据
+    #     self.word_data = {
+    #         ("学科单词", "数学"): [
+    #             {"english": "derivative", "chinese": "导数"},
+    #             {"english": "matrix", "chinese": "矩阵"},
+    #             {"english": "integral", "chinese": "积分"},
+    #         ],
+    #         ("学科单词", "计算机"): [
+    #             {"english": "algorithm", "chinese": "算法"},
+    #             {"english": "recursion", "chinese": "递归"},
+    #             {"english": "compiler", "chinese": "编译器"},
+    #         ],
+    #         ("学术英语", "演讲用语"): [
+    #             {"english": "hello", "chinese": "打招呼"},
+    #         ],
+    #         ("学术英语", "学术写作"): [
+    #             {"english": "Next", "chinese": "下一个"},
+    #         ],
+    #         ("学术英语", "小组讨论用语"): [
+    #             {"english": "In my opinion", "chinese": "我认为"},
+    #             {"english": "I agree with you", "chinese": "我同意你的观点"},
+    #         ],
+    #         ("学术英语", "邮件用语"): [
+    #             {"english": "In my opinion", "chinese": "我认为"},
+    #             {"english": "I agree with you", "chinese": "我同意你的观点"},
+    #         ]
+    #     }
 
     # ---------------- 单词点击单独切换（可选保留） ----------------
     def toggle_word_meaning(self, item):
@@ -290,19 +293,23 @@ class RecitePage(QWidget):
         if cn_label:
             cn_label.setVisible(not cn_label.isVisible())
 
-    # ---------------- 数据获取方法 ----------------
+    # ---------------- api接口-获取第一季分类----------------
     def get_categories(self):
-        return ["学科单词", "学术英语"]
+        return get_categories()
 
+    # ---------------- api接口-获取第二级分类----------------
     def get_subcategories(self, category):
-        data = {
-            "学科单词": ["数学", "计算机", "土木", "机械"],
-            "学术英语": ["小组讨论用语", "演讲用语", "学术写作", "邮件用语"]
-        }
-        return data.get(category, [])
+        return get_subcategories(category)
+        # data = {
+        #     "学科单词": ["数学", "计算机", "土木", "机械"],
+        #     "学术英语": ["小组讨论用语", "演讲用语", "学术写作", "邮件用语"]
+        # }
+        # return data.get(category, [])
+
 
     def get_words(self, category, sub):
-        return self.word_data.get((category, sub), [])
+        # return self.word_data.get((category, sub), [])
+        return get_words(category, sub)
 
     # ---------------- 工具方法 ----------------
     def clear_container(self):
