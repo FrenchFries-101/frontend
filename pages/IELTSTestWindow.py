@@ -8,8 +8,11 @@ from PySide6.QtWidgets import QLabel, QVBoxLayout,QPushButton
 
 from PySide6.QtCore import Signal,QEvent
 from PySide6.QtWidgets import QMessageBox
+from service.api import get_listening_material,submit_score
+import requests
 
 from pages.ExitDialog import ExitDialog
+import session
 
 class IELTSTestWindow(QWidget):
     exit_test_signal = Signal()
@@ -35,8 +38,9 @@ class IELTSTestWindow(QWidget):
         self.player.setAudioOutput(self.audio)
 
         #这里后期直接从接口获取url 地址
-        url = "http://124.223.33.28:7777/Listening/5/test1/01_section1-1.m4a"
-        self.player.setSource(QUrl(url))
+        #url = "http://124.223.33.28:7777/Listening/5/test1/01_section1-1.m4a"
+        self.player.stop()
+        #self.player.setSource(QUrl(url))
         self.ui.pushButton.clicked.connect(self.play_audio)
 
         self.player.positionChanged.connect(self.update_slider)
@@ -51,16 +55,13 @@ class IELTSTestWindow(QWidget):
 
         layout = QVBoxLayout(question_widget)
 
-        self.image_list=[
-            "resources/images/IELTSTest.png",
-            "resources/images/IELTSTest2.jpg"
-        ]
+        self.image_list=[]
         self.current_image_index = 0
         self.question_image = QLabel()
         self.question_image.setScaledContents(True)
 
         layout.addWidget(self.question_image)
-        self.show_image(0)
+        #self.show_image(0)
 
         #创建按钮
 
@@ -107,28 +108,32 @@ class IELTSTestWindow(QWidget):
         self.ui.pushButton_3.clicked.connect(self.submit_answers)
         self.ui.scrollArea.installEventFilter(self)
 
-
     def submit_answers(self):
 
-        correct_answers = [
-            "hotel", "friday", "london", "train", "9:30",
-            "passport", "credit", "bus", "ticket", "map"
-        ]
+        print("answers", self.answers)
+
+        # ✅ 按题号排序（适配 1-10 / 11-20 / 21-30）
+        sorted_answers = sorted(self.answers.items())
+        correct_answers = [v for k, v in sorted_answers]
+
+        print("correct answers:", correct_answers)
 
         grid = self.ui.gridLayout
-
         correct_count = 0
 
-        for i in range(10):
+        for i, correct_answer in enumerate(correct_answers):
 
             line_edit = getattr(self.ui, f"lineEdit_{i + 1}" if i > 0 else "lineEdit")
 
             user_answer = line_edit.text().strip().lower()
-            correct_answer = correct_answers[i]
+
+            # ✅ 支持多答案（a / b / c）
+            options = [ans.strip().lower() for ans in correct_answer.split("/")]
 
             answer_label = QLabel(correct_answer)
+            answer_label.setObjectName("answer_label")
 
-            if user_answer == correct_answer:
+            if user_answer in options:
                 answer_label.setStyleSheet("color:#10b981;font-weight:bold;")
                 line_edit.setStyleSheet("border:2px solid #10b981;")
                 correct_count += 1
@@ -139,18 +144,34 @@ class IELTSTestWindow(QWidget):
             grid.addWidget(answer_label, i, 2)
             line_edit.setReadOnly(True)
 
+        # ✅ 显示总分（自动题数）
+        total = len(correct_answers)
+        self.ui.Score_label.setText(f"Correct {correct_count}/{total}")
 
+        # 🚀 提交到后端（你原来的逻辑 ✔ 保留）
+        user_id = session.user["id"]
 
-        # 显示总分
-        self.ui.Score_label.setText(f"Correct {correct_count}/10")
+        print("self section",self.section)
+        result = submit_score({
+            "section_id": self.section,
+            "correct_num": correct_count,
+            "total_num": total,  # ✅ 这里也改成动态
+            "user_id": user_id
+        }
+        )
 
-        # 停止计时器
+        if result and result.get("status") == "success":
+            print("提交成功")
+        else:
+            print("提交失败")
+
+        # ⏱ 停止计时器
         self.timer.stop()
 
-        # 隐藏 Submit 按钮
+        # 🚫 隐藏 Submit 按钮（保留）
         self.ui.pushButton_3.hide()
 
-        # 退出按钮直接退出
+        # 🔁 修改退出按钮行为（保留）
         self.ui.Exit_button.clicked.disconnect()
         self.ui.Exit_button.clicked.connect(self.exit_direct)
 
@@ -246,8 +267,7 @@ class IELTSTestWindow(QWidget):
     def show_image(self, index):
 
         if 0 <= index < len(self.image_list):
-            pixmap = QPixmap(self.image_list[index])
-            self.question_image.setPixmap(pixmap)
+            self.question_image.setPixmap(self.image_list[index])
             self.current_image_index = index
 
     def next_image(self):
@@ -276,3 +296,136 @@ class IELTSTestWindow(QWidget):
         self.reset_timer()
 
         self.timer.start(1000)
+
+    def set_data(self, cam, test, section):
+
+        self.reset_ui()
+
+        self.cam = cam
+        self.test = test
+        self.section = section
+
+        print("收到：", cam, test, section)
+
+        self.ui.Test_title.setText(
+            f"Cambridge {cam} - Test {test} - Section {section}"
+        )
+
+        raw_data = get_listening_material(cam, test, section)
+        print("raw_data:",raw_data)
+        data = self.parse_section_data(raw_data)
+        print("data: ",data)
+
+        if not data:
+            QMessageBox.warning(self, "Error", "获取数据失败")
+            self.answers={}
+            return
+
+       # BASE_URL = "http://127.0.0.1:8000/"
+
+        # 🎧 音频
+        audio_url = data["audio"]
+        self.player.stop()
+        self.player.setSource(QUrl(audio_url))
+
+        # 🖼 图片
+        image_url = data["images"]
+        self.load_image_from_url(image_url)
+
+        # 🧠 答案（保存起来）
+        self.answers = data["answers"]
+
+        # 重置状态
+        self.reset_timer()
+        self.timer.start(1000)
+
+    def load_image_from_url(self, urls):
+        """
+        urls: list of image URLs
+        """
+        if not urls:
+            return
+
+        self.image_list = []  # 清空原来的列表
+        self.current_image_index = 0
+
+        for url in urls:
+            try:
+                response = requests.get(url)
+                pixmap = QPixmap()
+                pixmap.loadFromData(response.content)
+                self.image_list.append(pixmap)  # 保存 QPixmap 对象
+            except Exception as e:
+                print("图片加载失败:", e)
+
+        # 显示第一张
+        if self.image_list:
+            self.show_image(0)
+
+    def parse_section_data(self,data):
+        result = {}
+
+        # 🎧 audio
+        result["audio"] = data.get("audio")
+
+        # 🖼️ image：字符串 → list
+        image_str = data.get("image", "")
+        result["images"] = image_str.split() if image_str else []
+
+        # 🧠 answers：统一成 {题号:int → 答案}
+        parsed_answers = {}
+
+        for key, value in data.get("answers", {}).items():
+
+            # 👉 单题
+            if "-" not in key:
+                parsed_answers[int(key)] = value
+
+            # 👉 区间题（比如 5-6）
+            else:
+                start, end = map(int, key.split("-"))
+
+                for i, ans in zip(range(start, end + 1), value):
+                    parsed_answers[i] = ans
+
+        result["answers"] = parsed_answers
+
+        return result
+
+    def reset_ui(self):
+
+        # 1️⃣ 清空输入框 + 恢复可编辑
+        for i in range(10):
+            line_edit = getattr(self.ui, f"lineEdit_{i + 1}" if i > 0 else "lineEdit")
+            line_edit.clear()
+            line_edit.setReadOnly(False)
+            line_edit.setStyleSheet("")  # 清除红绿边框
+
+        # 2️⃣ 清除正确答案显示（第3列）
+        grid = self.ui.gridLayout
+
+        self.ui.pushButton.setText("▶")
+
+        for i in reversed(range(grid.count())):
+            item = grid.itemAt(i)
+            widget = item.widget()
+
+            if widget and isinstance(widget, QLabel):
+                # ⚠️ 只删“你动态添加的答案label”
+                # 可以加个判断避免误删UI原本的label
+                if widget.objectName() == "answer_label":
+                    widget.deleteLater()
+
+        # 3️⃣ 重置分数
+        self.ui.Score_label.setText("")
+
+        # 4️⃣ 显示 Submit 按钮
+        self.ui.pushButton_3.show()
+
+        # 5️⃣ 恢复 Exit 按钮逻辑
+        try:
+            self.ui.Exit_button.clicked.disconnect()
+        except:
+            pass
+
+        self.ui.Exit_button.clicked.connect(self.confirm_exit)

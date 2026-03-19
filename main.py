@@ -8,9 +8,6 @@ from pages.MainWindows import MainWindow
 from pages.RegisterWindow import RegisterWindow
 from pages.IELTSTestWindow import IELTSTestWindow
 
-
-
-
 class AppWindow(QMainWindow):
 
     def __init__(self):
@@ -23,10 +20,11 @@ class AppWindow(QMainWindow):
 
         self.login_page = LoginWindow()
         self.register_page = RegisterWindow()  # <-- 新增
-        self.main_page = MainWindow()
+        #self.main_page = MainWindow()
 
         self.stack.addWidget(self.login_page)
-        self.stack.addWidget(self.main_page)
+        #self.stack.addWidget(self.main_page)
+        self.stack.addWidget(QWidget())
         self.stack.addWidget(self.test_page)  # index 2
         self.stack.addWidget(self.register_page)
 
@@ -37,14 +35,23 @@ class AppWindow(QMainWindow):
 
         self.register_page.register_success.connect(self.slide_to_main)  # 注册成功跳到主界面
         self.register_page.go_login.connect(self.slide_to_login)  # 点击已有账号返回登录
-        self.main_page.exit_signal.connect(self.slide_to_login)
-        self.main_page.start_test_signal.connect(self.slide_to_test)
         self.test_page.exit_test_signal.connect(self.slide_back_to_main)
 
         self.load_qss()
 
 
     def slide_to_main(self):
+
+        if not hasattr(self, "main_page"):
+            self.main_page = MainWindow()
+
+            # 替换 stack 里的占位 widget
+            self.stack.removeWidget(self.stack.widget(1))
+            self.stack.insertWidget(1, self.main_page)
+
+            # 绑定信号（必须在这里做）
+            self.main_page.exit_signal.connect(self.slide_to_login)
+            self.main_page.start_test_signal.connect(self.slide_to_test)
 
         current_index = self.stack.currentIndex()
         next_index = 1
@@ -121,7 +128,12 @@ class AppWindow(QMainWindow):
 
         self.stack.setCurrentIndex(next_index)
 
-    def slide_to_test(self):
+    def slide_to_test(self, cam, test, section):
+
+        # ✅ 先传数据
+        print("主界面传section",section)
+        self.test_page.set_data(cam, test, section)
+
         current_index = self.stack.currentIndex()
         next_index = 2
 
@@ -133,14 +145,12 @@ class AppWindow(QMainWindow):
         next_widget.move(width, 0)
         next_widget.show()
 
-        # 当前页面滑出
         self.anim1 = QPropertyAnimation(current_widget, b"pos")
         self.anim1.setDuration(500)
         self.anim1.setStartValue(QPoint(0, 0))
         self.anim1.setEndValue(QPoint(-width, 0))
         self.anim1.setEasingCurve(QEasingCurve.OutCubic)
 
-        # 新页面滑入
         self.anim2 = QPropertyAnimation(next_widget, b"pos")
         self.anim2.setDuration(500)
         self.anim2.setStartValue(QPoint(width, 0))

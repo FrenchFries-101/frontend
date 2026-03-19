@@ -13,6 +13,7 @@ for example:
 ```python
 from service.API import get_words
 ```
+---
 ## 运行后端程序步骤
 1. 添加main
 ```python
@@ -39,4 +40,10 @@ python seed_data.py
 5. 在终端运行
 ```
 uvicorn main:app --reload
+```
+---
+## 全局获取user_id
+```python
+import session
+user_id = session.user["id"]
 ```

@@ -8,11 +8,15 @@ from PySide6.QtWidgets import QPushButton
 from PySide6.QtWidgets import QFrame, QLabel, QHBoxLayout
 from PySide6.QtWidgets import QProgressBar
 from service.api import get_cambridge_list, get_tests, get_sections
+import random
+from PySide6.QtGui import QPixmap
+import session
+from PySide6.QtCore import Qt
 
 
 class MainWindow(QWidget):
     exit_signal = Signal()  # 新增信号
-    start_test_signal = Signal()
+    start_test_signal = Signal(int,int,int)
     current_cam=0
     current_test=0
     current_section=0
@@ -55,6 +59,10 @@ class MainWindow(QWidget):
         # Exit按钮逻辑
         self.ui.Exit_button.clicked.connect(self.exit_to_login)
         self.generate_cambridge_buttons()
+        self.set_random_avatar(self.ui.label_4)
+        self.user_name=session.user['username']
+        print(self.user_name)
+        self.ui.label_13.setText(f"{self.user_name}")
 
     def exit_to_login(self):
         self.exit_signal.emit()
@@ -89,9 +97,10 @@ class MainWindow(QWidget):
         cambridge_list = get_cambridge_list()
 
         for cam in cambridge_list:
-            button = QPushButton(f"Cambridge {cam}")
+            cam_id = cam["cambridge_id"]
+            button = QPushButton(f"Cambridge {cam_id}")
             button.setMinimumHeight(40)
-
+            print("cam",cam_id)
             button.clicked.connect(
                 lambda checked=False, c=cam: self.show_tests(c)
             )
@@ -102,8 +111,8 @@ class MainWindow(QWidget):
 
         print(cambridge_list)
         # 默认加载第一个
-        # if cambridge_list:
-        #     self.show_tests(cambridge_list[0])
+        if cambridge_list:
+            self.show_tests(cambridge_list[4])
 
     def show_tests(self, cam):
 
@@ -115,11 +124,18 @@ class MainWindow(QWidget):
             if item.widget():
                 item.widget().deleteLater()
 
-        user_id = 1  # 你可以后面改成登录用户
-        tests = get_tests(cam, user_id)
+        user_id = session.user["id"]
+        cam_id = cam["cambridge_id"]
+
+        print("user_id:", user_id)
+        print("cam_id:", cam_id)
+
+        tests = get_tests(cam_id, user_id)
 
         for t in tests:
-            test_id = t["test_id"]
+            print(t, type(t))
+            test_no = t["test_no"]
+            test_id=t["test_id"]
             total_sections = t["total_sections"]
             completed = t["completed_sections"]
 
@@ -131,7 +147,7 @@ class MainWindow(QWidget):
 
             left_layout = QVBoxLayout()
 
-            title = QLabel(f"Cambridge {cam} Test {test_id}")
+            title = QLabel(f"Cambridge {cam_id} Test {test_no}")
 
             progress = QProgressBar()
             progress.setMaximum(total_sections)
@@ -145,7 +161,7 @@ class MainWindow(QWidget):
             enter_btn = QPushButton("Open")
 
             enter_btn.clicked.connect(
-                lambda checked=False, c=cam, t=test_id: self.show_sections(c, t)
+                lambda checked=False, c=cam_id, t=test_id: self.show_sections(c, t)
             )
 
             card_layout.addLayout(left_layout)
@@ -169,8 +185,10 @@ class MainWindow(QWidget):
         sections = get_sections(cam, test)
 
         for sec in sections:
-            section_number = sec["section_number"]
+            print(sec)
+            section_number = sec["section_no"]
             section_name = sec["section_name"]
+            section_id=sec["section_id"]
 
             card = QFrame()
             card.setObjectName("section_card")
@@ -189,7 +207,7 @@ class MainWindow(QWidget):
             start_btn = QPushButton("Begin Training")
 
             start_btn.clicked.connect(
-                lambda _, c=cam, t=test, s=section_number:
+                lambda _, c=cam, t=test, s=section_id:
                 self.start_section(c, t, s)
             )
 
@@ -208,5 +226,28 @@ class MainWindow(QWidget):
         self.current_section = section
 
         print(cam, test, section)
+        print(type(cam), type(test), type(section))
+        self.start_test_signal.emit(cam,int(test),int(section))
 
-        self.start_test_signal.emit()
+    def set_random_avatar(self, label):
+        import random
+
+        index = random.randint(1, 7)
+        path = f"resources/icons/teenager{index}.png"
+
+        pixmap = QPixmap(path)
+
+        # ✅ QLabel 比图片大
+        label.setFixedSize(100, 100)
+
+        # ✅ 图片缩小一点（关键！）
+        pixmap = pixmap.scaled(
+            70, 70,  # 比 label 小
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation
+        )
+
+        label.setPixmap(pixmap)
+
+        # ✅ 居中
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)

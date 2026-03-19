@@ -20,7 +20,7 @@
    <string notr="true">QWidget {
     font-family: &quot;Segoe UI&quot;,&quot;Microsoft YaHei&quot;;
     font-size: 14px;
-    color: #333333;
+    color: #444444;
 }
 
 
@@ -38,7 +38,7 @@ QWidget#Form {
 /* ============================= */
 
 QFrame#frame {
-    background-color: rgba(255,255,255,180);
+    background-color: rgba(255,255,255,190);
     border-radius: 15px;
 }
 
@@ -60,7 +60,7 @@ QLabel#label,
 QLabel#label_4 {
     font-size: 28px;
     font-weight: bold;
-    color: #4A90E2;
+    color: #ff6b81;
     background: transparent;
 }
 
@@ -72,7 +72,7 @@ QLabel#label_4 {
 QLabel#label_2,
 QLabel#label_3 {
     font-size: 15px;
-    color: #555555;
+    color: #666666;
     background: transparent;
 }
 
@@ -82,25 +82,17 @@ QLabel#label_3 {
 /* ============================= */
 
 QLineEdit {
-
-    background-color: white;
-
-    border: 1px solid #dcdcdc;
-
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
     border-radius: 8px;
-
     padding: 6px 10px;
-
     min-height: 32px;
 }
 
-
 /* 输入框获得焦点 */
-
 QLineEdit:focus {
-
-    border: 2px solid #4A90E2;
-
+    border: 2px solid #ff6b81;
+    background-color: #fffafa;
 }
 
 
@@ -109,36 +101,23 @@ QLineEdit:focus {
 /* ============================= */
 
 QPushButton#pushButton {
-
-    background-color: #4A90E2;
-
+    background-color: #ff6b81;
     color: white;
-
-    border-radius: 8px;
-
+    border-radius: 10px;
     font-size: 15px;
-
     font-weight: bold;
-
     min-height: 36px;
+    border: none;
 }
-
 
 /* Hover */
-
 QPushButton#pushButton:hover {
-
-    background-color: #357ABD;
-
+    background-color: #ff4f70;
 }
 
-
 /* 点击 */
-
 QPushButton#pushButton:pressed {
-
-    background-color: #2c5fa3;
-
+    background-color: #e8435f;
 }
 
 
@@ -147,21 +126,15 @@ QPushButton#pushButton:pressed {
 /* ============================= */
 
 QPushButton#pushButton_2 {
-
     background: transparent;
-
-    color: #4A90E2;
-
+    color: #ff6b81;
     border: none;
 }
 
-
 /* hover */
-
 QPushButton#pushButton_2:hover {
-
     text-decoration: underline;
-
+    color: #ff4f70;
 }
 
 
@@ -170,22 +143,24 @@ QPushButton#pushButton_2:hover {
 /* ============================= */
 
 QPushButton#pushButton_3 {
-
     background: transparent;
-
     color: #999999;
-
     border: none;
+}
 
+/* hover */
+QPushButton#pushButton_3:hover {
+    color: #ff6b81;
 }
 
 
-/* hover */
+/* ============================= */
+/* 提示信息（错误提示） */
+/* ============================= */
 
-QPushButton#pushButton_3:hover {
-
-    color: #4A90E2;
-
+QLabel#label_5 {
+    color: #e63946;
+    font-size: 13px;
 }</string>
   </property>
   <widget class="QFrame" name="frame">
@@ -212,11 +187,11 @@ QPushButton#pushButton_3:hover {
       <height>591</height>
      </rect>
     </property>
-    <layout class="QVBoxLayout" name="verticalLayout" stretch="1,1,4,1,1">
+    <layout class="QVBoxLayout" name="verticalLayout" stretch="1,1,4,1,1,1">
      <item>
       <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>留着插一张图片放在这里当logo (可以当成这个图书的logo</string>
+        <string>Acedamic English</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -237,7 +212,7 @@ QPushButton#pushButton_3:hover {
       </widget>
      </item>
      <item>
-      <layout class="QGridLayout" name="gridLayout" rowstretch="1,1,1,1,0" columnstretch="1,1,2,1">
+      <layout class="QGridLayout" name="gridLayout" rowstretch="1,1,1,1" columnstretch="1,1,2,1">
        <item row="0" column="2">
         <widget class="QLineEdit" name="lineEdit">
          <property name="placeholderText">
@@ -393,6 +368,46 @@ QPushButton#pushButton_3:hover {
        </item>
        <item row="3" column="3">
         <spacer name="verticalSpacer_9">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <spacer name="verticalSpacer_14">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_13">
          <property name="orientation">
           <enum>Qt::Orientation::Vertical</enum>
          </property>

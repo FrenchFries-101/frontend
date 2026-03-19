@@ -1,6 +1,9 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Signal
+from service.api import register,login,get_current_user
+from PySide6.QtWidgets import QMessageBox
+import session
 
 
 class LoginWindow(QWidget):
@@ -24,5 +27,38 @@ class LoginWindow(QWidget):
         self.ui.pushButton.clicked.connect(self.login)
 
     def login(self):
-        print("login success")
-        self.login_success.emit()
+        # 1️⃣ 获取输入
+        username = self.ui.lineEdit.text().strip()
+        password = self.ui.lineEdit_2.text().strip()
+
+        self.ui.label_5.setText("")
+
+        # 2️⃣ 判空
+        if not username or not password:
+            self.ui.label_5.setStyleSheet("color: red;")
+            self.ui.label_5.setText("username or password cannot be empty")
+            return
+
+        try:
+            # 3️⃣ 调用后端 API
+            res = login(username, password)
+
+            # 4️⃣ 获取 token
+            token = res["access_token"]
+
+            print("Login success, token:", token)
+
+            # 👉 可以存起来（后面用）
+            session.token=token
+
+            # （可选）立刻获取用户信息
+            user = get_current_user(token)
+            session.user=user
+            print("Current user:", user)
+
+            # 5️⃣ 发信号（跳转主界面）
+            self.login_success.emit()
+
+        except Exception as e:
+            self.ui.label_5.setStyleSheet("color: red;")
+            self.ui.label_5.setText(str(e))

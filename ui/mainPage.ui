@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1148</width>
-    <height>604</height>
+    <width>943</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -201,9 +201,8 @@ QFrame#test_card {
 }
 
 QFrame#test_card:hover {
-
-    border: 1px solid #3b82f6;
-    background-color: #f9fafb;
+    border: 1px solid #ff6b81;   /* ✅ 主粉色 */
+    background-color: #fff0f3;   /* 淡粉背景 */
 }
 
 QPushButton#Recite_button {
@@ -228,9 +227,38 @@ QPushButton#Discussion_button {
 
 QPushButton#Exit_button{
 	qproperty-icon:url(resources/icons/exit.png);
-	qproperty-iconSize:20px 20px;
+	qproperty-iconSize:20px,20px;
 }
-</string>
+
+QProgressBar {
+    border: none;
+    background-color: #f1f1f1;
+    border-radius: 6px;
+    text-align: center;
+}
+
+QProgressBar::chunk {
+    background-color: #ff6b81;   /* ✅ 粉色进度 */
+    border-radius: 6px;
+}
+
+QLabel#label_4 {
+    background-color: #fff0f3;      /* 淡粉背景 */
+    border-radius: 50px;            /* 圆形（要配合固定大小） */
+    border: 2px solid #ffccd5;      /* 柔和边框 */
+    padding: 6px;
+}
+
+QLabel#label_13 {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ff6b81;
+
+    background-color: #fff0f3;
+    border-radius: 10px;
+
+    padding: 4px 10px;
+}</string>
   </property>
   <widget class="QWidget" name="horizontalLayoutWidget">
    <property name="geometry">
@@ -243,7 +271,7 @@ QPushButton#Exit_button{
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,4">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="2,2,2,1,2,1,2,1,0,0,2,3">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="2,2,2,1,2,1,2,1,0,0,2,0,0,3">
       <item>
        <widget class="QLabel" name="label">
         <property name="text">
@@ -365,6 +393,26 @@ QPushButton#Exit_button{
        </widget>
       </item>
       <item>
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_13">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="verticalSpacer">
         <property name="orientation">
          <enum>Qt::Orientation::Vertical</enum>
@@ -385,20 +433,121 @@ QPushButton#Exit_button{
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>0</y>
-         <width>751</width>
-         <height>551</height>
+         <y>10</y>
+         <width>741</width>
+         <height>541</height>
         </rect>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="Recite_page">
-        <layout class="QVBoxLayout" name="verticalLayout_10">
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_2" stretch=""/>
-         </item>
-        </layout>
+        <widget class="QWidget" name="verticalLayoutWidget">
+         <property name="geometry">
+          <rect>
+           <x>-1</x>
+           <y>-1</y>
+           <width>741</width>
+           <height>541</height>
+          </rect>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2" stretch="2,6,1,1">
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Common Used Word List</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QFrame" name="frame_2">
+            <property name="frameShape">
+             <enum>QFrame::Shape::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Shadow::Raised</enum>
+            </property>
+            <layout class="QGridLayout" name="gridLayout">
+             <item row="0" column="0">
+              <widget class="QPushButton" name="pushButton">
+               <property name="text">
+                <string>Email to lecturer</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QPushButton" name="pushButton_2">
+               <property name="text">
+                <string>STEM subject</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QPushButton" name="pushButton_3">
+               <property name="text">
+                <string>Group discussion</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QPushButton" name="pushButton_4">
+               <property name="text">
+                <string>Presentation</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QPushButton" name="pushButton_5">
+              <property name="text">
+               <string>Add to favourite</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_6">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_6">
+              <property name="text">
+               <string>Check favourite list</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
        </widget>
        <widget class="QWidget" name="favourite_page">
         <widget class="QWidget" name="verticalLayoutWidget_2">
@@ -536,8 +685,8 @@ QPushButton#Exit_button{
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>695</width>
-                  <height>385</height>
+                  <width>94</width>
+                  <height>42</height>
                  </rect>
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,4">
@@ -551,8 +700,8 @@ QPushButton#Exit_button{
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>134</width>
-                      <height>367</height>
+                      <width>97</width>
+                      <height>212</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -598,8 +747,8 @@ QPushButton#Exit_button{
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>537</width>
-                      <height>367</height>
+                      <width>534</width>
+                      <height>280</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -889,31 +1038,21 @@ QPushButton#Exit_button{
          </layout>
         </widget>
        </widget>
-       <widget class="QWidget" name="Profile_page">
-        <widget class="QLabel" name="label_4">
+       <widget class="QWidget" name="Profile_page"/>
+       <widget class="QWidget" name="discussion_page">
+        <widget class="QLabel" name="label_6">
          <property name="geometry">
           <rect>
-           <x>304</x>
+           <x>200</x>
            <y>240</y>
-           <width>91</width>
-           <height>20</height>
+           <width>111</width>
+           <height>16</height>
           </rect>
          </property>
          <property name="text">
-          <string>第三个界面</string>
+          <string>Discussion 界面</string>
          </property>
         </widget>
-       </widget>
-       <widget class="QWidget" name="discussion_page">
-        <layout class="QVBoxLayout" name="verticalLayout_11">
-         <item>
-          <widget class="QLabel" name="label_6">
-           <property name="text">
-            <string>Discussion 界面</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </widget>
       </widget>
      </widget>
