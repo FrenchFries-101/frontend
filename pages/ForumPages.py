@@ -1,4 +1,5 @@
 import os
+import session
 from utils.path_utils import resource_path
 import sys
 from PySide6.QtWidgets import QMessageBox
@@ -311,7 +312,7 @@ QPushButton:checked{
 
         # MockForumData.create_post(title, content)
         #创建create的接口！
-        create_post(title, content, 1)#记得改用户id
+        create_post(title, content, session.user)#记得改 用户id
         QMessageBox.information(self, "Success", "Release successful!")
         self.clear_inputs()
         self.stack.setCurrentIndex(0)
@@ -428,7 +429,7 @@ QPushButton:checked{
 
         #替换6: def reply_post(post_id, content, user_id)
         # MockForumData.create_reply(self.current_post_id, content)\
-        reply_post(self.current_post_id, content, 1)#记得改用户id
+        reply_post(self.current_post_id, content, session.user)#记得改 用户id
         QMessageBox.information(self, "Success", "Release successful!")
         self.reply_input.clear()
         self.load_post_detail(self.current_post_id)
@@ -514,7 +515,7 @@ QPushButton:checked{
     #
 
     def handle_like_post(self, post_id):
-        res = like_post(post_id, 1)
+        res = like_post(post_id, session.user) #记得改 用户id
 
         if res.get("status") == "ok":
             widget = self.detail_container.findChild(SingleDetailedPost)
@@ -546,7 +547,7 @@ QPushButton:checked{
     #         self.load_post_detail(self.current_post_id)
 
     def handle_like_reply(self, reply_id):
-        res = like_reply(reply_id, 1)
+        res = like_reply(reply_id, session.user) #记得改 用户id
 
         if res.get("status") == "ok":
 
