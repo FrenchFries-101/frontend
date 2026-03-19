@@ -95,7 +95,22 @@ QWidget#Form QLabel#like {
 
 
 /* ================= Like 按钮 ================= */
+QPushButton#like_btn {
+    background-color: pink;
+    color: white;
+    border-radius: 8px;
 
+	qproperty-icon: url(resources/icons/heart.png);
+    qproperty-iconSize: 20px 20px;
+}
+
+QPushButton#like_btn:hover {
+    background-color: #ff9aa2;
+}
+
+QPushButton#like_btn:pressed {
+    background-color: #ff6f91;
+}
 
 
 /* ================= 子组件透明 ================= */
@@ -306,6 +321,12 @@ QWidget#Form * {
       </item>
       <item>
        <widget class="QWidget" name="bottom" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -335,7 +356,29 @@ QWidget#Form * {
           <number>0</number>
          </property>
          <item>
+          <widget class="QLabel" name="time">
+           <property name="minimumSize">
+            <size>
+             <width>30</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>时间</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QLabel" name="like">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -376,27 +419,23 @@ QWidget#Form * {
              <height>50</height>
             </size>
            </property>
+           <property name="autoFillBackground">
+            <bool>false</bool>
+           </property>
            <property name="styleSheet">
             <string notr="true"/>
            </property>
            <property name="text">
             <string/>
            </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="time">
-           <property name="minimumSize">
+           <property name="iconSize">
             <size>
-             <width>30</width>
-             <height>0</height>
+             <width>10</width>
+             <height>10</height>
             </size>
            </property>
-           <property name="text">
-            <string>时间</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+           <property name="flat">
+            <bool>true</bool>
            </property>
           </widget>
          </item>

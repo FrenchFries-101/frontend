@@ -69,13 +69,20 @@ class SingleReply(QWidget):
             color: white;
             border-radius: 8px;
         }
+                QPushButton:hover {
+            background-color: #ff9aa2;   /* 悬停稍深 */
+        }
+        
+        QPushButton:pressed {
+            background-color: #ff6f91;   /* 点击时更深 */
+        }
         """)
 
         self.like_btn.setFixedSize(40, 15)
         self.like_btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.like_btn.setIcon(QIcon(QPixmap(self.heart_red)))
+        # self.like_btn.setIcon(QIcon(QPixmap(self.heart_red)))
         # 图标大小适配按钮（留边距，避免溢出）
-        self.like_btn.setIconSize(QSize(10, 10))
+        # self.like_btn.setIconSize(QSize(10, 10))
         self.like_btn.setFlat(True)
         self.like_btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
@@ -94,6 +101,7 @@ class SingleReply(QWidget):
         self.name.setText(self.data.get("author", ""))
         self.content.setText(self.data.get("content", ""))
         self.time.setText(self.data.get("time", ""))
+        # self.like_label.setText(f'❤ {self.likes_count}')
         self.like_label.setText(str(self.likes_count))
 
         pix = QPixmap(self.avatar_path)
