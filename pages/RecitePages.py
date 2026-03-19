@@ -3,6 +3,7 @@ from PySide6.QtWidgets import (
     QPushButton, QListWidget, QListWidgetItem, QHBoxLayout,
     QSizePolicy, QSpacerItem
 )
+from utils.path_utils import resource_path
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QPixmap, QIcon, QColor
 from service.api_word import get_categories, get_subcategories, get_words #接口
@@ -13,10 +14,17 @@ class RecitePage(QWidget):
     def __init__(self):
         super().__init__()
         # 获取当前脚本所在目录
-        self.BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # 上一级 project_root
-        self.ICON_RETURN = os.path.join(self.BASE_DIR, "resources", "icons", "return_black.png")
-        self.ICON_CHINESE_OFF = os.path.join(self.BASE_DIR, "resources", "icons", "book.png")
-        self.ICON_CHINESE_ON = os.path.join(self.BASE_DIR, "resources", "icons", "bookopen.png")
+        # self.BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # 上一级 project_root
+        # self.ICON_RETURN = os.path.join(self.BASE_DIR, "resources", "icons", "return_black.png")
+        # self.ICON_CHINESE_OFF = os.path.join(self.BASE_DIR, "resources", "icons", "book.png")
+        # self.ICON_CHINESE_ON = os.path.join(self.BASE_DIR, "resources", "icons", "bookopen.png")
+        #
+
+        self.ICON_RETURN = resource_path("resources/icons/return_black.png")
+        self.ICON_CHINESE_OFF = resource_path("resources/icons/book.png")
+        self.ICON_CHINESE_ON = resource_path("resources/icons/bookopen.png")
+
+
         # 全局中文显示开关状态
         self.show_chinese_global = False
 

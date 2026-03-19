@@ -1,7 +1,7 @@
 import os
 import random
 import sys
-
+from utils.path_utils import resource_path
 from PySide6.QtWidgets import (
     QWidget, QLabel, QVBoxLayout, QSizePolicy, QPushButton, QApplication, QScrollArea
 )
@@ -31,10 +31,9 @@ class SingleReply(QWidget):
         self.heart_red = self.get_icon("heart2.png")
 
         avatar_id = random.randint(1, 10)
-        self.avatar_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
-            "resources", "icons",
-            f"avatar{avatar_id}.png"
+
+        self.avatar_path = resource_path(
+            os.path.join("resources", "icons", f"avatar{avatar_id}.png")
         )
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(10, 10, 10, 10)
@@ -42,10 +41,8 @@ class SingleReply(QWidget):
 
         # 加载UI
         loader = QUiLoader()
-        ui_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
-            "ui",
-            "single_reply.ui"
+        ui_path = resource_path(
+            os.path.join("ui", "single_reply.ui")
         )
 
         ui_file = QFile(ui_path)
@@ -121,10 +118,11 @@ class SingleReply(QWidget):
             self.like_btn.setIcon(QIcon(self.heart_gray))
 
     def get_icon(self, name):
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        path = os.path.join(base_dir, "..", "resources", "icons", name)
+        path = resource_path(os.path.join("resources", "icons", name))
+
         if not os.path.exists(path):
             print(f"图标不存在: {path}")
+
         return path
 
 

@@ -1,4 +1,5 @@
 import os
+from utils.path_utils import resource_path
 
 from PySide6.QtGui import QPixmap, QIcon
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QPushButton
@@ -6,78 +7,7 @@ from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Signal, Qt, QSize
 
 from PySide6.QtWidgets import QSizePolicy
-#
-#
-# class SingleDetailedPost(QWidget):
-#
-#     clicked = Signal(dict)
-#     liked = Signal(int)   # ⭐ 新增：点赞信号
-#
-#     def __init__(self, post_data):
-#         super().__init__()
-#
-#         self.post = post_data   # ⭐ 保存数据
-#         self.post_id = post_data["id"]
-#         self.likes_count = post_data.get("likes", 0)
-#
-#         loader = QUiLoader()
-#
-#         ui_path = os.path.join(
-#             os.path.dirname(os.path.dirname(__file__)),
-#             "ui",
-#             "SingleDetailedPost.ui"
-#         )
-#
-#         ui_file = QFile(ui_path)
-#         ui_file.open(QFile.ReadOnly)
-#
-#         self.ui = loader.load(ui_file, self)
-#         ui_file.close()
-#
-#         # 加入布局
-#         layout = self.layout()
-#         if layout is None:
-#             layout = QVBoxLayout(self)
-#         layout.addWidget(self.ui)
-#
-#         # 找控件
-#         self.title = self.findChild(QLabel, "post_title")
-#         self.author = self.findChild(QLabel, "auther_time")
-#         self.likes_label = self.findChild(QLabel, "post_likes")
-#         self.contents = self.findChild(QLabel, "contents")
-#         self.avatar_image = self.findChild(QLabel, "label")
-#
-#         # ⭐ 点赞按钮（你UI里要有这个objectName）
-#         self.like_btn = self.findChild(QPushButton, "like_button")
-#
-#         # 头像
-#         pixmap = QPixmap(self.get_icon("writer.png"))
-#         pixmap = pixmap.scaled(20, 20, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-#         self.avatar_image.setPixmap(pixmap)
-#
-#         # 绑定点赞
-#         if self.like_btn:
-#             self.like_btn.clicked.connect(self.handle_like)
-#
-#         self.load_data()
-#
-#     def get_icon(self, name):
-#         base_dir = os.path.dirname(__file__)
-#         return os.path.join(base_dir, "..", "resources", "icons", name)
-#
-#     def handle_like(self):
-#         self.like_btn.setEnabled(False)
-#         self.liked.emit(self.post_id)
-#
-#     def load_data(self):
-#         self.title.setText(self.post.get("title", ""))
-#         self.contents.setText(self.post.get("content", ""))
-#         self.author.setText(f'{self.post.get("author", "")}  {self.post.get("time", "")}')
-#         self.likes_label.setText(f'❤ {self.likes_count}')
-#
-#     def mousePressEvent(self, event):
-#         self.clicked.emit(self.post)
-# SingleDetailedPost.py
+
 class SingleDetailedPost(QWidget):
     clicked = Signal(dict)
     liked = Signal(int)  # 发信号给外层处理
@@ -93,7 +23,8 @@ class SingleDetailedPost(QWidget):
 
         # 加载UI
         loader = QUiLoader()
-        ui_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "ui", "SingleDetailedPost.ui")
+        # ui_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "ui", "SingleDetailedPost.ui")
+        ui_path = resource_path(os.path.join("ui", "SingleDetailedPost.ui"))
         ui_file = QFile(ui_path)
         ui_file.open(QFile.ReadOnly)
         self.ui = loader.load(ui_file, self)
@@ -156,8 +87,8 @@ class SingleDetailedPost(QWidget):
         self.clicked.emit(self.post)
 
     def get_icon(self, name):
-        base_dir = os.path.dirname(__file__)
-        return os.path.join(base_dir, "..", "resources", "icons", name)
+        return resource_path(os.path.join("resources", "icons", name))
+
 
 
 if __name__ == "__main__":

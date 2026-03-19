@@ -1,4 +1,5 @@
 import os
+from utils.path_utils import resource_path
 import sys
 from PySide6.QtWidgets import QMessageBox
 from PySide6.QtGui import QIcon
@@ -119,11 +120,13 @@ QPushButton:checked{
     def load_full_ui(self):
         # 一次性加载整个postPage.ui
         loader = QUiLoader()
-        ui_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),  # 上一级目录（AgileProject）
-            "ui",
-            "postPage.ui"
-        )
+        # ui_path = os.path.join(
+        #     os.path.dirname(os.path.dirname(__file__)),  # 上一级目录（AgileProject）
+        #     "ui",
+        #     "postPage.ui"
+        # )
+
+        ui_path = resource_path("ui/postPage.ui")
         ui_file = QFile(ui_path)
         if not ui_file.open(QFile.ReadOnly):
             print(f"Can't open ui file(ForumPages): {ui_path}")
@@ -458,9 +461,12 @@ QPushButton:checked{
         self.stack.setCurrentIndex(1)
 
     #inner function: get icon images
+    # def get_icon(self, name):
+    #     base_dir = os.path.dirname(__file__)
+    #     return os.path.join(base_dir, "..","resources", "icons", name)
+
     def get_icon(self, name):
-        base_dir = os.path.dirname(__file__)
-        return os.path.join(base_dir, "..","resources", "icons", name)
+        return resource_path(f"resources/icons/{name}")
 
     #inner function
     def scroll_to_top(self):
