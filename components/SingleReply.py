@@ -6,31 +6,36 @@ from PySide6.QtWidgets import (
     QWidget, QLabel, QVBoxLayout, QSizePolicy, QPushButton, QApplication, QScrollArea
 )
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QFile, Qt, Signal
-from PySide6.QtGui import QPixmap
+from PySide6.QtCore import QFile, Qt, Signal, QSize
+from PySide6.QtGui import QPixmap, QIcon
 
+
+# ⭐ 关键改动版 SingleReply
 
 class SingleReply(QWidget):
 
-    liked = Signal(int)   # ⭐ 发出 reply_id
+    liked = Signal(int)
 
     def __init__(self, data):
         super().__init__()
 
-        self.liked_by_user = False  # 初始状态：未点赞
+
+        self.liked_by_user = False
         self.data = data
-        self.reply_id = data["reply_id"]   # ⭐ 必须是 reply_id
+        self.reply_id = data["reply_id"]
         self.likes_count = data.get("likes", 0)
 
-        # 随机头像
+        self.setProperty("reply_id", self.reply_id)
+
+        self.heart_gray = self.get_icon("heart.png")
+        self.heart_red = self.get_icon("heart2.png")
+
         avatar_id = random.randint(1, 10)
         self.avatar_path = os.path.join(
             os.path.dirname(os.path.dirname(__file__)),
             "resources", "icons",
             f"avatar{avatar_id}.png"
         )
-
-        # 主布局
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(10, 10, 10, 10)
         self.main_layout.setAlignment(Qt.AlignTop)
@@ -44,10 +49,7 @@ class SingleReply(QWidget):
         )
 
         ui_file = QFile(ui_path)
-        if not ui_file.open(QFile.ReadOnly):
-            print(f"无法打开UI文件: {ui_path}")
-            return
-
+        ui_file.open(QFile.ReadOnly)
         self.ui = loader.load(ui_file, self)
         ui_file.close()
 
@@ -59,74 +61,63 @@ class SingleReply(QWidget):
         self.time = self.ui.findChild(QLabel, "time")
         self.like_label = self.ui.findChild(QLabel, "like")
         self.avatar = self.ui.findChild(QLabel, "avatar")
-
-        # ⭐ 点赞按钮（UI里必须有）
         self.like_btn = self.ui.findChild(QPushButton, "like_button")
-        self.like_btn.setText("❤")
 
-        if not self.like_btn:
-            print("❌ 没找到 like_button，请检查 UI objectName")
+        self.like_btn.setStyleSheet("""
+        QPushButton {
+            background-color: pink;
+            color: white;
+            border-radius: 8px;
+        }
+        """)
 
-        # 内容样式优化
-        if self.content:
-            self.content.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-            self.content.setWordWrap(True)
-            self.content.setMinimumWidth(200)
+        self.like_btn.setFixedSize(40, 15)
+        self.like_btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.like_btn.setIcon(QIcon(QPixmap(self.heart_red)))
+        # 图标大小适配按钮（留边距，避免溢出）
+        self.like_btn.setIconSize(QSize(10, 10))
+        self.like_btn.setFlat(True)
+        self.like_btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-        for label in [self.name, self.time, self.like_label]:
-            if label:
-                label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        #只绑定一次（你之前绑了两次）
+        self.like_btn.clicked.connect(self.handle_like)
 
-        # 绑定点赞
-        if self.like_btn:
-            self.like_btn.clicked.connect(self.handle_like)
+        # 内容优化
+        self.content.setWordWrap(True)
+        self.content.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
 
+        # 初始化UI
         self.load_data()
+        self.update_like_ui()
 
     def load_data(self):
         self.name.setText(self.data.get("author", ""))
         self.content.setText(self.data.get("content", ""))
         self.time.setText(self.data.get("time", ""))
-        self.like_label.setText(f"{self.likes_count}")
-
-        # 初始化点赞按钮颜色
-        self.like_btn.setStyleSheet("color: #555555;")  # 默认深灰
+        self.like_label.setText(str(self.likes_count))
 
         pix = QPixmap(self.avatar_path)
         if not pix.isNull():
             self.avatar.setPixmap(
                 pix.scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             )
-            self.avatar.setScaledContents(True)
-
-    # def handle_like(self):
-    #     # ⭐ 发信号给外部
-    #     self.liked.emit(self.reply_id)
-    #
-    #     # ⭐ UI立即更新
-    #     self.likes_count += 1
-    #     self.like_label.setText(f"❤ {self.likes_count}")
-    #
-    #     # ⭐ 防止连点
-    #     self.like_btn.setEnabled(False)
 
     def handle_like(self):
-        # 切换状态
-        self.liked_by_user = not self.liked_by_user
-
-        # 更新 UI
-        if self.liked_by_user:
-            self.like_label.setText(f"{self.likes_count + 1}")  # 点赞
-            self.like_btn.setStyleSheet("color: red;")  # 红色心
-        else:
-            self.like_label.setText(f"{self.likes_count}")  # 取消点赞
-            self.like_btn.setStyleSheet("color: #555555;")  # 深灰色心
-
-        # 发信号给外层，外层再调用接口
+        self.like_btn.setEnabled(False)  # 防止连点
         self.liked.emit(self.reply_id)
 
-    def sizeHint(self):
-        return self.ui.sizeHint() if hasattr(self, 'ui') else super().sizeHint()
+    def update_like_ui(self):
+        if self.liked_by_user:
+            self.like_btn.setIcon(QIcon(self.heart_red))
+        else:
+            self.like_btn.setIcon(QIcon(self.heart_gray))
+
+    def get_icon(self, name):
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        path = os.path.join(base_dir, "..", "resources", "icons", name)
+        if not os.path.exists(path):
+            print(f"图标不存在: {path}")
+        return path
 
 
 if __name__ == "__main__":
@@ -146,18 +137,6 @@ if __name__ == "__main__":
     container_layout.setAlignment(Qt.AlignTop)
     scroll.setWidget(container)
     main_layout.addWidget(scroll)
-
-    # # 头像路径（请确认路径正确）
-    # avatar_path = os.path.join(
-    #     os.path.dirname(os.path.dirname(__file__)),
-    #     "resources",
-    #     "icons",
-    #     "avatar1.png"
-    # )
-    # # 路径容错
-    # if not os.path.exists(avatar_path):
-    #     print(f"头像文件不存在: {avatar_path}")
-    #     avatar_path = "placeholder.png"  # 替换为你的占位图路径
 
     # 创建测试评论（包含长文本，验证换行）
     for i in range(10):

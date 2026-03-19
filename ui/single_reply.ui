@@ -96,22 +96,6 @@ QWidget#Form QLabel#like {
 
 /* ================= Like 按钮 ================= */
 
-QWidget#Form QPushButton {
-
-    border: none;
-    background: transparent;
-
-    font-size: 12px;
-    color: #999999;
-}
-
-
-/* hover 点赞按钮 */
-
-QWidget#Form QPushButton:hover {
-
-    color: #ff6b81;
-}
 
 
 /* ================= 子组件透明 ================= */
@@ -195,7 +179,13 @@ QWidget#Form * {
    </item>
    <item>
     <widget class="QWidget" name="content" native="true">
-     <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="maximumSize">
+      <size>
+       <width>600</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0">
       <property name="topMargin">
        <number>4</number>
       </property>
@@ -319,25 +309,45 @@ QWidget#Form * {
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>30</height>
+          <height>50</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>30</height>
+          <height>50</height>
          </size>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QLabel" name="time">
-           <property name="text">
-            <string>时间</string>
-           </property>
-          </widget>
-         </item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0">
+         <property name="spacing">
+          <number>1</number>
+         </property>
+         <property name="leftMargin">
+          <number>6</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>6</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item>
           <widget class="QLabel" name="like">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>50</width>
+             <height>16777215</height>
+            </size>
+           </property>
            <property name="layoutDirection">
             <enum>Qt::LayoutDirection::LeftToRight</enum>
            </property>
@@ -356,20 +366,55 @@ QWidget#Form * {
           <widget class="QPushButton" name="like_button">
            <property name="minimumSize">
             <size>
-             <width>30</width>
-             <height>19</height>
+             <width>50</width>
+             <height>50</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
+             <width>50</width>
+             <height>50</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true"/>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="time">
+           <property name="minimumSize">
+            <size>
              <width>30</width>
-             <height>30</height>
+             <height>0</height>
             </size>
            </property>
            <property name="text">
-            <string>PushButton</string>
+            <string>时间</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
            </property>
           </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Policy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>80</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
        </widget>

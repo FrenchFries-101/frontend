@@ -93,8 +93,8 @@ QTextEdit{
     border-radius:6px;
 }
 
-/* 按钮 */
-QPushButton{
+/* 按钮 like_button*/
+QPushButton:not(#like_button){
     background:white;
     border:1px solid #eee;
     border-radius:8px;
@@ -377,7 +377,7 @@ QPushButton:checked{
         }
 
 
-        self.detail_title.setText(f"Post Details：{fixed_post['title']}")
+        self.detail_title.setText(f"Post Details")
 
         # 添加帖子组件
         post_widget = SingleDetailedPost(fixed_post)
@@ -479,56 +479,83 @@ QPushButton:checked{
 
 
     # 点赞帖子
+    # def handle_like_post(self, post_id):
+    #     res = like_post(post_id, 1)
+    #
+    #     if res.get("status") == "ok":
+    #
+    #         widget = self.detail_container.findChild(SingleDetailedPost)
+    #
+    #         if widget:
+    #             # ✅ 用后端 action 决定状态
+    #             if res["action"] == "liked":
+    #                 widget.liked_by_user = True
+    #             else:
+    #                 widget.liked_by_user = False
+    #
+    #             # ✅ 更新 UI（统一走组件方法）
+    #             widget.update_like_ui()
+    #
+    #
+    #             # ✅ 更新点赞数
+    #             widget.likes_label.setText(str(res["likes"]))
+    #
+    #             # ✅ 恢复按钮
+    #             widget.like_btn.setEnabled(True)
+    #
+    #     else:
+    #         QMessageBox.warning(self, "Error", "点赞失败")
+    #
+
     def handle_like_post(self, post_id):
         res = like_post(post_id, 1)
 
         if res.get("status") == "ok":
-
             widget = self.detail_container.findChild(SingleDetailedPost)
 
             if widget:
-                # ✅ 用后端 action 决定状态
-                if res["action"] == "liked":
-                    widget.liked_by_user = True
-                else:
-                    widget.liked_by_user = False
+                # ⭐ 直接反转状态
+                widget.liked_by_user = not widget.liked_by_user
 
-                # ✅ 更新 UI（统一走组件方法）
                 widget.update_like_ui()
 
-                # ✅ 更新点赞数
+                # 更新点赞数（后端给的是对的）
                 widget.likes_label.setText(str(res["likes"]))
 
-                # ✅ 恢复按钮
                 widget.like_btn.setEnabled(True)
 
         else:
             QMessageBox.warning(self, "Error", "点赞失败")
-        # # 调接口点赞
-        # res = like_post(post_id, 1)  # 后端接口返回最新点赞数
-        # if res is not None:
-        #     # 立即刷新数字
-        #     widget = self.detail_container.findChild(SingleDetailedPost)  # 找到当前帖子widget
-        #     if widget:
-        #         widget.likes_count = res["likes"]  # 后端返回的最新值
-        #         widget.likes_label.setText(f"{widget.likes_count}")
-        #     # QMessageBox.information(self, "Success", "点赞成功")
-        # else:
-        #     QMessageBox.warning(self, "Error", "Error")
-
-
 
 
     #点赞评论
-    def handle_like_reply(self, reply_id):
-        print(f"点赞 reply_id: {reply_id}")
+    # def handle_like_reply(self, reply_id):
+    #     print(f"点赞 reply_id: {reply_id}")
+    #
+    #     res = like_reply(reply_id, 1)  #记得改user_id
+    #     if res:
+    #         print("点赞成功:", res)
+    #     else:
+    #         QMessageBox.warning(self, "Error", "点赞失败")
+    #         self.load_post_detail(self.current_post_id)
 
-        res = like_reply(reply_id, 1)  #记得改user_id
-        if res:
-            print("点赞成功:", res)
-        else:
-            QMessageBox.warning(self, "Error", "点赞失败")
-            self.load_post_detail(self.current_post_id)
+    def handle_like_reply(self, reply_id):
+        res = like_reply(reply_id, 1)
+
+        if res.get("status") == "ok":
+
+            replies = self.detail_container.findChildren(SingleReply)
+
+            for widget in replies:
+                if widget.property("reply_id") == reply_id:
+                    # ⭐ 只在这里改一次！
+                    widget.liked_by_user = not widget.liked_by_user
+
+                    widget.update_like_ui()
+                    widget.like_label.setText(str(res["likes"]))
+                    widget.like_btn.setEnabled(True)
+
+                    break
 
 # ======================== 运行 ========================
 if __name__ == "__main__":

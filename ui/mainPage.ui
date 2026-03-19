@@ -83,7 +83,7 @@ QPushButton:checked{
 QWidget#PageArea{
     background-color: #ffffff;
     border-radius: 12px;
-    margin: 10px;
+padding: 10px; 
 }
 
 
@@ -391,12 +391,12 @@ QPushButton#Exit_button{
         </rect>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>3</number>
        </property>
        <widget class="QWidget" name="Recite_page">
         <layout class="QVBoxLayout" name="verticalLayout_10">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_2" stretch=""/>
+          <layout class="QVBoxLayout" name="verticalLayout_2"/>
          </item>
         </layout>
        </widget>
@@ -536,8 +536,8 @@ QPushButton#Exit_button{
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>695</width>
-                  <height>385</height>
+                  <width>94</width>
+                  <height>42</height>
                  </rect>
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,4">
@@ -551,8 +551,8 @@ QPushButton#Exit_button{
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>134</width>
-                      <height>367</height>
+                      <width>97</width>
+                      <height>212</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -598,8 +598,8 @@ QPushButton#Exit_button{
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>537</width>
-                      <height>367</height>
+                      <width>534</width>
+                      <height>280</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_5">
