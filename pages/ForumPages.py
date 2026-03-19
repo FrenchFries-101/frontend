@@ -480,17 +480,41 @@ QPushButton:checked{
 
     # 点赞帖子
     def handle_like_post(self, post_id):
-        # 调接口点赞
-        res = like_post(post_id, 1)  # 后端接口返回最新点赞数
-        if res is not None:
-            # 立即刷新数字
-            widget = self.detail_container.findChild(SingleDetailedPost)  # 找到当前帖子widget
+        res = like_post(post_id, 1)
+
+        if res.get("status") == "ok":
+
+            widget = self.detail_container.findChild(SingleDetailedPost)
+
             if widget:
-                widget.likes_count = res["likes"]  # 后端返回的最新值
-                widget.likes_label.setText(f"{widget.likes_count}")
-            # QMessageBox.information(self, "Success", "点赞成功")
+                # ✅ 用后端 action 决定状态
+                if res["action"] == "liked":
+                    widget.liked_by_user = True
+                else:
+                    widget.liked_by_user = False
+
+                # ✅ 更新 UI（统一走组件方法）
+                widget.update_like_ui()
+
+                # ✅ 更新点赞数
+                widget.likes_label.setText(str(res["likes"]))
+
+                # ✅ 恢复按钮
+                widget.like_btn.setEnabled(True)
+
         else:
-            QMessageBox.warning(self, "Error", "Error")
+            QMessageBox.warning(self, "Error", "点赞失败")
+        # # 调接口点赞
+        # res = like_post(post_id, 1)  # 后端接口返回最新点赞数
+        # if res is not None:
+        #     # 立即刷新数字
+        #     widget = self.detail_container.findChild(SingleDetailedPost)  # 找到当前帖子widget
+        #     if widget:
+        #         widget.likes_count = res["likes"]  # 后端返回的最新值
+        #         widget.likes_label.setText(f"{widget.likes_count}")
+        #     # QMessageBox.information(self, "Success", "点赞成功")
+        # else:
+        #     QMessageBox.warning(self, "Error", "Error")
 
 
 

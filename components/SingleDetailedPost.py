@@ -119,9 +119,10 @@ class SingleDetailedPost(QWidget):
 
     def handle_like(self):
         # 切换状态
-        self.liked_by_user = not self.liked_by_user
-        # 更新 UI
-        self.update_like_ui()
+        # self.liked_by_user = not self.liked_by_user
+        # # 更新 UI
+        # self.update_like_ui()
+        self.like_btn.setEnabled(False)  # 防止狂点
         # 发信号给外层处理接口
         self.liked.emit(self.post_id)
 
