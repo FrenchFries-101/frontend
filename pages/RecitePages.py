@@ -3,8 +3,10 @@ from PySide6.QtWidgets import (
     QPushButton, QListWidget, QListWidgetItem, QHBoxLayout,
     QSizePolicy, QSpacerItem
 )
+from utils.path_utils import resource_path
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QPixmap, QIcon, QColor
+from service.api_word import get_categories, get_subcategories, get_words #接口
 import os
 
 
@@ -12,15 +14,22 @@ class RecitePage(QWidget):
     def __init__(self):
         super().__init__()
         # 获取当前脚本所在目录
-        self.BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # 上一级 project_root
-        self.ICON_RETURN = os.path.join(self.BASE_DIR, "resources", "icons", "return_black.png")
-        self.ICON_CHINESE_OFF = os.path.join(self.BASE_DIR, "resources", "icons", "chinese.png")
-        self.ICON_CHINESE_ON = os.path.join(self.BASE_DIR, "resources", "icons", "chinese1.png")
+        # self.BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # 上一级 project_root
+        # self.ICON_RETURN = os.path.join(self.BASE_DIR, "resources", "icons", "return_black.png")
+        # self.ICON_CHINESE_OFF = os.path.join(self.BASE_DIR, "resources", "icons", "book.png")
+        # self.ICON_CHINESE_ON = os.path.join(self.BASE_DIR, "resources", "icons", "bookopen.png")
+        #
+
+        self.ICON_RETURN = resource_path("resources/icons/return_black.png")
+        self.ICON_CHINESE_OFF = resource_path("resources/icons/book.png")
+        self.ICON_CHINESE_ON = resource_path("resources/icons/bookopen.png")
+
+
         # 全局中文显示开关状态
         self.show_chinese_global = False
 
         self.init_ui()
-        self.init_data()
+        # self.init_data()
         self.show_categories()
 
 
@@ -167,9 +176,11 @@ class RecitePage(QWidget):
         self.chinese_btn = QPushButton()
         # self.chinese_btn.setFixedSize(30, 30)
         self.chinese_btn.setObjectName("title_chinese_btn")
-        self.chinese_btn.setFixedSize(24, 24)
+        self.chinese_btn.setFixedSize(30, 30)
         # self.chinese_btn.setVisible(False)
         self.chinese_btn.setStyleSheet("border:none;background:transparent;")
+        # self.chinese_btn.setToolTip("Show meaning")
+        # print(f"点击显示的浮窗：{self.chinese_btn.toolTip()}")
 
         # 加载两张图片，和返回按钮同款
         pixmap_off = QPixmap(self.ICON_CHINESE_OFF)#记载为土
@@ -178,7 +189,7 @@ class RecitePage(QWidget):
         else:
             print("pixmap_off 加载成功")
         if not pixmap_off.isNull():
-            scaled_off = pixmap_off.scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            scaled_off = pixmap_off.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.icon_chinese_off = QIcon(scaled_off)
             # self.chinese_btn.setIcon(QIcon(scaled_off))
             print("ICON_CHINESE_OFF成功！！")
@@ -196,7 +207,7 @@ class RecitePage(QWidget):
         else:
             print("pixmap_on 加载成功")
         if not pixmap_on.isNull():
-            scaled_on = pixmap_on.scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            scaled_on = pixmap_on.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.icon_chinese_on = QIcon(scaled_on)
             print("ICON_CHINESE_ON记载成功！")
             if self.icon_chinese_on.isNull():
@@ -211,7 +222,7 @@ class RecitePage(QWidget):
         # 默认状态
         try:
             self.chinese_btn.setIcon(self.icon_chinese_off)
-            self.chinese_btn.setIconSize(QSize(24, 24))
+            self.chinese_btn.setIconSize(QSize(30, 30))
             self.chinese_btn.setFixedSize(30,30)
             print(self.chinese_btn.icon().isNull())
         except:
@@ -251,34 +262,34 @@ class RecitePage(QWidget):
         self.page_state = "category"
         self.word_list = None
 
-    def init_data(self):
-        # 单词数据
-        self.word_data = {
-            ("学科单词", "数学"): [
-                {"english": "derivative", "chinese": "导数"},
-                {"english": "matrix", "chinese": "矩阵"},
-                {"english": "integral", "chinese": "积分"},
-            ],
-            ("学科单词", "计算机"): [
-                {"english": "algorithm", "chinese": "算法"},
-                {"english": "recursion", "chinese": "递归"},
-                {"english": "compiler", "chinese": "编译器"},
-            ],
-            ("学术英语", "演讲用语"): [
-                {"english": "hello", "chinese": "打招呼"},
-            ],
-            ("学术英语", "学术写作"): [
-                {"english": "Next", "chinese": "下一个"},
-            ],
-            ("学术英语", "小组讨论用语"): [
-                {"english": "In my opinion", "chinese": "我认为"},
-                {"english": "I agree with you", "chinese": "我同意你的观点"},
-            ],
-            ("学术英语", "邮件用语"): [
-                {"english": "In my opinion", "chinese": "我认为"},
-                {"english": "I agree with you", "chinese": "我同意你的观点"},
-            ]
-        }
+    # def init_data(self):
+    #     # 单词数据
+    #     self.word_data = {
+    #         ("学科单词", "数学"): [
+    #             {"english": "derivative", "chinese": "导数"},
+    #             {"english": "matrix", "chinese": "矩阵"},
+    #             {"english": "integral", "chinese": "积分"},
+    #         ],
+    #         ("学科单词", "计算机"): [
+    #             {"english": "algorithm", "chinese": "算法"},
+    #             {"english": "recursion", "chinese": "递归"},
+    #             {"english": "compiler", "chinese": "编译器"},
+    #         ],
+    #         ("学术英语", "演讲用语"): [
+    #             {"english": "hello", "chinese": "打招呼"},
+    #         ],
+    #         ("学术英语", "学术写作"): [
+    #             {"english": "Next", "chinese": "下一个"},
+    #         ],
+    #         ("学术英语", "小组讨论用语"): [
+    #             {"english": "In my opinion", "chinese": "我认为"},
+    #             {"english": "I agree with you", "chinese": "我同意你的观点"},
+    #         ],
+    #         ("学术英语", "邮件用语"): [
+    #             {"english": "In my opinion", "chinese": "我认为"},
+    #             {"english": "I agree with you", "chinese": "我同意你的观点"},
+    #         ]
+    #     }
 
     # ---------------- 单词点击单独切换（可选保留） ----------------
     def toggle_word_meaning(self, item):
@@ -290,19 +301,28 @@ class RecitePage(QWidget):
         if cn_label:
             cn_label.setVisible(not cn_label.isVisible())
 
-    # ---------------- 数据获取方法 ----------------
+    # ---------------- api接口-获取第一季分类----------------
     def get_categories(self):
-        return ["学科单词", "学术英语"]
+        return get_categories()
+    # 示例返回值
 
+
+    # ---------------- api接口-获取第二级分类----------------
     def get_subcategories(self, category):
-        data = {
-            "学科单词": ["数学", "计算机", "土木", "机械"],
-            "学术英语": ["小组讨论用语", "演讲用语", "学术写作", "邮件用语"]
-        }
-        return data.get(category, [])
+        return get_subcategories(category)
+        # data = {
+        #     "学科单词": ["数学", "计算机", "土木", "机械"],
+        #     "学术英语": ["小组讨论用语", "演讲用语", "学术写作", "邮件用语"]
+        # }
+        # return data.get(category, [])
 
-    def get_words(self, category, sub):
-        return self.word_data.get((category, sub), [])
+
+    # def get_words(self, category, sub):
+    #     # return self.word_data.get((category, sub), [])
+    #     return get_words(category, sub)
+
+    def get_words(self, subcategory_id):
+        return get_words(subcategory_id)
 
     # ---------------- 工具方法 ----------------
     def clear_container(self):
@@ -325,6 +345,7 @@ class RecitePage(QWidget):
         if self.page_state == "subcategory":
             self.show_categories()
 
+
     def show_categories(self):
         """显示一级分类页面：隐藏返回按钮和开关"""
         self.clear_container()
@@ -332,17 +353,29 @@ class RecitePage(QWidget):
         self.title_back_btn.setVisible(False)
         self.switch_widget.setVisible(False)  # 隐藏开关容器
 
-        # 显示一级分类按钮
+        # # 显示一级分类按钮
+        # for c in self.get_categories():
+        #     # c 可能是 dict 或 str
+        #     text = c["name"] if isinstance(c, dict) else str(c)
+        #     btn = QPushButton(text)
+        #     btn.setProperty("class", "category")
+        #     # 用 lambda 保存当前分类值
+        #     btn.clicked.connect(lambda _, x=text: self.show_subcategories(x))
+        #     self.container.addWidget(btn)
+
         for c in self.get_categories():
-            btn = QPushButton(c)
+            btn = QPushButton(c["category_name"])  # 显示名字
             btn.setProperty("class", "category")
-            btn.clicked.connect(lambda _, x=c: self.show_subcategories(x))
+
+            # ⭐ 传 category_id，不是名字
+            btn.clicked.connect(lambda _, cid=c["category_id"]: self.show_subcategories(cid))
+
             self.container.addWidget(btn)
+
         self.container.addStretch()
 
-    def show_subcategories(self, category):
-        """显示二级分类页面：显示返回按钮和开关"""
-        self.current_category = category
+    def show_subcategories(self, category_id):
+        self.current_category = category_id
         self.page_state = "subcategory"
         self.title_back_btn.setVisible(True)
         self.switch_widget.setVisible(True)  # 显示开关容器
@@ -353,28 +386,52 @@ class RecitePage(QWidget):
         self.tab_layout.setSpacing(10)
         self.container.addLayout(self.tab_layout)
 
-        # 二级分类按钮
-        sub_list = self.get_subcategories(category)
-        self.current_sub = sub_list[0] if sub_list else ""
+        # 获取二级分类
+        # sub_list = self.get_subcategories(category_id)
+        # self.current_sub = sub_list[0] if sub_list else ""
+        #
+        # for sub in sub_list:
+        #     # sub 必须是字符串
+        #     sub_text = sub if isinstance(sub, str) else str(sub)
+        #     btn = QPushButton(sub_text)
+        #     btn.setCheckable(True)
+        #     btn.setAutoExclusive(True)
+        #     btn.setProperty("class", "category")
+        #     btn.clicked.connect(lambda _, s=sub_text: self.switch_subcategory(s))
+        #     self.tab_layout.addWidget(btn)
+
+        sub_list = self.get_subcategories(category_id)
+
+        # 默认选第一个 subcategory_id
+        self.current_sub = sub_list[0]["subcategory_id"] if sub_list else None
+
         for sub in sub_list:
-            btn = QPushButton(sub)
+            btn = QPushButton(sub["subcategory_name"])
             btn.setCheckable(True)
             btn.setAutoExclusive(True)
             btn.setProperty("class", "category")
-            btn.clicked.connect(lambda _, s=sub: self.switch_subcategory(s))
+
+            # ⭐ 传 subcategory_id
+            btn.clicked.connect(lambda _, sid=sub["subcategory_id"]: self.switch_subcategory(sid))
+
             self.tab_layout.addWidget(btn)
 
         # 单词列表
         self.word_list = QListWidget()
         self.word_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
-        # self.word_list.itemClicked.connect(self.toggle_word_meaning)
         self.container.addWidget(self.word_list)
 
         self.load_words()
 
-    def switch_subcategory(self, sub):
-        """切换二级分类"""
-        self.current_sub = sub
+
+
+    # def switch_subcategory(self, sub):
+    #     """切换二级分类"""
+    #     self.current_sub = sub
+    #     self.load_words()
+
+    def switch_subcategory(self, sub_id):
+        self.current_sub = sub_id
         self.load_words()
 
     #切换函数
@@ -393,49 +450,58 @@ class RecitePage(QWidget):
 
     # ---------------- 加载单词列表 ----------------
     def load_words(self):
-        """加载并显示单词列表"""
         if not self.word_list or not self.current_category or not self.current_sub:
             return
 
         self.word_list.clear()
-        words = self.get_words(self.current_category, self.current_sub)
+        words = self.get_words(self.current_sub)
 
         for w in words:
-            # 单词卡片Widget
             word_widget = QWidget()
-            word_layout = QHBoxLayout(word_widget)
-            word_layout.setContentsMargins(0, 0, 0, 0)
-            word_layout.setSpacing(0)
 
-            # 英文标签
+            # ⭐ 卡片样式
+            word_widget.setStyleSheet("""
+                QWidget {
+                    background: white;
+                    border-radius: 10px;
+                    padding: 8px;
+                }
+            """)
+
+            word_layout = QVBoxLayout(word_widget)
+            word_layout.setContentsMargins(10, 8, 10, 8)  # ⭐ 留白！！
+            word_layout.setSpacing(6)  # ⭐ 行间距！！
+
+            # ---------------- 英文 ----------------
             en_label = QLabel(w["english"])
-            en_label.setObjectName("word_en")
-            en_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            en_label.setStyleSheet("""
+                font-size:16px;
+                font-weight:600;
+                color:#222;
+            """)
+            en_label.setAlignment(Qt.AlignLeft)
 
-            # 弹性空间
-            spacer = QWidget()
-            spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-
-            # 中文标签（根据全局开关决定显示状态）
+            # ---------------- 中文 ----------------
             cn_label = QLabel(w["chinese"])
-            cn_label.setObjectName("word_cn")
-            cn_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            cn_label.setStyleSheet("""
+                font-size:14px;
+                color:#666;
+            """)
+            cn_label.setWordWrap(True)
+            cn_label.setAlignment(Qt.AlignLeft | Qt.AlignTop)
 
-            # 组装布局
+
+            # ---------------- 加入布局 ----------------
             word_layout.addWidget(en_label)
-            word_layout.addWidget(spacer)
             word_layout.addWidget(cn_label)
 
-            #它本身是一个新的窗口，先绑定到整体窗口再setVisible就不会单独创建一个新的窗口了
             cn_label.setVisible(self.show_chinese_global)
 
-            # 列表项
+            # ---------------- ListItem ----------------
             item = QListWidgetItem()
-            item.setSizeHint(QSize(0, 50))
 
-            # 存储中文标签引用
-            cn_label.setProperty("cn_label", True)
-            item.setData(Qt.UserRole, cn_label)
+            # ⭐⭐ 关键：自动高度（不要写死50）
+            item.setSizeHint(word_widget.sizeHint())
 
             self.word_list.addItem(item)
             self.word_list.setItemWidget(item, word_widget)

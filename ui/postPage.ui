@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>558</width>
-    <height>488</height>
+    <height>510</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -204,8 +204,8 @@ QLineEdit#search_input::placeholder {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>536</width>
-            <height>330</height>
+            <width>96</width>
+            <height>26</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -361,7 +361,7 @@ QLabel#detail_title {
             <x>0</x>
             <y>0</y>
             <width>536</width>
-            <height>346</height>
+            <height>368</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -389,19 +389,25 @@ QLabel#detail_title {
            <height>55</height>
           </size>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1,0">
           <item>
            <widget class="QTextEdit" name="reply_input">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="minimumSize">
              <size>
-              <width>0</width>
-              <height>40</height>
+              <width>490</width>
+              <height>45</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>16777215</width>
-              <height>40</height>
+              <width>490</width>
+              <height>45</height>
              </size>
             </property>
             <property name="styleSheet">
@@ -451,17 +457,29 @@ QTextEdit#reply_input::placeholder {
           </item>
           <item>
            <widget class="QPushButton" name="reply_button">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="minimumSize">
              <size>
-              <width>25</width>
-              <height>40</height>
+              <width>0</width>
+              <height>45</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>40</width>
-              <height>40</height>
+              <width>16777215</width>
+              <height>16777215</height>
              </size>
+            </property>
+            <property name="mouseTracking">
+             <bool>true</bool>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::FocusPolicy::NoFocus</enum>
             </property>
             <property name="layoutDirection">
              <enum>Qt::LayoutDirection::LeftToRight</enum>
@@ -474,8 +492,6 @@ QTextEdit#reply_input::placeholder {
 
     border: 1px solid #ffb3c1;
     border-radius: 8px;
-
-    padding: 6px 14px;
 }
 
 

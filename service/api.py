@@ -1,7 +1,7 @@
 import requests
 
-BASE_URL = "http://124.223.33.28:8787"
-#BASE_URL="http://127.0.0.1:8000"
+#BASE_URL = "http://124.233.33.28:8787"
+BASE_URL = "http://127.0.0.1:8000"
 
 def get_cambridge_list():
     res = requests.get(f"{BASE_URL}/listening/cambridge")
@@ -104,55 +104,41 @@ def get_words(category, subcategory):
         return []
 
 def register(username, email, password):
-    url = f"{BASE_URL}/register"
-
-    data = {
-        "username": username,
-        "email": email,
-        "password": password
-    }
-
-    response = requests.post(url, json=data)
-
-    if response.status_code == 200:
-        return response.json()
-    else:
-        raise Exception(response.json()["detail"])
-
-
-# ----------------------
-# 登录（重点：form-data）
-# ----------------------
+    try:
+        res = requests.post(
+            f"{BASE_URL}/register",
+            json={
+                "username": username,
+                "email": email,
+                "password": password
+            }
+        )
+        return res.json()
+    except Exception as e:
+        print("注册失败:", e)
+        return None
 def login(username, password):
-    url = f"{BASE_URL}/login"
-
-    data = {
-        "username": username,
-        "password": password
-    }
-
-    # ⚠️ FastAPI OAuth2 必须用 form data
-    response = requests.post(url, data=data)
-
-    if response.status_code == 200:
-        return response.json()  # {access_token, token_type}
-    else:
-        raise Exception(response.json()["detail"])
-
-
-# ----------------------
-# 获取当前用户
-# ----------------------
+    try:
+        res = requests.post(
+            f"{BASE_URL}/login",
+            data={
+                "username": username,
+                "password": password
+            }
+        )
+        return res.json()
+    except Exception as e:
+        print("登录失败:", e)
+        return None
 def get_current_user(token):
-    url = f"{BASE_URL}/users/me"
-
-    headers = {
-        "Authorization": f"Bearer {token}"
-    }
-
-    response = requests.get(url, headers=headers)
-
-    if response.status_code == 200:
-        return response.json()
-    else:
-        raise Exception(response.json()["detail"])
+    try:
+        res = requests.get(
+            f"{BASE_URL}/users/me",
+            headers={
+                "Authorization": f"Bearer {token}"
+            }
+        )
+        return res.json()
+    except Exception as e:
+        print("获取用户失败:", e)
+        return None
