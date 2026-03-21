@@ -2,7 +2,6 @@ import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QStackedWidget
 from PySide6.QtCore import QPropertyAnimation, QEasingCurve, QPoint
 from PySide6.QtWidgets import QWidget
-
 from pages.LoginWindows import LoginWindow
 from pages.MainWindows import MainWindow
 from pages.RegisterWindow import RegisterWindow
@@ -12,8 +11,6 @@ class AppWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-
-
         self.test_page = IELTSTestWindow()
 
         self.stack = QStackedWidget()

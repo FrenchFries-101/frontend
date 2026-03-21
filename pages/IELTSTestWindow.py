@@ -13,6 +13,7 @@ import requests
 
 from pages.ExitDialog import ExitDialog
 import session
+from utils.path_utils import resource_path
 
 class IELTSTestWindow(QWidget):
     exit_test_signal = Signal()
@@ -21,7 +22,7 @@ class IELTSTestWindow(QWidget):
         super().__init__()
 
         loader = QUiLoader()
-        ui_file = QFile("ui/IELTSTest.ui")   # 你的新界面
+        ui_file = QFile(resource_path("ui/IELTSTest.ui"))   # 你的新界面
         ui_file.open(QFile.ReadOnly)
 
         self.ui = loader.load(ui_file)

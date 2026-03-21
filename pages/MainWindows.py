@@ -12,6 +12,7 @@ import random
 from PySide6.QtGui import QPixmap
 import session
 from PySide6.QtCore import Qt
+from utils.path_utils import resource_path
 
 
 class MainWindow(QWidget):
@@ -25,7 +26,7 @@ class MainWindow(QWidget):
         super().__init__()
 
         loader = QUiLoader()
-        ui_file = QFile("ui/mainPage.ui")
+        ui_file = QFile(resource_path("ui/mainPage.ui"))
         ui_file.open(QFile.ReadOnly)
 
         self.ui = loader.load(ui_file)
@@ -34,6 +35,8 @@ class MainWindow(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.ui)
         self.setLayout(layout)
+
+        self.load_qss()
 
         self.ui.pushButton_14.clicked.connect(self.start_test)
 
@@ -233,7 +236,7 @@ class MainWindow(QWidget):
         import random
 
         index = random.randint(1, 7)
-        path = f"resources/icons/teenager{index}.png"
+        path = resource_path(f"resources/icons/teenager{index}.png")
 
         pixmap = QPixmap(path)
 
@@ -251,3 +254,41 @@ class MainWindow(QWidget):
 
         # ✅ 居中
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+    def load_qss(self):
+        # 获取所有图标路径，Windows 路径转换成 /
+        book_icon = resource_path("resources/icons/book-alt.png").replace("\\", "/")
+        headphones_icon = resource_path("resources/icons/headphones.png").replace("\\", "/")
+        user_icon = resource_path("resources/icons/user-speaking.png").replace("\\", "/")
+        bank_icon = resource_path("resources/icons/bank.png").replace("\\", "/")
+        exit_icon = resource_path("resources/icons/exit.png").replace("\\", "/")
+
+        # 使用 f-string 安全替换
+        qss = f"""
+        QPushButton#Recite_button {{
+            qproperty-icon: url({book_icon});
+            qproperty-iconSize: 20px 20px;
+        }}
+
+        QPushButton#Favourite_button {{
+            qproperty-icon: url({headphones_icon});
+            qproperty-iconSize: 20px 20px;
+        }}
+
+        QPushButton#Profile_button {{
+            qproperty-icon: url({user_icon});
+            qproperty-iconSize: 20px 20px;
+        }}
+
+        QPushButton#Discussion_button {{
+            qproperty-icon: url({bank_icon});
+            qproperty-iconSize: 20px 20px;
+        }}
+
+        QPushButton#Exit_button {{
+            qproperty-icon: url({exit_icon});
+            qproperty-iconSize: 20px 20px;
+        }}
+        """
+
+        self.setStyleSheet(qss)

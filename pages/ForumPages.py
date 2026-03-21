@@ -13,6 +13,7 @@ from components.SinglePost import SinglePost
 from components.SingleReply import SingleReply
 from components.SingleDetailedPost import SingleDetailedPost
 from service.api_forum import get_posts,get_post_detail,search_posts,get_replies,create_post,reply_post,like_post,like_reply
+import session
 
 
 # ========================假数据========================
@@ -311,7 +312,7 @@ QPushButton:checked{
 
         # MockForumData.create_post(title, content)
         #创建create的接口！
-        create_post(title, content, 1)#记得改用户id
+        create_post(title, content, session.user["id"])#记得改用户id
         QMessageBox.information(self, "Success", "Release successful!")
         self.clear_inputs()
         self.stack.setCurrentIndex(0)
@@ -428,7 +429,7 @@ QPushButton:checked{
 
         #替换6: def reply_post(post_id, content, user_id)
         # MockForumData.create_reply(self.current_post_id, content)\
-        reply_post(self.current_post_id, content, 1)#记得改用户id
+        reply_post(self.current_post_id, content, session.user["id"])#记得改用户id
         QMessageBox.information(self, "Success", "Release successful!")
         self.reply_input.clear()
         self.load_post_detail(self.current_post_id)
