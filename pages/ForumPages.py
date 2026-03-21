@@ -313,11 +313,7 @@ QPushButton:checked{
 
         # MockForumData.create_post(title, content)
         #创建create的接口！
-<<<<<<< HEAD
         create_post(title, content, session.user["id"])#记得改用户id
-=======
-        create_post(title, content, session.user)#记得改 用户id
->>>>>>> 0accfe7bf6d48f4e7c49ff6708047d67f56f3769
         QMessageBox.information(self, "Success", "Release successful!")
         self.clear_inputs()
         self.stack.setCurrentIndex(0)
@@ -434,11 +430,7 @@ QPushButton:checked{
 
         #替换6: def reply_post(post_id, content, user_id)
         # MockForumData.create_reply(self.current_post_id, content)\
-<<<<<<< HEAD
         reply_post(self.current_post_id, content, session.user["id"])#记得改用户id
-=======
-        reply_post(self.current_post_id, content, session.user)#记得改 用户id
->>>>>>> 0accfe7bf6d48f4e7c49ff6708047d67f56f3769
         QMessageBox.information(self, "Success", "Release successful!")
         self.reply_input.clear()
         self.load_post_detail(self.current_post_id)
