@@ -312,7 +312,7 @@ QPushButton:checked{
 
         # MockForumData.create_post(title, content)
         #创建create的接口！
-        create_post(title, content, session.user)#记得改 用户id
+        create_post(title, content, session.user["id"])#记得改 用户id
         QMessageBox.information(self, "Success", "Release successful!")
         self.clear_inputs()
         self.stack.setCurrentIndex(0)
@@ -515,7 +515,7 @@ QPushButton:checked{
     #
 
     def handle_like_post(self, post_id):
-        res = like_post(post_id, session.user) #记得改 用户id
+        res = like_post(post_id, session.user["id"]) #记得改 用户id
 
         if res.get("status") == "ok":
             widget = self.detail_container.findChild(SingleDetailedPost)
@@ -547,7 +547,7 @@ QPushButton:checked{
     #         self.load_post_detail(self.current_post_id)
 
     def handle_like_reply(self, reply_id):
-        res = like_reply(reply_id, session.user) #记得改 用户id
+        res = like_reply(reply_id, session.user["id"]) #记得改 用户id
 
         if res.get("status") == "ok":
 
