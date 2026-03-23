@@ -6,7 +6,7 @@ BASE_URL = "http://127.0.0.1:8000/forum"
 # =========================
 # 获取帖子列表
 # =========================
-def get_posts(page=1, page_size=20):
+def get_posts(page=1, page_size=200):
     try:
         res = requests.get(
             f"{BASE_URL}/posts",

@@ -43,6 +43,10 @@ class SingleDetailedPost(QWidget):
         self.contents = self.findChild(QLabel, "contents")
         self.avatar_image = self.findChild(QLabel, "label")
         self.like_btn = self.findChild(QPushButton, "like_button")
+        self.LAYOUT = self.findChild(QVBoxLayout, "verticalLayout")
+
+        self.LAYOUT.setContentsMargins(10, 10, 10, 10)
+        self.LAYOUT.setAlignment(Qt.AlignTop)
 
         self.like_btn.setMinimumSize(30, 30)
         self.like_btn.setIcon(QIcon(self.get_icon("heart.png")))

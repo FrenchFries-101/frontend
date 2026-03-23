@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>558</width>
-    <height>510</height>
+    <height>507</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -35,7 +35,7 @@
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="forum_main">
       <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -390,13 +390,16 @@ QLabel#detail_title {
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
          <widget class="QWidget" name="detail_content">
           <property name="geometry">
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>96</width>
-            <height>26</height>
+            <width>536</width>
+            <height>365</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_6">

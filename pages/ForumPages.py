@@ -51,6 +51,7 @@ from service.api_forum import get_posts,get_post_detail,search_posts,get_replies
 class ForumWindow(QWidget):
     def __init__(self):
         super().__init__()
+        print("开始加载论天界面")
 
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.main_layout = QVBoxLayout(self)
@@ -220,7 +221,7 @@ QPushButton:checked{
         else:
             response = get_posts()
 
-        print("RAW:", response)
+        # print("RAW:", response)
 
         #只取posts
         posts = response.get("posts", [])
@@ -365,7 +366,11 @@ QPushButton:checked{
         self.detail_title.setText(f"Post Details")
 
         # 添加帖子组件
+        # post_widget = SingleDetailedPost(fixed_post)
+        # self.detail_layout.addWidget(post_widget)
         post_widget = SingleDetailedPost(fixed_post)
+        post_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        post_widget.setMinimumWidth(self.detail_scroll.viewport().width())  # 关键
         self.detail_layout.addWidget(post_widget)
         #连接点赞逻辑？
         post_widget.liked.connect(self.handle_like_post)
