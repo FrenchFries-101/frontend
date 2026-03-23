@@ -4,6 +4,7 @@ from PySide6.QtCore import QFile,Signal
 #自己创的单词界面
 from pages.RecitePages import RecitePage
 from pages.ForumPages import ForumWindow
+from pages.SpeakingPage import SpeakingPanel
 from PySide6.QtWidgets import QPushButton
 from PySide6.QtWidgets import QFrame, QLabel, QHBoxLayout,QSizePolicy
 from PySide6.QtWidgets import QProgressBar
@@ -42,6 +43,7 @@ class MainWindow(QWidget):
 
         self.init_recite_page()
         self.init_forum_page()
+        self.init_speaking_page()
 
         self.ui.Recite_button.clicked.connect(
             lambda: self.ui.stackedWidget.setCurrentIndex(0)
@@ -83,6 +85,11 @@ class MainWindow(QWidget):
         self.forum_page = ForumWindow()
         self.ui.stackedWidget.removeWidget(self.ui.discussion_page)
         self.ui.stackedWidget.insertWidget(3, self.forum_page.ui)
+    
+    def init_speaking_page(self):
+        self.speaking_page = SpeakingPanel()
+        self.ui.stackedWidget.removeWidget(self.ui.Profile_page)
+        self.ui.stackedWidget.insertWidget(2, self.speaking_page)
 
     def start_test(self):
         self.start_test_signal.emit()
