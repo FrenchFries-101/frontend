@@ -221,7 +221,7 @@ QPushButton#Profile_button {
 }
 
 QPushButton#Discussion_button {
-    qproperty-icon: url(resources/icons/bank2.png);
+    qproperty-icon: url(resources/icons/bank.png);
     qproperty-iconSize: 20px 20px;
 }
 
@@ -439,7 +439,7 @@ QLabel#label_13 {
         </rect>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="Recite_page">
         <widget class="QWidget" name="verticalLayoutWidget">
@@ -685,8 +685,8 @@ QLabel#label_13 {
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>695</width>
-                  <height>385</height>
+                  <width>690</width>
+                  <height>379</height>
                  </rect>
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,4">
@@ -700,8 +700,8 @@ QLabel#label_13 {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>134</width>
-                      <height>367</height>
+                      <width>132</width>
+                      <height>357</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -747,8 +747,8 @@ QLabel#label_13 {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>537</width>
-                      <height>367</height>
+                      <width>531</width>
+                      <height>340</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_5">
