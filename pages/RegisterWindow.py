@@ -74,7 +74,7 @@ class RegisterWindow(QWidget):
             print("Register success:", res)
 
             # 8️⃣ 发信号（可以跳登录页）
-            self.register_success.emit()
+            #self.register_success.emit()
 
         except Exception as e:
             # 9️⃣ 后端错误提示（比如用户名重复）

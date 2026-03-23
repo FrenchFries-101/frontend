@@ -17,7 +17,7 @@ from utils.path_utils import resource_path
 
 class MainWindow(QWidget):
     exit_signal = Signal()  # 新增信号
-    start_test_signal = Signal(int,int,int)
+    start_test_signal = Signal(int,int,int,int)
     current_cam=0
     current_test=0
     current_section=0
@@ -61,11 +61,10 @@ class MainWindow(QWidget):
 
         # Exit按钮逻辑
         self.ui.Exit_button.clicked.connect(self.exit_to_login)
-        self.generate_cambridge_buttons()
+
+        #把加载数据的内容给删掉
+        #self.generate_cambridge_buttons()
         self.set_random_avatar(self.ui.label_4)
-        self.user_name=session.user['username']
-        print(self.user_name)
-        self.ui.label_13.setText(f"{self.user_name}")
 
     def exit_to_login(self):
         self.exit_signal.emit()
@@ -210,8 +209,8 @@ class MainWindow(QWidget):
             start_btn = QPushButton("Begin Training")
 
             start_btn.clicked.connect(
-                lambda _, c=cam, t=test, s=section_id:
-                self.start_section(c, t, s)
+                lambda _, c=cam, t=test, s=section_id,ss=section_number:
+                self.start_section(c, t, s,ss)
             )
 
             card_layout.addLayout(left_layout)
@@ -222,15 +221,16 @@ class MainWindow(QWidget):
 
         layout.addStretch()
 
-    def start_section(self, cam, test, section):
+    def start_section(self, cam, test, section, section_number):
 
         self.current_cam = cam
         self.current_test = test
         self.current_section = section
+        self.current_sectionNumber=section_number
 
         print(cam, test, section)
         print(type(cam), type(test), type(section))
-        self.start_test_signal.emit(cam,int(test),int(section))
+        self.start_test_signal.emit(cam,int(test),int(section),int(section_number))
 
     def set_random_avatar(self, label):
         import random
@@ -260,7 +260,7 @@ class MainWindow(QWidget):
         book_icon = resource_path("resources/icons/book-alt.png").replace("\\", "/")
         headphones_icon = resource_path("resources/icons/headphones.png").replace("\\", "/")
         user_icon = resource_path("resources/icons/user-speaking.png").replace("\\", "/")
-        bank_icon = resource_path("resources/icons/bank.png").replace("\\", "/")
+        bank_icon = resource_path("resources/icons/bank2.png").replace("\\", "/")
         exit_icon = resource_path("resources/icons/exit.png").replace("\\", "/")
 
         # 使用 f-string 安全替换
@@ -292,3 +292,32 @@ class MainWindow(QWidget):
         """
 
         self.setStyleSheet(qss)
+
+    def load_data(self):
+        print("开始加载Cambridge数据...")
+
+        # 加载数据
+        self.generate_cambridge_buttons()
+
+    def set_user(self, user):
+        self.user = user
+        self.user_name = user['username']
+        self.ui.label_13.setText(self.user_name)
+
+    def clear_data(self):
+        # 清空用户名
+        self.ui.label_13.setText("")
+
+        # 清空 Cambridge 列表
+        layout = self.ui.scrollAreaWidgetContents_2.layout()
+        while layout.count():
+            item = layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        # 清空 Test/Section 列表
+        layout2 = self.ui.scrollAreaWidgetContents_3.layout()
+        while layout2.count():
+            item = layout2.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
