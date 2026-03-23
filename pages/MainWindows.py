@@ -5,7 +5,7 @@ from PySide6.QtCore import QFile,Signal
 from pages.RecitePages import RecitePage
 from pages.ForumPages import ForumWindow
 from PySide6.QtWidgets import QPushButton
-from PySide6.QtWidgets import QFrame, QLabel, QHBoxLayout
+from PySide6.QtWidgets import QFrame, QLabel, QHBoxLayout,QSizePolicy
 from PySide6.QtWidgets import QProgressBar
 from service.api import get_cambridge_list, get_tests, get_sections
 import random
@@ -148,6 +148,7 @@ class MainWindow(QWidget):
             card_layout = QHBoxLayout(card)
 
             left_layout = QVBoxLayout()
+            left_layout.setSpacing(6)
 
             title = QLabel(f"Cambridge {cam_id} Test {test_no}")
 
@@ -178,39 +179,57 @@ class MainWindow(QWidget):
 
         layout = self.ui.scrollAreaWidgetContents_3.layout()
 
-        # 清空原来的 Test 列表
+        # 清空原来的 Section 列表
         while layout.count():
             item = layout.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
 
-        sections = get_sections(cam, test)
+        import session
+        user_id=session.user["id"]
+
+        # 这里改了
+        sections = get_sections(test, user_id)
 
         for sec in sections:
             print(sec)
+
             section_number = sec["section_no"]
             section_name = sec["section_name"]
-            section_id=sec["section_id"]
+            section_id = sec["section_id"]
+            correct_num = sec["correct_num"]
+            is_completed = sec["is_completed"]
 
             card = QFrame()
             card.setObjectName("section_card")
-            card.setMinimumHeight(80)
+            card.setMinimumHeight(110)
+            card.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
 
             card_layout = QHBoxLayout(card)
-
             left_layout = QVBoxLayout()
 
             title = QLabel(f"Section {section_number}")
+            title.setObjectName("section_title")
+
             name_label = QLabel(section_name)
+            name_label.setObjectName("section_name")
+
+            # 新增：成绩 / 状态
+            if is_completed:
+                score_label = QLabel(f"Score: {correct_num}/10  ✔")
+            else:
+                score_label = QLabel("Not completed")
+
+            start_btn = QPushButton("Begin Training")
+            score_label.setObjectName("section_score")
 
             left_layout.addWidget(title)
             left_layout.addWidget(name_label)
-
-            start_btn = QPushButton("Begin Training")
+            left_layout.addWidget(score_label)  # 新增这一行
 
             start_btn.clicked.connect(
-                lambda _, c=cam, t=test, s=section_id,ss=section_number:
-                self.start_section(c, t, s,ss)
+                lambda _, c=cam, t=test, s=section_id, ss=section_number:
+                self.start_section(c, t, s, ss)
             )
 
             card_layout.addLayout(left_layout)

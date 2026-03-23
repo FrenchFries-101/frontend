@@ -19,12 +19,12 @@ def get_tests(cambridge_id, user_id):
     return res.json()
 
 
-def get_sections(cambridge_id, test_id):
+def get_sections(test_id, user_id):
     res = requests.get(
         f"{BASE_URL}/listening/sections",
         params={
-            "cambridge_id": cambridge_id,
-            "test_id": test_id
+            "test_id": test_id,
+            "user_id": user_id
         }
     )
     return res.json()
