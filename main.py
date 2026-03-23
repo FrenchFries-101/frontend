@@ -8,6 +8,8 @@ from pages.MainWindows import MainWindow
 from pages.RegisterWindow import RegisterWindow
 from pages.IELTSTestWindow import IELTSTestWindow
 
+
+
 class AppWindow(QMainWindow):
 
     def __init__(self):

@@ -30,12 +30,12 @@
 
 QWidget#Form {
 
-    background-color: white;
+background-color: white;
 
-    border-radius: 12px;
-    border: 1px solid #f0f0f0;
+border-radius: 12px;
+border: 1px solid #f0f0f0;
 
-    padding: 10px;
+padding: 10px;
 }
 
 
@@ -43,8 +43,8 @@ QWidget#Form {
 
 QWidget#Form:hover {
 
-    background-color: #fff7f9;
-    border: 1px solid #ff8fa3;
+background-color: #fff7f9;
+border: 1px solid #ff8fa3;
 }
 
 
@@ -52,16 +52,16 @@ QWidget#Form:hover {
 
 QWidget#Form QLabel#name {
 
-    font-size: 13px;
-    font-weight: 600;
-    color: #333333;
+font-size: 13px;
+font-weight: 600;
+color: #333333;
 }
 
 
 /* hover 用户名变粉 */
 
 QWidget#Form:hover QLabel#name {
-    color: #ff6b81;
+color: #ff6b81;
 }
 
 
@@ -69,8 +69,8 @@ QWidget#Form:hover QLabel#name {
 
 QWidget#Form QLabel#time {
 
-    font-size: 11px;
-    color: #999999;
+font-size: 11px;
+color: #999999;
 }
 
 
@@ -78,10 +78,10 @@ QWidget#Form QLabel#time {
 
 QWidget#Form QLabel#label_content {
 
-    font-size: 14px;
-    color: #444444;
-    padding-top: 4px;
-    padding-bottom: 4px;
+font-size: 14px;
+color: #444444;
+padding-top: 4px;
+padding-bottom: 4px;
 }
 
 
@@ -89,36 +89,21 @@ QWidget#Form QLabel#label_content {
 
 QWidget#Form QLabel#like {
 
-    font-size: 12px;
-    color: #ff6b81;
+font-size: 12px;
+color: #ff6b81;
 }
 
 
-/* ================= Like 按钮 ================= */
-QPushButton#like_btn {
-    background-color: pink;
-    color: white;
-    border-radius: 8px;
 
-	qproperty-icon: url(resources/icons/heart.png);
-    qproperty-iconSize: 20px 20px;
-}
-
-QPushButton#like_btn:hover {
-    background-color: #ff9aa2;
-}
-
-QPushButton#like_btn:pressed {
-    background-color: #ff6f91;
-}
 
 
 /* ================= 子组件透明 ================= */
 
 QWidget#Form * {
 
-    background: transparent;
-}</string>
+background: transparent;
+}
+</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_4">
    <property name="topMargin">
@@ -199,6 +184,9 @@ QWidget#Form * {
        <width>600</width>
        <height>16777215</height>
       </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0">
       <property name="topMargin">
@@ -339,18 +327,18 @@ QWidget#Form * {
           <height>50</height>
          </size>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0">
+        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,1,0">
          <property name="spacing">
           <number>1</number>
          </property>
          <property name="leftMargin">
-          <number>6</number>
+          <number>0</number>
          </property>
          <property name="topMargin">
           <number>0</number>
          </property>
          <property name="rightMargin">
-          <number>6</number>
+          <number>0</number>
          </property>
          <property name="bottomMargin">
           <number>0</number>
@@ -407,6 +395,12 @@ QWidget#Form * {
          </item>
          <item>
           <widget class="QPushButton" name="like_button">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="minimumSize">
             <size>
              <width>50</width>
@@ -415,7 +409,7 @@ QWidget#Form * {
            </property>
            <property name="maximumSize">
             <size>
-             <width>50</width>
+             <width>1150</width>
              <height>50</height>
             </size>
            </property>
@@ -423,10 +417,26 @@ QWidget#Form * {
             <bool>false</bool>
            </property>
            <property name="styleSheet">
-            <string notr="true"/>
+            <string notr="true">/* ================= Like 按钮 ================= */
+QPushButton#like_btn {
+background-color: pink;
+color: white;
+border-radius: 8px;
+padding: 0; 
+margin: 0; 
+border: none; 
+}
+
+QPushButton#like_btn:hover {
+background-color: #ff9aa2;
+}
+
+QPushButton#like_btn:pressed {
+background-color: #ff6f91;
+}</string>
            </property>
            <property name="text">
-            <string/>
+            <string>爱心</string>
            </property>
            <property name="iconSize">
             <size>

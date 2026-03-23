@@ -13,40 +13,39 @@ from PySide6.QtCore import QFile, Qt
 from components.SinglePost import SinglePost
 from components.SingleReply import SingleReply
 from components.SingleDetailedPost import SingleDetailedPost
-from service.api_forum import get_posts,get_post_detail,search_posts,get_replies,create_post,reply_post,like_post,like_reply
+from service.api_forum import get_posts,get_post_detail,search_posts,get_replies,create_post,reply_post,like_post,like_reply,is_post_liked,is_reply_liked
 
-
-# ========================假数据========================
-class MockForumData:
-    _posts = [
-        {"id": 1, "title": "关于**的瓜", "contents": "这是第一条帖子的详细内容", "author": "用户1", "time": "2026-03-12", "likes": 12},
-        {"id": 2, "title": "Python Qt开发经验分享", "contents": "这是第二条帖子的详细内容", "author": "用户2", "time": "2026-03-13", "likes": 28}
-    ]
-    _replies = {
-        1: [
-            {"name": "回复用户1", "content": "沙发！前排围观", "time": "2026-03-13 10:00", "likes": 5, "avatar": os.path.join(os.path.dirname(__file__), "resources", "icons", "avatar1.png")},
-            {"name": "回复用户2", "content": "支持楼主，期待后续", "time": "2026-03-13 11:00", "likes": 3, "avatar": os.path.join(os.path.dirname(__file__), "resources", "icons", "avatar1.png")}
-        ]
-    }
-
-    @classmethod
-    def get_posts(cls, keyword=""):
-        return [p for p in cls._posts if keyword in p["title"]] if keyword else cls._posts
-    @classmethod
-    def get_post_detail(cls, post_id):
-        return next((p for p in cls._posts if p["id"] == post_id), None)
-    @classmethod
-    def get_replies(cls, post_id):
-        return cls._replies.get(post_id, [])
-    @classmethod
-    def create_post(cls, title, content):
-        new_id = max(p["id"] for p in cls._posts) + 1
-        cls._posts.append({"id": new_id, "title": title, "content": content, "author": "当前用户", "time": "2026-03-15", "likes": 0})
-    @classmethod
-    def create_reply(cls, post_id, content):
-        if post_id not in cls._replies:
-            cls._replies[post_id] = []
-        cls._replies[post_id].append({"name": "当前用户", "content": content, "time": "2026-03-15 15:00", "likes": 0, "avatar": os.path.join(os.path.dirname(__file__), "resources", "icons", "avatar1.png")})
+# # ========================假数据========================
+# class MockForumData:
+#     _posts = [
+#         {"id": 1, "title": "关于**的瓜", "contents": "这是第一条帖子的详细内容", "author": "用户1", "time": "2026-03-12", "likes": 12},
+#         {"id": 2, "title": "Python Qt开发经验分享", "contents": "这是第二条帖子的详细内容", "author": "用户2", "time": "2026-03-13", "likes": 28}
+#     ]
+#     _replies = {
+#         1: [
+#             {"name": "回复用户1", "content": "沙发！前排围观", "time": "2026-03-13 10:00", "likes": 5, "avatar": os.path.join(os.path.dirname(__file__), "resources", "icons", "avatar1.png")},
+#             {"name": "回复用户2", "content": "支持楼主，期待后续", "time": "2026-03-13 11:00", "likes": 3, "avatar": os.path.join(os.path.dirname(__file__), "resources", "icons", "avatar1.png")}
+#         ]
+#     }
+#
+#     @classmethod
+#     def get_posts(cls, keyword=""):
+#         return [p for p in cls._posts if keyword in p["title"]] if keyword else cls._posts
+#     @classmethod
+#     def get_post_detail(cls, post_id):
+#         return next((p for p in cls._posts if p["id"] == post_id), None)
+#     @classmethod
+#     def get_replies(cls, post_id):
+#         return cls._replies.get(post_id, [])
+#     @classmethod
+#     def create_post(cls, title, content):
+#         new_id = max(p["id"] for p in cls._posts) + 1
+#         cls._posts.append({"id": new_id, "title": title, "content": content, "author": "当前用户", "time": "2026-03-15", "likes": 0})
+#     @classmethod
+#     def create_reply(cls, post_id, content):
+#         if post_id not in cls._replies:
+#             cls._replies[post_id] = []
+#         cls._replies[post_id].append({"name": "当前用户", "content": content, "time": "2026-03-15 15:00", "likes": 0, "avatar": os.path.join(os.path.dirname(__file__), "resources", "icons", "avatar1.png")})
 
 # ======================== 主窗口：一次性加载整个UI ========================
 class ForumWindow(QWidget):
@@ -95,12 +94,6 @@ QTextEdit{
     border-radius:6px;
 }
 
-/* 按钮 like_button*/
-QPushButton:not(#like_button){
-    background:white;
-    border:1px solid #eee;
-    border-radius:8px;
-}
 
 QPushButton:hover{
     background:#fff0f3;
@@ -187,6 +180,7 @@ QPushButton:checked{
         # 查找主页面控件
         self.search_input = self.forum_main.findChild(QLineEdit, "search_input")
         self.search_btn = self.forum_main.findChild(QPushButton, "search_button")
+        self.update_btn = self.forum_main.findChild(QPushButton, "update_button")
         self.to_create_btn = self.forum_main.findChild(QPushButton, "to_create_botton")
         self.post_scroll = self.ui.findChild(QScrollArea, "post_scrollArea")
         self.post_container = self.ui.findChild(QWidget, "post_contents")
@@ -194,6 +188,10 @@ QPushButton:checked{
         #按钮图片-搜索帖子
         self.search_btn.setIcon(QIcon(self.get_icon("search.png")))
         self.search_btn.setToolTip("Search")
+
+        self.update_btn.setIcon(QIcon(self.get_icon("refresh.png")))
+        self.update_btn.setToolTip("Refresh")
+
 
         # 设置滚动区域
         self.post_scroll.setWidgetResizable(True)
@@ -207,24 +205,6 @@ QPushButton:checked{
         # 初始化帖子列表
         self.load_posts()
 
-    # def load_posts(self, keyword=""):
-    #     # 清空旧内容
-    #     while self.post_layout.count():
-    #         child = self.post_layout.takeAt(0)
-    #         if child.widget():
-    #             child.widget().deleteLater()
-    #
-    #     #替换1: 这里要替换成 get_posts
-    #     # posts = MockForumData.get_posts(keyword)
-    #     posts = get_posts()
-    #     print(posts)
-    #
-    #     for post in posts:
-    #         post_widget = SinglePost(post)
-    #         post_widget.clicked.connect(lambda p=post: self.go_to_detail(p["id"]))
-    #         self.post_layout.addWidget(post_widget)
-    #
-    #     print("posts loaded:", [p["title"] for p in posts])
 
     def load_posts(self, keyword=""):
 
@@ -270,7 +250,6 @@ QPushButton:checked{
         print("loaded:", len(posts))
 
 
-    # ------------------------ 创建页面逻辑 ------------------------
     def init_create_page(self):
         # 查找创建页面控件
         self.clear_btn = self.forum_create.findChild(QPushButton, "clear_button")
@@ -370,16 +349,18 @@ QPushButton:checked{
             return
         print(f"post raw detail information：{post}")
 
-        #字段匹配清洗
+        liked = is_post_liked(post_id, session.user["id"])
+        print("is_post_liked:", liked)#test
+
         fixed_post = {
             "id": post.get("id"),
             "title": post.get("title", ""),
             "author": post.get("author") or "Unknown",
             "time": post.get("time", ""),
             "content": post.get("content", ""),
-            "likes": post.get("likes", 0)
+            "likes": post.get("likes", 0),
+            "liked_by_user": liked  # ⭐关键
         }
-
 
         self.detail_title.setText(f"Post Details")
 
@@ -410,11 +391,16 @@ QPushButton:checked{
         print(replies)
 
         for reply in replies:
-            #测试
-            print(reply)
-            reply_widget = SingleReply(reply)
-            #点赞信号！！连接？
+            liked = is_reply_liked(reply["reply_id"], session.user["id"])
+            reply_data = {
+                **reply,#复制一份原来的字段
+                "liked_by_user": liked
+            }
+            #创建单个回复组件
+            reply_widget = SingleReply(reply_data)
+            #连接动作
             reply_widget.liked.connect(self.handle_like_reply)
+            #加到布局里面
             self.detail_layout.addWidget(reply_widget)
 
 
@@ -440,6 +426,7 @@ QPushButton:checked{
 
         #替换2 改成search_posts(keyword, page=1, page_size=20):
         self.search_btn.clicked.connect(lambda: self.load_posts(self.search_input.text()))
+        self.update_btn.clicked.connect(self.back_to_main)
         self.to_create_btn.clicked.connect(lambda: self.stack.setCurrentIndex(2))
 
         # 创建页面事件
@@ -474,77 +461,25 @@ QPushButton:checked{
         self.detail_scroll.verticalScrollBar().setValue(0)
         self.load_post_detail(self.current_post_id)
 
-    #点赞帖子
-    # def handle_like_post(self, post_id):
-    #     res = like_post(post_id, 1)
-    #
-    #     if res:
-    #         QMessageBox.information(self, "Success", "点赞成功")
-    #         self.load_post_detail(post_id)  # 或局部更新
-    #     else:
-    #         QMessageBox.warning(self, "Error", "点赞失败")
 
-
-    # 点赞帖子
-    # def handle_like_post(self, post_id):
-    #     res = like_post(post_id, 1)
-    #
-    #     if res.get("status") == "ok":
-    #
-    #         widget = self.detail_container.findChild(SingleDetailedPost)
-    #
-    #         if widget:
-    #             # ✅ 用后端 action 决定状态
-    #             if res["action"] == "liked":
-    #                 widget.liked_by_user = True
-    #             else:
-    #                 widget.liked_by_user = False
-    #
-    #             # ✅ 更新 UI（统一走组件方法）
-    #             widget.update_like_ui()
-    #
-    #
-    #             # ✅ 更新点赞数
-    #             widget.likes_label.setText(str(res["likes"]))
-    #
-    #             # ✅ 恢复按钮
-    #             widget.like_btn.setEnabled(True)
-    #
-    #     else:
-    #         QMessageBox.warning(self, "Error", "点赞失败")
-    #
 
     def handle_like_post(self, post_id):
-        res = like_post(post_id, session.user["id"]) #记得改 用户id
+        res = like_post(post_id, session.user["id"])
 
         if res.get("status") == "ok":
             widget = self.detail_container.findChild(SingleDetailedPost)
 
             if widget:
-                # ⭐ 直接反转状态
-                widget.liked_by_user = not widget.liked_by_user
+                #用后端结果，不自己猜
+                widget.liked_by_user = (res["action"] == "liked")
 
                 widget.update_like_ui()
-
-                # 更新点赞数（后端给的是对的）
                 widget.likes_label.setText(str(res["likes"]))
-
                 widget.like_btn.setEnabled(True)
-
         else:
             QMessageBox.warning(self, "Error", "点赞失败")
 
 
-    #点赞评论
-    # def handle_like_reply(self, reply_id):
-    #     print(f"点赞 reply_id: {reply_id}")
-    #
-    #     res = like_reply(reply_id, 1)  #记得改user_id
-    #     if res:
-    #         print("点赞成功:", res)
-    #     else:
-    #         QMessageBox.warning(self, "Error", "点赞失败")
-    #         self.load_post_detail(self.current_post_id)
 
     def handle_like_reply(self, reply_id):
         res = like_reply(reply_id, session.user["id"]) #记得改 用户id
@@ -555,8 +490,8 @@ QPushButton:checked{
 
             for widget in replies:
                 if widget.property("reply_id") == reply_id:
-                    # ⭐ 只在这里改一次！
-                    widget.liked_by_user = not widget.liked_by_user
+                    # widget.liked_by_user = not widget.liked_by_user
+                    widget.liked_by_user = (res["action"] == "liked")
 
                     widget.update_like_ui()
                     widget.like_label.setText(str(res["likes"]))

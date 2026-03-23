@@ -33,8 +33,8 @@ class SingleDetailedPost(QWidget):
         layout = self.layout() or QVBoxLayout(self)
         layout.addWidget(self.ui)
 
-        self.heart_gray = self.get_icon("heart.png")  # 灰色
-        self.heart_red = self.get_icon("heart2.png")  # 红色
+        self.heart_gray = self.get_icon("heart2.png")  # 灰色
+        self.heart_red = self.get_icon("heart.png")  # 红色
 
         # 找控件
         self.title = self.findChild(QLabel, "post_title")

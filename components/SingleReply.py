@@ -20,21 +20,24 @@ class SingleReply(QWidget):
         super().__init__()
 
 
-        self.liked_by_user = False
+        # self.liked_by_user = False
+        #获取点赞状态哦
+        self.liked_by_user = data.get("liked_by_user", False)
         self.data = data
         self.reply_id = data["reply_id"]
         self.likes_count = data.get("likes", 0)
-
         self.setProperty("reply_id", self.reply_id)
 
-        self.heart_gray = self.get_icon("heart.png")
-        self.heart_red = self.get_icon("heart2.png")
+        #图片
+        self.heart_gray = self.get_icon("heart2.png")
+        self.heart_red = self.get_icon("heart.png")
 
         avatar_id = random.randint(1, 10)
 
         self.avatar_path = resource_path(
             os.path.join("resources", "icons", f"avatar{avatar_id}.png")
         )
+
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(10, 10, 10, 10)
         self.main_layout.setAlignment(Qt.AlignTop)
@@ -69,7 +72,7 @@ class SingleReply(QWidget):
                 QPushButton:hover {
             background-color: #ff9aa2;   /* 悬停稍深 */
         }
-        
+
         QPushButton:pressed {
             background-color: #ff6f91;   /* 点击时更深 */
         }
@@ -114,8 +117,10 @@ class SingleReply(QWidget):
     def update_like_ui(self):
         if self.liked_by_user:
             self.like_btn.setIcon(QIcon(self.heart_red))
+            print("用户点击喜欢，显示红色心")
         else:
             self.like_btn.setIcon(QIcon(self.heart_gray))
+            print("用户点击喜欢，显示灰色心")
 
     def get_icon(self, name):
         path = resource_path(os.path.join("resources", "icons", name))

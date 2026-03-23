@@ -17,11 +17,6 @@ class SinglePost(QWidget):
 
         loader = QUiLoader()
         ui_path = resource_path(os.path.join("ui", "single_post.ui"))
-        # ui_path = os.path.join(
-        #     os.path.dirname(os.path.dirname(__file__)),
-        #     "ui",
-        #     "single_post.ui"
-        # )
 
         ui_file = QFile(ui_path)
         ui_file.open(QFile.ReadOnly)

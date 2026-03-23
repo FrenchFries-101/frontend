@@ -1,7 +1,7 @@
 import requests
 
 # BASE_URL = "http://124.223.33.28:8787/forum"
-BASE_URL = "http://127.0.0.1:8004/forum"
+BASE_URL = "http://127.0.0.1:8000/forum"
 
 # =========================
 # 获取帖子列表
@@ -137,3 +137,28 @@ def like_reply(reply_id, user_id):
     except Exception as e:
         print("回复点赞失败:", e)
         return {}
+
+
+def is_post_liked(post_id, user_id):
+    try:
+        res = requests.get(
+            f"{BASE_URL}/posts/{post_id}/is-liked",
+            params={"user_id": user_id}
+        )
+        res.raise_for_status()
+        return res.json().get("liked", False)
+    except Exception as e:
+        print("判断帖子点赞失败:", e)
+        return False
+
+def is_reply_liked(reply_id, user_id):
+    try:
+        res = requests.get(
+            f"{BASE_URL}/replies/{reply_id}/is-liked",
+            params={"user_id": user_id}
+        )
+        res.raise_for_status()
+        return res.json().get("liked", False)
+    except Exception as e:
+        print("判断回复点赞失败:", e)
+        return False

@@ -35,7 +35,7 @@
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="forum_main">
       <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -68,16 +68,19 @@
          </property>
          <property name="styleSheet">
           <string notr="true">/*font: 16pt &quot;Papyrus&quot;;*/
-font: 700 15pt &quot;Terminal&quot;;
-color: rgb(50, 43, 43);</string>
+font: 700 17pt &quot;Terminal&quot;;
+color: #ff6b81;</string>
          </property>
          <property name="text">
-          <string>  DIICSU Forum</string>
+          <string>  DIICSU FORUM</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
          </property>
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="Search">
+        <layout class="QHBoxLayout" name="Search" stretch="0,0,2,0,0">
          <item>
           <spacer name="horizontalSpacer">
            <property name="orientation">
@@ -93,6 +96,31 @@ color: rgb(50, 43, 43);</string>
             </size>
            </property>
           </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="update_button">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: #ffe1e8;</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QLineEdit" name="search_input">
@@ -170,19 +198,7 @@ QLineEdit#search_input::placeholder {
             </size>
            </property>
            <property name="styleSheet">
-            <string notr="true">QPushButton#search_button {
-	font: 9pt &quot;Terminal&quot;;
-
-    background-color: #ffc2bc;
-    color: white;
-
-    border-radius: 8px;
-    border: none;
-
-    padding: 6px 14px;
-
-    font-size: 9px;
-}</string>
+            <string notr="true">background-color: #ffe1e8;</string>
            </property>
            <property name="text">
             <string/>
@@ -191,6 +207,22 @@ QLineEdit#search_input::placeholder {
             <iconset theme="QIcon::ThemeIcon::EditFind"/>
            </property>
           </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Policy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>15</width>
+             <height>10</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
        </item>
@@ -204,8 +236,8 @@ QLineEdit#search_input::placeholder {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>96</width>
-            <height>26</height>
+            <width>536</width>
+            <height>352</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -352,6 +384,9 @@ QLabel#detail_title {
        </item>
        <item>
         <widget class="QScrollArea" name="detail_scrollArea">
+         <property name="layoutDirection">
+          <enum>Qt::LayoutDirection::LeftToRight</enum>
+         </property>
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
@@ -360,8 +395,8 @@ QLabel#detail_title {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>536</width>
-            <height>368</height>
+            <width>96</width>
+            <height>26</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_6">
