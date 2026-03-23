@@ -429,7 +429,7 @@ QPushButton:checked{
 
         #替换6: def reply_post(post_id, content, user_id)
         # MockForumData.create_reply(self.current_post_id, content)\
-        reply_post(self.current_post_id, content, session.user)#记得改 用户id
+        reply_post(self.current_post_id, content, session.user['id'])#记得改 用户id
         QMessageBox.information(self, "Success", "Release successful!")
         self.reply_input.clear()
         self.load_post_detail(self.current_post_id)
@@ -572,3 +572,6 @@ if __name__ == "__main__":
     window.resize(900, 700)
     window.show()
     sys.exit(app.exec())
+
+
+

@@ -1,6 +1,7 @@
 import requests
 
-BASE_URL = "http://124.223.33.28:8787"
+# BASE_URL = "http://124.223.33.28:8787"
+BASE_URL = "http://127.0.0.1:8004"
 
 
 def get_categories():
