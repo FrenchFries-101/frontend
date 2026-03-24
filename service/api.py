@@ -2,6 +2,8 @@ import requests
 
 # BASE_URL = "http://124.233.33.28:8787"
 BASE_URL = "http://127.0.0.1:8000"
+#BASE_URL = "http://124.233.33.28:8787"
+BASE_URL = "http://127.0.0.1:8000"
 
 def get_cambridge_list():
     res = requests.get(f"{BASE_URL}/listening/cambridge")
@@ -19,12 +21,12 @@ def get_tests(cambridge_id, user_id):
     return res.json()
 
 
-def get_sections(cambridge_id, test_id):
+def get_sections(test_id, user_id):
     res = requests.get(
         f"{BASE_URL}/listening/sections",
         params={
-            "cambridge_id": cambridge_id,
-            "test_id": test_id
+            "test_id": test_id,
+            "user_id": user_id
         }
     )
     return res.json()

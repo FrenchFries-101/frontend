@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Signal
 from service.api import register as register_api
+from utils.path_utils import resource_path
 
 class RegisterWindow(QWidget):
 
@@ -12,7 +13,7 @@ class RegisterWindow(QWidget):
         super().__init__()
 
         loader = QUiLoader()
-        ui_file = QFile("ui/register.ui")
+        ui_file = QFile(resource_path("ui/register.ui"))
         ui_file.open(QFile.ReadOnly)
 
         self.ui = loader.load(ui_file)
@@ -21,6 +22,8 @@ class RegisterWindow(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.ui)
         self.setLayout(layout)
+
+        self.load_qss()
 
         # 点击注册按钮
         self.ui.pushButton.clicked.connect(self.register)
@@ -71,9 +74,20 @@ class RegisterWindow(QWidget):
             print("Register success:", res)
 
             # 8️⃣ 发信号（可以跳登录页）
-            self.register_success.emit()
+            #self.register_success.emit()
 
         except Exception as e:
             # 9️⃣ 后端错误提示（比如用户名重复）
             self.ui.label_7.setStyleSheet("color: red;")
             self.ui.label_7.setText(str(e))
+
+    def load_qss(self):
+        bg_path = resource_path("resources/images/login-picture2.jpg").replace("\\", "/")
+
+        qss = f"""
+        QWidget#Form {{
+            border-image: url({bg_path});
+        }}
+        """
+
+        self.setStyleSheet(qss)

@@ -4,6 +4,7 @@ from PySide6.QtCore import QFile, Signal
 from service.api import register,login,get_current_user
 from PySide6.QtWidgets import QMessageBox
 import session
+from utils.path_utils import resource_path
 
 
 class LoginWindow(QWidget):
@@ -14,7 +15,7 @@ class LoginWindow(QWidget):
         super().__init__()
 
         loader = QUiLoader()
-        ui_file = QFile("ui/login.ui")
+        ui_file = QFile(resource_path("ui/login.ui"))
         ui_file.open(QFile.ReadOnly)
 
         self.ui = loader.load(ui_file)
@@ -23,6 +24,8 @@ class LoginWindow(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.ui)
         self.setLayout(layout)
+
+        self.load_qss()
 
         self.ui.pushButton.clicked.connect(self.login)
 
@@ -62,3 +65,21 @@ class LoginWindow(QWidget):
         except Exception as e:
             self.ui.label_5.setStyleSheet("color: red;")
             self.ui.label_5.setText(str(e))
+
+    def load_qss(self):
+        bg_path = resource_path("resources/images/login-picture2.jpg").replace("\\", "/")
+
+        print("背景图片路径:", bg_path)
+
+        bg_path = resource_path("resources/images/login-picture2.jpg").replace("\\", "/")
+        import os
+        print("背景图片路径:", bg_path)
+        print("文件存在吗?", os.path.exists(bg_path))
+
+        qss = f"""
+        QWidget#Form {{
+            border-image: url({bg_path});
+        }}
+        """
+
+        self.setStyleSheet(qss)

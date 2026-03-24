@@ -1,12 +1,13 @@
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QStackedWidget
-from PySide6.QtCore import QPropertyAnimation, QEasingCurve, QPoint
+from PySide6.QtCore import QPropertyAnimation, QEasingCurve, QPoint,QTimer
 from PySide6.QtWidgets import QWidget
-
 from pages.LoginWindows import LoginWindow
 from pages.MainWindows import MainWindow
 from pages.RegisterWindow import RegisterWindow
 from pages.IELTSTestWindow import IELTSTestWindow
+from utils.loading_overlay import LoadingOverlay
+
 
 
 
@@ -14,19 +15,18 @@ class AppWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-
-
         self.test_page = IELTSTestWindow()
 
         self.stack = QStackedWidget()
 
         self.login_page = LoginWindow()
         self.register_page = RegisterWindow()  # <-- 新增
-        #self.main_page = MainWindow()
+        self.main_page = MainWindow()
 
         self.stack.addWidget(self.login_page)
-        #self.stack.addWidget(self.main_page)
-        self.stack.addWidget(QWidget())
+        self.stack.addWidget(self.main_page)
+        #这个占位是用来干什么的
+        #self.stack.addWidget(QWidget())
         self.stack.addWidget(self.test_page)  # index 2
         self.stack.addWidget(self.register_page)
 
@@ -37,15 +37,21 @@ class AppWindow(QMainWindow):
 
         self.register_page.register_success.connect(self.slide_to_main)  # 注册成功跳到主界面
         self.register_page.go_login.connect(self.slide_to_login)  # 点击已有账号返回登录
+
+        self.main_page.exit_signal.connect(self.slide_to_login)
+        self.main_page.start_test_signal.connect(self.slide_to_test)
         self.test_page.exit_test_signal.connect(self.slide_back_to_main)
 
         self.load_qss()
+
+        self.loading = LoadingOverlay(self)
+        self.loading.resize(self.size())
 
 
     def slide_to_main(self):
 
         if not hasattr(self, "main_page"):
-            self.main_page = MainWindow()
+            #self.main_page = MainWindow()
 
             # 替换 stack 里的占位 widget
             self.stack.removeWidget(self.stack.widget(1))
@@ -88,11 +94,22 @@ class AppWindow(QMainWindow):
         self.anim1.start()
         self.anim2.start()
 
-        overlay.hide()
+        # 动画结束后再加载数据
+        self.anim2.finished.connect(self.start_load_main)
 
         self.stack.setCurrentIndex(next_index)
 
+        # overlay.hide()
+        #
+        # self.stack.setCurrentIndex(next_index)
+        # self.loading.show()
+        #
+        # self.anim2.finished.connect(self.start_load_main)
+
     def slide_to_login(self):
+        #先全部清空一遍
+        self.logout_cleanup()
+
         current_index = self.stack.currentIndex()
         next_index = 0
 
@@ -130,11 +147,11 @@ class AppWindow(QMainWindow):
 
         self.stack.setCurrentIndex(next_index)
 
-    def slide_to_test(self, cam, test, section):
+    def slide_to_test(self, cam, test, section,section_number):
 
         # ✅ 先传数据
         print("主界面传section",section)
-        self.test_page.set_data(cam, test, section)
+        self.test_page.set_data(cam, test, section,section_number)
 
         current_index = self.stack.currentIndex()
         next_index = 2
@@ -239,6 +256,43 @@ class AppWindow(QMainWindow):
 
         overlay.hide()
         self.stack.setCurrentIndex(next_index)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.loading.resize(self.size())
+
+    def load_main_data(self):
+        self.main_page.load_data()
+        self.loading.hide()
+
+    # def start_loading_main(self):
+    #     import session
+    #     self.main_page.set_user(session.user)
+    #
+    #     self.loading.show()
+    #
+    #     QTimer.singleShot(100, self.load_main_data)
+
+    def start_load_main(self):
+        import session
+        self.main_page.set_user(session.user)
+
+        self.loading.show()
+
+        QTimer.singleShot(100, self.load_main_data)
+
+    def logout_cleanup(self):
+        import session
+
+        # 1. 清除 session
+        session.user = None
+
+        # 2. 清空 login 输入框
+        #self.login_page.ui.username_lineEdit.clear()
+        self.login_page.ui.lineEdit_2.clear()
+
+        # 3. 清空 main 页面数据
+        self.main_page.clear_data()
 
 
 app = QApplication(sys.argv)

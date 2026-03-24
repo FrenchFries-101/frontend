@@ -1,7 +1,7 @@
 import requests
 
-# BASE_URL = "http://124.223.33.28:8787/forum"
-BASE_URL = "http://127.0.0.1:8000/forum"
+#BASE_URL = "http://124.223.33.28:8787/forum"
+BASE_URL="http://127.0.0.1:8000/forum"
 
 # =========================
 # 获取帖子列表

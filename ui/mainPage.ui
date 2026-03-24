@@ -221,7 +221,7 @@ QPushButton#Profile_button {
 }
 
 QPushButton#Discussion_button {
-    qproperty-icon: url(resources/icons/bank.png);
+    qproperty-icon: url(resources/icons/bank2.png);
     qproperty-iconSize: 20px 20px;
 }
 

@@ -20,17 +20,18 @@ QPushButton#test_card:pressed {
     background-color: #eff6ff;
 }
 
-QFrame#section_card {
-
+QFrame#test_card {
     background-color: white;
+    border-radius: 20px;
     border: 1px solid #e5e7eb;
-    border-radius: 8px;
     padding: 10px;
 }
 
-QFrame#section_card:hover {
-
-    border: 1px solid #10b981;
+QFrame#test_card:hover {
+    border: 1px solid #ff6b81;
+    /* ✅ 主粉色 */
+    background-color: #fff0f3;
+    /* 淡粉背景 */
 }
 
 QProgressBar {
@@ -47,12 +48,35 @@ QProgressBar::chunk {
     border-radius: 6px;
 }
 
-QFrame#section_card QLabel:first-child {
-    font-size: 15px;
-    font-weight: 600;
+QFrame#section_card {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px;
+    margin: 8px 15px;
 }
 
-QFrame#section_card QLabel:last-child {
+QFrame#section_card:hover {
+    border: 1px solid #ff6b81;
+    background-color: #fff7f9;
+}
+
+/* Section 标题 */
+QLabel#section_title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #111827;
+}
+
+/* Section 名称 */
+QLabel#section_name {
+    font-size: 13px;
     color: #6b7280;
+}
+
+/* Section 分数 */
+QLabel#section_score {
     font-size: 12px;
+    font-weight: bold;
+    color: #10b981;
 }
