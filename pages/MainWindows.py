@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QFile,Signal
+from PySide6.QtCore import QFile,Signal,QSize
 #自己创的单词界面
 from pages.RecitePages import RecitePage
 from pages.ForumPages import ForumWindow
@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QFrame, QLabel, QHBoxLayout,QSizePolicy
 from PySide6.QtWidgets import QProgressBar
 from service.api import get_cambridge_list, get_tests, get_sections
 import random
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QPixmap,QIcon
 import session
 from PySide6.QtCore import Qt
 from utils.path_utils import resource_path
@@ -37,7 +37,8 @@ class MainWindow(QWidget):
         layout.addWidget(self.ui)
         self.setLayout(layout)
 
-        self.load_qss()
+        #self.load_qss()
+        self.load_icons()
 
         self.ui.pushButton_14.clicked.connect(self.start_test)
 
@@ -281,43 +282,19 @@ class MainWindow(QWidget):
         # ✅ 居中
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-    def load_qss(self):
-        # 获取所有图标路径，Windows 路径转换成 /
-        book_icon = resource_path("resources/icons/book-alt.png").replace("\\", "/")
-        headphones_icon = resource_path("resources/icons/headphones.png").replace("\\", "/")
-        user_icon = resource_path("resources/icons/user-speaking.png").replace("\\", "/")
-        bank_icon = resource_path("resources/icons/bank2.png").replace("\\", "/")
-        exit_icon = resource_path("resources/icons/exit.png").replace("\\", "/")
+    def load_icons(self):
+        self.ui.Recite_button.setIcon(QIcon(resource_path("resources/icons/book-alt.png")))
+        self.ui.Favourite_button.setIcon(QIcon(resource_path("resources/icons/headphones.png")))
+        self.ui.Profile_button.setIcon(QIcon(resource_path("resources/icons/user-speaking.png")))
+        self.ui.Discussion_button.setIcon(QIcon(resource_path("resources/icons/bank2.png")))
+        self.ui.Exit_button.setIcon(QIcon(resource_path("resources/icons/exit.png")))
 
-        # 使用 f-string 安全替换
-        qss = f"""
-        QPushButton#Recite_button {{
-            qproperty-icon: url({book_icon});
-            qproperty-iconSize: 20px 20px;
-        }}
-
-        QPushButton#Favourite_button {{
-            qproperty-icon: url({headphones_icon});
-            qproperty-iconSize: 20px 20px;
-        }}
-
-        QPushButton#Profile_button {{
-            qproperty-icon: url({user_icon});
-            qproperty-iconSize: 20px 20px;
-        }}
-
-        QPushButton#Discussion_button {{
-            qproperty-icon: url({bank_icon});
-            qproperty-iconSize: 20px 20px;
-        }}
-
-        QPushButton#Exit_button {{
-            qproperty-icon: url({exit_icon});
-            qproperty-iconSize: 20px 20px;
-        }}
-        """
-
-        self.setStyleSheet(qss)
+        # 设置图标大小
+        self.ui.Recite_button.setIconSize(QSize(20, 20))
+        self.ui.Favourite_button.setIconSize(QSize(20, 20))
+        self.ui.Profile_button.setIconSize(QSize(20, 20))
+        self.ui.Discussion_button.setIconSize(QSize(20, 20))
+        self.ui.Exit_button.setIconSize(QSize(20, 20))
 
     def load_data(self):
         print("开始加载Cambridge数据...")

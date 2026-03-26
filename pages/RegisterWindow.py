@@ -3,6 +3,8 @@ from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Signal
 from service.api import register as register_api
 from utils.path_utils import resource_path
+from PySide6.QtGui import QPalette, QBrush, QPixmap
+import os
 
 class RegisterWindow(QWidget):
 
@@ -23,7 +25,8 @@ class RegisterWindow(QWidget):
         layout.addWidget(self.ui)
         self.setLayout(layout)
 
-        self.load_qss()
+        #self.load_qss()
+        self.set_background()
 
         # 点击注册按钮
         self.ui.pushButton.clicked.connect(self.register)
@@ -81,13 +84,15 @@ class RegisterWindow(QWidget):
             self.ui.label_7.setStyleSheet("color: red;")
             self.ui.label_7.setText(str(e))
 
-    def load_qss(self):
-        bg_path = resource_path("resources/images/login-picture2.jpg").replace("\\", "/")
+    def set_background(self):
+        path = resource_path("resources/images/login-picture2.jpg")
+        print("Register 背景路径:", path)
+        print("文件存在吗:", os.path.exists(path))
 
-        qss = f"""
-        QWidget#Form {{
-            border-image: url({bg_path});
-        }}
-        """
+        pixmap = QPixmap(path)
 
-        self.setStyleSheet(qss)
+        palette = QPalette()
+        palette.setBrush(QPalette.Window, QBrush(pixmap))
+
+        self.setAutoFillBackground(True)
+        self.setPalette(palette)

@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QMovie
+from utils.path_utils import resource_path
 
 
 class LoadingOverlay(QWidget):
@@ -18,7 +19,7 @@ class LoadingOverlay(QWidget):
         self.spinner = QLabel()
 
         # GIF 转圈动画
-        self.movie = QMovie("resources/icons/loading.gif")
+        self.movie = QMovie(resource_path("resources/icons/loading.gif"))
         self.spinner.setMovie(self.movie)
         self.movie.start()
 

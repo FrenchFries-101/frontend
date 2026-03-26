@@ -47,10 +47,3 @@ uvicorn main:app --reload
 import session
 user_id = session.user["id"]
 ```
-
----
-## 3.23 修复已知问题
-1. 登录速度变快（在运行登录之前就预先加载界面）
-2. 加 loading 动画，防止一下加载不出来数据
-3. 主界面退出自动清空原先登录信息
-4. 注册完不能直接登录，要返回登录界面

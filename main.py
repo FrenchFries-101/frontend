@@ -7,6 +7,9 @@ from pages.MainWindows import MainWindow
 from pages.RegisterWindow import RegisterWindow
 from pages.IELTSTestWindow import IELTSTestWindow
 from utils.loading_overlay import LoadingOverlay
+from PySide6.QtWidgets import QSystemTrayIcon, QMenu
+from PySide6.QtGui import QAction, QIcon
+from floating_icon import FloatingIcon
 
 
 
@@ -46,6 +49,9 @@ class AppWindow(QMainWindow):
 
         self.loading = LoadingOverlay(self)
         self.loading.resize(self.size())
+
+        self.init_tray()
+        self.floating_icon = FloatingIcon(self)
 
 
     def slide_to_main(self):
@@ -293,6 +299,58 @@ class AppWindow(QMainWindow):
 
         # 3. 清空 main 页面数据
         self.main_page.clear_data()
+
+    def init_tray(self):
+        self.tray = QSystemTrayIcon(self)
+        self.tray.setIcon(QIcon("resources/icons/unicorn.png"))
+
+        menu = QMenu()
+
+        open_action = QAction("Open")
+        main_action = QAction("Main Menu")
+        test_action = QAction("IELTS Test")
+        logout_action = QAction("Logout")
+        quit_action = QAction("Exit")
+
+        open_action.triggered.connect(self.show_window)
+        main_action.triggered.connect(lambda: self.stack.setCurrentIndex(1))
+        test_action.triggered.connect(lambda: self.stack.setCurrentIndex(2))
+        logout_action.triggered.connect(self.slide_to_login)
+        quit_action.triggered.connect(self.quit_app)
+
+        menu.addAction(open_action)
+        menu.addAction(main_action)
+        menu.addAction(test_action)
+        menu.addAction(logout_action)
+        menu.addSeparator()
+        menu.addAction(quit_action)
+
+        self.tray.setContextMenu(menu)
+        self.tray.activated.connect(self.tray_clicked)
+        self.tray.show()
+
+    def show_window(self):
+        self.show()
+        self.raise_()
+        self.activateWindow()
+
+    def tray_clicked(self, reason):
+        if reason == QSystemTrayIcon.ActivationReason.DoubleClick:
+            self.show_window()
+
+    def quit_app(self):
+        self.tray.hide()
+        QApplication.quit()
+
+    def closeEvent(self, event):
+        event.ignore()
+        self.hide()
+        self.tray.showMessage(
+            "IELTS Assistant",
+            "App is minimized to tray",
+            QSystemTrayIcon.MessageIcon.Information,
+            2000
+        )
 
 
 app = QApplication(sys.argv)
