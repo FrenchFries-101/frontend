@@ -356,3 +356,38 @@ class MainWindow(QWidget):
             item = layout2.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
+
+    def _show_ielts_mode(self):
+    self.ui.book_scroll.show()
+    self.generate_cambridge_buttons()
+
+    def _show_ted_mode(self):
+        self.ui.book_scroll.hide()
+        self._load_ted_talks()
+
+    def _load_ted_talks(self):
+        layout = self.ui.scrollAreaWidgetContents_3.layout()
+        while layout.count():
+            item = layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        talks = get_ted_talks()
+        for talk in talks:
+            card = self._make_ted_card(talk)
+            layout.addWidget(card)
+        layout.addStretch()
+
+    def _make_ted_card(self, talk):
+        _TALK_SUBTITLES = {
+            1: "Why coding education should be accessible to every student",
+            2: "Unpacking the basics of quantum computing in everyday language",
+            3: "How building useless things sparks creativity and joy",
+            4: "The critical mistakes engineers must avoid to prevent failure",
+            5: "Rethinking how we design and build our physical world",
+            6: "How thoughtful city planning shapes sustainable urban futures",
+            7: "Engineering solutions for more eco-friendly road infrastructure",
+            8: "How autonomous vehicles and smart systems will transform travel",
+            9: "The simple traffic technique that reduces congestion and saves time",
+            10: "Creator-produced content on modern challenges and opportunities",
+        }
