@@ -17,6 +17,7 @@ class AppWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.test_page = IELTSTestWindow()
+        self.ted_test_page = TedTestWindow()
 
         self.stack = QStackedWidget()
 
@@ -30,6 +31,7 @@ class AppWindow(QMainWindow):
         #self.stack.addWidget(QWidget())
         self.stack.addWidget(self.test_page)  # index 2
         self.stack.addWidget(self.register_page)
+        self.stack.addWidget(self.ted_test_page)
 
         self.setCentralWidget(self.stack)
 
@@ -41,7 +43,9 @@ class AppWindow(QMainWindow):
 
         self.main_page.exit_signal.connect(self.slide_to_login)
         self.main_page.start_test_signal.connect(self.slide_to_test)
+        self.main_page.start_ted_signal.connect(self.slide_to_ted)
         self.test_page.exit_test_signal.connect(self.slide_back_to_main)
+        self.ted_test_page.exit_signal.connect(self.slide_back_to_main)
 
         self.load_qss()
 
@@ -183,6 +187,34 @@ class AppWindow(QMainWindow):
         self.anim1.start()
         self.anim2.start()
 
+        self.stack.setCurrentIndex(next_index)
+
+    def slide_to_ted(self, talk_id, title, audio_path):                                             
+        self.ted_test_page.set_data(talk_id, title, audio_path)               
+        current_index = self.stack.currentIndex()
+        next_index = 4
+
+        current_widget = self.stack.widget(current_index)
+        next_widget = self.stack.widget(next_index)
+
+        width = self.stack.frameRect().width()
+        next_widget.move(width, 0)
+        next_widget.show()
+
+        self.anim1 = QPropertyAnimation(current_widget, b"pos")
+        self.anim1.setDuration(500)
+        self.anim1.setStartValue(QPoint(0, 0))
+        self.anim1.setEndValue(QPoint(-width, 0))
+        self.anim1.setEasingCurve(QEasingCurve.OutCubic)
+
+        self.anim2 = QPropertyAnimation(next_widget, b"pos")
+        self.anim2.setDuration(500)
+        self.anim2.setStartValue(QPoint(width, 0))
+        self.anim2.setEndValue(QPoint(0, 0))
+        self.anim2.setEasingCurve(QEasingCurve.OutCubic)
+
+        self.anim1.start()
+        self.anim2.start()
         self.stack.setCurrentIndex(next_index)
 
     def slide_back_to_main(self):
