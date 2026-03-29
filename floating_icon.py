@@ -8,7 +8,7 @@ class FloatingIcon(QWidget):
         super().__init__()
         self.main_window = main_window
 
-        self.setFixedSize(1136, 810)
+        self.setFixedSize(80, 80)
         # 无边框 + 置顶 + 不显示在任务栏
         self.setWindowFlags(
             Qt.FramelessWindowHint |
@@ -19,9 +19,9 @@ class FloatingIcon(QWidget):
 
         # 显示 GIF
         self.label = QLabel(self)
-        self.label.setFixedSize(1136, 810)
+        self.label.setFixedSize(80, 80)
         self.label.setAlignment(Qt.AlignCenter)
-        self.movie = QMovie("resources/icons/tuoniao.gif")
+        self.movie = QMovie("resources/icons/Sweet run cycle.gif")
         self.movie.setScaledSize(self.label.size())
         self.label.setMovie(self.movie)
         self.movie.start()

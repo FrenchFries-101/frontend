@@ -1,19 +1,15 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QFrame, QLabel, QHBoxLayout, QSizePolicy, QProgressBar, QTreeWidgetItem
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QFile,Signal,QSize
-#自己创的单词界面
+from PySide6.QtCore import QFile, Signal, QSize, Qt, QUrl
+from PySide6.QtGui import QPixmap, QIcon
+
 from pages.RecitePages import RecitePage
 from pages.ForumPages import ForumWindow
 from pages.SpeakingPage import SpeakingPanel
-from PySide6.QtWidgets import QPushButton
-from PySide6.QtWidgets import QFrame, QLabel, QHBoxLayout,QSizePolicy
-from PySide6.QtWidgets import QProgressBar
 from service.api import get_cambridge_list, get_tests, get_sections
-import random
-from PySide6.QtGui import QPixmap,QIcon
-import session
-from PySide6.QtCore import Qt
 from utils.path_utils import resource_path
+import session
+import random
 
 
 class MainWindow(QWidget):
@@ -46,27 +42,13 @@ class MainWindow(QWidget):
         self.init_forum_page()
         self.init_speaking_page()
 
-        self.ui.Recite_button.clicked.connect(
-            lambda: self.ui.stackedWidget.setCurrentIndex(0)
-        )
+        self.setup_sidebar_tree()
+        self.ui.navTree.itemClicked.connect(self.on_nav_item_clicked)
 
-        self.ui.Favourite_button.clicked.connect(
-            lambda: self.ui.stackedWidget.setCurrentIndex(1)
-        )
+        # 如果你保留了 Exit_button 就连上；删掉也不会报错
+        if hasattr(self.ui, "Exit_button"):
+            self.ui.Exit_button.clicked.connect(self.exit_to_login)
 
-        self.ui.Profile_button.clicked.connect(
-            lambda: self.ui.stackedWidget.setCurrentIndex(2)
-        )
-
-        self.ui.Discussion_button.clicked.connect(
-            lambda: self.ui.stackedWidget.setCurrentIndex(3)
-        )
-
-        # Exit按钮逻辑
-        self.ui.Exit_button.clicked.connect(self.exit_to_login)
-
-        #把加载数据的内容给删掉
-        #self.generate_cambridge_buttons()
         self.set_random_avatar(self.ui.label_4)
 
     def exit_to_login(self):
@@ -75,6 +57,53 @@ class MainWindow(QWidget):
         # self.ui.btn_listening.clicked.connect(
         #     lambda: self.ui.stackedWidget.setCurrentIndex(3)
         # )
+
+    def go_page(self, key: str):
+        route = {
+            "word_list": 0,
+            "listening": 1,
+            "speaking": 2,
+            "discussion": 3,
+        }
+        if key in route:
+            self.ui.stackedWidget.setCurrentIndex(route[key])
+
+    def setup_sidebar_tree(self):
+        tree = self.ui.navTree
+        tree.clear()
+        tree.setHeaderHidden(True)
+        tree.setAnimated(True)
+        tree.setExpandsOnDoubleClick(False)
+
+        learning = QTreeWidgetItem(["Learning Task"])
+        team = QTreeWidgetItem(["Team Work"])
+        pets = QTreeWidgetItem(["Pets Home"])
+
+        wl = QTreeWidgetItem(["Word List"]); wl.setData(0, Qt.UserRole, "word_list")
+        li = QTreeWidgetItem(["Listening"]); li.setData(0, Qt.UserRole, "listening")
+        sp = QTreeWidgetItem(["Speaking"]); sp.setData(0, Qt.UserRole, "speaking")
+        ds = QTreeWidgetItem(["Discussion"]); ds.setData(0, Qt.UserRole, "discussion")
+        learning.addChildren([wl, li, sp, ds])
+
+        t1 = QTreeWidgetItem(["Team Slot 1"]); t1.setData(0, Qt.UserRole, "team_1")
+        t2 = QTreeWidgetItem(["Team Slot 2"]); t2.setData(0, Qt.UserRole, "team_2")
+        team.addChildren([t1, t2])
+
+        p1 = QTreeWidgetItem(["Pet Slot 1"]); p1.setData(0, Qt.UserRole, "pet_1")
+        p2 = QTreeWidgetItem(["Pet Slot 2"]); p2.setData(0, Qt.UserRole, "pet_2")
+        pets.addChildren([p1, p2])
+
+        tree.addTopLevelItems([learning, team, pets])
+        learning.setExpanded(True)
+
+    def on_nav_item_clicked(self, item, column):
+        if item.childCount() > 0:
+            item.setExpanded(not item.isExpanded())
+            return
+
+        key = item.data(0, Qt.UserRole)
+        self.go_page(key)
+
 
     #创建自己背单词界面
     def init_recite_page(self):
@@ -283,18 +312,21 @@ class MainWindow(QWidget):
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
     def load_icons(self):
-        self.ui.Recite_button.setIcon(QIcon(resource_path("resources/icons/book-alt.png")))
-        self.ui.Favourite_button.setIcon(QIcon(resource_path("resources/icons/headphones.png")))
-        self.ui.Profile_button.setIcon(QIcon(resource_path("resources/icons/user-speaking.png")))
-        self.ui.Discussion_button.setIcon(QIcon(resource_path("resources/icons/bank2.png")))
         self.ui.Exit_button.setIcon(QIcon(resource_path("resources/icons/exit.png")))
-
         # 设置图标大小
-        self.ui.Recite_button.setIconSize(QSize(20, 20))
-        self.ui.Favourite_button.setIconSize(QSize(20, 20))
-        self.ui.Profile_button.setIconSize(QSize(20, 20))
-        self.ui.Discussion_button.setIconSize(QSize(20, 20))
         self.ui.Exit_button.setIconSize(QSize(20, 20))
+
+        logo_path = resource_path("resources/icons/arctic-fox.png")
+        logo_url = QUrl.fromLocalFile(logo_path).toString()
+
+        self.ui.label.setText(
+            f'<span>'
+            f'<img src="{logo_url}" width="30" height="30" '
+            f'style="vertical-align:middle; margin-right:8px;">'
+            f'<span style="vertical-align:middle;">DIIFOX</span>'
+            f'</span>'
+        )
+        self.ui.label.setAlignment(Qt.AlignCenter)
 
     def load_data(self):
         print("开始加载Cambridge数据...")

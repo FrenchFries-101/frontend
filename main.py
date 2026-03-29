@@ -12,8 +12,6 @@ from PySide6.QtGui import QAction, QIcon
 from floating_icon import FloatingIcon
 
 
-
-
 class AppWindow(QMainWindow):
 
     def __init__(self):
