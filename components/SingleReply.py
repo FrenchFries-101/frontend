@@ -63,20 +63,36 @@ class SingleReply(QWidget):
         self.avatar = self.ui.findChild(QLabel, "avatar")
         self.like_btn = self.ui.findChild(QPushButton, "like_button")
 
-        self.like_btn.setStyleSheet("""
-        QPushButton {
-            background-color: pink;
-            color: white;
-            border-radius: 8px;
-        }
-                QPushButton:hover {
-            background-color: #ff9aa2;   /* 悬停稍深 */
-        }
+        # self.like_btn.setStyleSheet("""
+        # QPushButton {
+        #     background-color: pink;
+        #     color: white;
+        #     border-radius: 8px;
+        # }
+        #         QPushButton:hover {
+        #     background-color: #ff9aa2;   /* 悬停稍深 */
+        # }
 
-        QPushButton:pressed {
-            background-color: #ff6f91;   /* 点击时更深 */
-        }
-        """)
+        # QPushButton:pressed {
+        #     background-color: #ff6f91;   /* 点击时更深 */
+        # }
+        # """)
+
+        self.like_btn.setStyleSheet("""
+QPushButton#like_button{
+    border: 1px solid #ead8c8;
+    background: #fff3e8;
+    border-radius: 8px;
+}
+QPushButton#like_button:hover{
+    background: #ffe9d6;
+    border: 1px solid #f2c39d;
+}
+QPushButton#like_button:pressed{
+    background: #ffdcbf;
+}
+""")
+
 
         self.like_btn.setFixedSize(40, 15)
         self.like_btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)

@@ -66,50 +66,87 @@ class ForumWindow(QWidget):
         self.setAttribute(Qt.WA_StyledBackground, True)
 
 
-
         self.ui.setStyleSheet("""
-
-        
- /* 外层保持透明，和 main 融合 */
+/* 外层保持透明，和主页面融合 */
 #ForumPage{
-    background:transparent;
+    background: transparent;
 }
 
-/* 页面主体 */
+/* 主区域容器 */
+QStackedWidget,
+QWidget#forum_main,
+QWidget#forum_detail,
+QWidget#forum_create{
+    background: #fffaf5;
+}
+
+/* 滚动区 */
 QScrollArea{
-    border:none;
-    background:white;
+    border: none;
+    background: #fffaf5;
+}
+QScrollArea > QWidget > QWidget{
+    background: #fffaf5;
 }
 
-/* 内容区域 */
+/* 内容区 */
 #post_contents,
 #detail_content{
-    background:white;
+    background: #fffaf5;
 }
 
 /* 输入框 */
 QLineEdit,
 QTextEdit{
-    background:white;
-    border:1px solid #ddd;
-    border-radius:6px;
+    background: #ffffff;
+    border: 1px solid #e9d8c8;
+    border-radius: 8px;
+    color: #5f4b3f;
+    padding: 8px 10px;
+    selection-background-color: #f7d6bd;
+}
+QLineEdit:focus,
+QTextEdit:focus{
+    border: 1px solid #f28d40;
 }
 
-
+/* 通用按钮（论坛页内） */
+QPushButton{
+    background: #fff3e8;
+    border: 1px solid #e9d8c8;
+    border-radius: 8px;
+    color: #6b5e55;
+    font-family: "Segoe UI Semibold","Microsoft YaHei";
+    font-size: 14px;
+    font-weight: 600;
+    padding: 7px 12px;
+}
 QPushButton:hover{
-    background:#fff0f3;
+    background: #ffe9d6;
+    border: 1px solid #f2c39d;
+    color: #f28d40;
 }
-
 QPushButton:pressed{
-    background:#ffd6e0;
+    background: #ffdcbf;
 }
-
 QPushButton:checked{
-    background:#ffccd5;
+    background: #ffe3cc;
+    border: 1px solid #f28d40;
+    color: #f28d40;
 }
 
-      
-        """)
+/* 标题文字 */
+QLabel{
+    color: #6b5e55;
+}
+QLabel#detail_title,
+QLabel#create_title_label{
+    color: #7a5c45;
+    font-size: 18px;
+    font-weight: 700;
+}
+""")
+
 
 
     def load_full_ui(self):

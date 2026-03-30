@@ -10,6 +10,7 @@ from service.api import get_cambridge_list, get_tests, get_sections
 from utils.path_utils import resource_path
 import session
 import random
+from PySide6.QtGui import QPixmap, QIcon, QMovie
 
 
 class MainWindow(QWidget):
@@ -30,6 +31,8 @@ class MainWindow(QWidget):
         ui_file.close()
 
         layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
         layout.addWidget(self.ui)
         self.setLayout(layout)
 
@@ -50,6 +53,8 @@ class MainWindow(QWidget):
             self.ui.Exit_button.clicked.connect(self.exit_to_login)
 
         self.set_random_avatar(self.ui.label_4)
+
+        self.init_top_bar()
 
     def exit_to_login(self):
         self.exit_signal.emit()
@@ -339,6 +344,13 @@ class MainWindow(QWidget):
         self.user_name = user['username']
         self.ui.label_13.setText(self.user_name)
 
+        #后面改了后端接口再改这里
+        # streak = user.get("streak_days", user.get("continuous_days", 0))
+        # coins = user.get("coin_num", user.get("coins", 0))
+
+        # self.ui.streakLabel.setText(f"连续学习 {streak} 天")
+        # self.ui.coinValueLabel.setText(str(coins))
+
     def clear_data(self):
         # 清空用户名
         self.ui.label_13.setText("")
@@ -356,3 +368,17 @@ class MainWindow(QWidget):
             item = layout2.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
+    
+    def init_top_bar(self):
+    # 连续学习文案
+        self.ui.streakLabel.setText("Learning 2 days")
+
+    # 金币 GIF
+        self.coin_movie = QMovie(resource_path("resources/icons/Coin.gif"))
+        self.ui.coinGifLabel.setMovie(self.coin_movie)
+        self.ui.coinGifLabel.setFixedSize(50, 50)
+        self.ui.coinGifLabel.setScaledContents(True)
+        self.coin_movie.start()
+
+    # 金币数量
+        self.ui.coinValueLabel.setText("200")

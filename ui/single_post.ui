@@ -26,57 +26,41 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">/* ================= 标题默认 ================= */
-QLabel#post_title {
+   <string notr="true">
 
-    color: rgb(58, 52, 52);
+
+QWidget#post_simple{
+    background: #fffaf5;
+    border: 1px solid #ead8c8;
+    border-radius: 12px;
+    padding: 10px 12px;
+}
+QWidget#post_simple:hover{
+    background: #fff3e8;
+    border: 1px solid #f2c39d;
+}
+
+QLabel#post_title{
+    color: #6b4f3b;
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 700;
     padding: 2px;
 }
-
-
-/* ================= 鼠标悬停标题 ================= */
-QLabel#post_title:hover {
-
-    color: #ff6b81;   /* 粉色 */
+QLabel#post_title:hover{
+    color: #f28d40;
 }
 
-
-/* ================= 卡片容器 ================= */
-QWidget#post_simple {
-
-    background-color: white;
-
-    border-radius: 12px;
-    border: 1px solid #eeeeee;
-
-    padding: 12px;
-}
-
-
-/* ================= 卡片 hover ================= */
-QWidget#post_simple:hover {
-
-    background-color: #fff7f9;   /* 非常浅的粉 */
-    border: 1px solid #ffb3c1;
-}
-
-
-/* ================= 作者时间 ================= */
-QLabel#auther_time {
-
-    color: #999999;
+QLabel#auther_time{
+    color: #9b8c80;
     font-size: 12px;
+    font-weight: 500;
 }
-
-
-/* ================= 点赞数 ================= */
-QLabel#post_likes {
-
-    color: #ff4d6d;
+QLabel#post_likes{
+    color: #e07a2f;
     font-size: 12px;
-}</string>
+    font-weight: 600;
+}
+</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <property name="topMargin">

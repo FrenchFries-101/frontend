@@ -354,7 +354,8 @@ class AppWindow(QMainWindow):
 app = QApplication(sys.argv)
 
 window = AppWindow()
-window.resize(1000, 700)
+#window.resize(1000, 700)
+window.showMaximized()
 window.show()
 
 sys.exit(app.exec())
