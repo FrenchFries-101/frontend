@@ -144,3 +144,12 @@ def get_current_user(token):
     except Exception as e:
         print("获取用户失败:", e)
         return None
+
+def get_rank_list():
+    try:
+        res = requests.get(f"{BASE_URL}/rank/list")
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("获取排行榜失败:", e)
+        return []
