@@ -6,7 +6,7 @@ from PySide6.QtGui import QPixmap, QIcon
 from pages.RecitePages import RecitePage
 from pages.ForumPages import ForumWindow
 from pages.SpeakingPage import SpeakingPanel
-from service.api import get_cambridge_list, get_tests, get_sections
+from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
 from utils.path_utils import resource_path
 import session
 import random
@@ -31,8 +31,6 @@ class MainWindow(QWidget):
         ui_file.close()
 
         layout = QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
         layout.addWidget(self.ui)
         self.setLayout(layout)
 
@@ -53,8 +51,6 @@ class MainWindow(QWidget):
             self.ui.Exit_button.clicked.connect(self.exit_to_login)
 
         self.set_random_avatar(self.ui.label_4)
-
-        self.init_top_bar()
 
     def exit_to_login(self):
         self.exit_signal.emit()
@@ -368,7 +364,7 @@ class MainWindow(QWidget):
             item = layout2.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
-    
+
     def init_top_bar(self):
     # 连续学习文案
         self.ui.streakLabel.setText("Learning 2 days")
@@ -382,3 +378,39 @@ class MainWindow(QWidget):
 
     # 金币数量
         self.ui.coinValueLabel.setText("200")
+
+
+    def _show_ielts_mode(self):
+        self.ui.book_scroll.show()
+        self.generate_cambridge_buttons()
+
+    def _show_ted_mode(self):
+        self.ui.book_scroll.hide()
+        self._load_ted_talks()
+
+    def _load_ted_talks(self):
+        layout = self.ui.scrollAreaWidgetContents_3.layout()
+        while layout.count():
+            item = layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        talks = get_ted_talks()
+        for talk in talks:
+            card = self._make_ted_card(talk)
+            layout.addWidget(card)
+        layout.addStretch()
+
+    def _make_ted_card(self, talk):
+        _TALK_SUBTITLES = {
+            1: "Why coding education should be accessible to every student",
+            2: "Unpacking the basics of quantum computing in everyday language",
+            3: "How building useless things sparks creativity and joy",
+            4: "The critical mistakes engineers must avoid to prevent failure",
+            5: "Rethinking how we design and build our physical world",
+            6: "How thoughtful city planning shapes sustainable urban futures",
+            7: "Engineering solutions for more eco-friendly road infrastructure",
+            8: "How autonomous vehicles and smart systems will transform travel",
+            9: "The simple traffic technique that reduces congestion and saves time",
+            10: "Creator-produced content on modern challenges and opportunities",
+        }
