@@ -16,6 +16,7 @@ import random
 class MainWindow(QWidget):
     exit_signal = Signal()  # 新增信号
     start_test_signal = Signal(int,int,int,int)
+    start_ted_signal = Signal(int, str, str)
     current_cam=0
     current_test=0
     current_section=0
