@@ -7,7 +7,7 @@ from pages.RecitePages import RecitePage
 from pages.ForumPages import ForumWindow
 from pages.SpeakingPage import SpeakingPanel
 from pages.RankPage import RankPage
-from service.api import get_cambridge_list, get_tests, get_sections
+from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks 
 from utils.path_utils import resource_path
 import session
 import random
