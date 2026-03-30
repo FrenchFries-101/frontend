@@ -7,6 +7,8 @@ from pages.RecitePages import RecitePage
 from pages.ForumPages import ForumWindow
 from pages.SpeakingPage import SpeakingPanel
 from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
+from pages.RankPage import RankPage
+from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
 from utils.path_utils import resource_path
 import session
 import random
@@ -16,6 +18,7 @@ from PySide6.QtGui import QPixmap, QIcon, QMovie
 class MainWindow(QWidget):
     exit_signal = Signal()  # 新增信号
     start_test_signal = Signal(int,int,int,int)
+    start_ted_signal = Signal(int, str, str)
     current_cam=0
     current_test=0
     current_section=0
@@ -42,6 +45,7 @@ class MainWindow(QWidget):
         self.init_recite_page()
         self.init_forum_page()
         self.init_speaking_page()
+        self.init_rank_page()
 
         self.setup_sidebar_tree()
         self.ui.navTree.itemClicked.connect(self.on_nav_item_clicked)
@@ -65,6 +69,7 @@ class MainWindow(QWidget):
             "listening": 1,
             "speaking": 2,
             "discussion": 3,
+            "rank": 4,
         }
         if key in route:
             self.ui.stackedWidget.setCurrentIndex(route[key])
@@ -84,7 +89,8 @@ class MainWindow(QWidget):
         li = QTreeWidgetItem(["Listening"]); li.setData(0, Qt.UserRole, "listening")
         sp = QTreeWidgetItem(["Speaking"]); sp.setData(0, Qt.UserRole, "speaking")
         ds = QTreeWidgetItem(["Discussion"]); ds.setData(0, Qt.UserRole, "discussion")
-        learning.addChildren([wl, li, sp, ds])
+        rk = QTreeWidgetItem(["Leaderboard"]); rk.setData(0, Qt.UserRole, "rank")
+        learning.addChildren([wl, li, sp, ds, rk])
 
         t1 = QTreeWidgetItem(["Team Slot 1"]); t1.setData(0, Qt.UserRole, "team_1")
         t2 = QTreeWidgetItem(["Team Slot 2"]); t2.setData(0, Qt.UserRole, "team_2")
@@ -121,6 +127,10 @@ class MainWindow(QWidget):
         self.speaking_page = SpeakingPanel()
         self.ui.stackedWidget.removeWidget(self.ui.Profile_page)
         self.ui.stackedWidget.insertWidget(2, self.speaking_page)
+
+    def init_rank_page(self):
+        self.rank_page = RankPage()
+        self.ui.stackedWidget.addWidget(self.rank_page)
 
     def start_test(self):
         self.start_test_signal.emit()
@@ -339,13 +349,6 @@ class MainWindow(QWidget):
         self.user = user
         self.user_name = user['username']
         self.ui.label_13.setText(self.user_name)
-
-        #后面改了后端接口再改这里
-        # streak = user.get("streak_days", user.get("continuous_days", 0))
-        # coins = user.get("coin_num", user.get("coins", 0))
-
-        # self.ui.streakLabel.setText(f"连续学习 {streak} 天")
-        # self.ui.coinValueLabel.setText(str(coins))
 
     def clear_data(self):
         # 清空用户名
