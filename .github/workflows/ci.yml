@@ -11,8 +11,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
     - name: Setup Python
       uses: actions/setup-python@v5
@@ -25,6 +24,6 @@ jobs:
         pip install pytest
 
     - name: Run tests
-      run: |
-        set PYTHONPATH=%CD%
-        pytest
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+      run: pytest tests/
