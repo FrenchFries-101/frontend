@@ -11,6 +11,7 @@ from PySide6.QtWidgets import QSystemTrayIcon, QMenu
 from PySide6.QtGui import QAction, QIcon
 from floating_icon import FloatingIcon
 
+from pages.TedTestWindow import TedTestWindow
 
 class AppWindow(QMainWindow):
 
