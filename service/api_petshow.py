@@ -5,8 +5,8 @@ import random
 _pet_db = {
     1: {
         "skin_id": 1,
-        "name": "默认狗狗",
-        "gif_url": "dog1.gif",
+        "name": "狗名字",
+        "gif_url": "resources/icons/dog.gif",
         "vitality": 50
     }
 }
