@@ -47,3 +47,4 @@ uvicorn main:app --reload
 import session
 user_id = session.user["id"]
 ```
+

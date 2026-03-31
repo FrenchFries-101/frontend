@@ -32,57 +32,52 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QWidget#post_simple QLabel#post_title {
+   <string notr="true">
+
+
+/* SingleDetailedPost - Warm Theme */
+QWidget#post_simple{
+    background: #fffaf5;
+    border: 1px solid #ead8c8;
+    border-radius: 12px;
+    padding: 12px;
+}
+
+QWidget#post_simple QLabel#post_title{
     font-size: 19px;
-    font-weight: 600;
-	color: rgb(255, 107, 129);
-}
-/* ================= 时间 ================= */
-
-QWidget#post_simple QLabel#auther_time {
-
-    font-size: 11px;
-    color: #999999;
+    font-weight: 700;
+    color: #6b4f3b;
 }
 
+QWidget#post_simple QLabel#auther_time{
+    font-size: 12px;
+    color: #9b8c80;
+}
 
-/* ================= 回复内容 ================= */
-
-QWidget#post_simple QLabel#contents {
-
+QWidget#post_simple QLabel#contents{
     font-size: 15px;
-    color: #444444;
+    color: #5f4b3f;
     padding-top: 4px;
     padding-bottom: 4px;
 }
 
-
-/* ================= 点赞 ================= */
-
-QWidget#post_simple QLabel#post_likes {
-
+QWidget#post_simple QLabel#post_likes{
     font-size: 12px;
-    color: #ff6b81;
+    color: #e07a2f;
+    font-weight: 600;
 }
 
-
-/* ================= Like 按钮 ================= */
-
-QWidget#post_simple QPushButton {
-
-    border: none;
-    background: transparent;
-
-    font-size: 12px;
-    color: #999999;
+QWidget#post_simple QPushButton#like_button{
+    border: 1px solid #ead8c8;
+    background: #fff3e8;
+    border-radius: 8px;
 }
-
-
-/* hover 点赞按钮 */
-
-QWidget#post_simple QPushButton:hover {
-
-    color: #ff6b81;
+QWidget#post_simple QPushButton#like_button:hover{
+    background: #ffe9d6;
+    border: 1px solid #f2c39d;
+}
+QWidget#post_simple QPushButton#like_button:pressed{
+    background: #ffdcbf;
 }
 
 

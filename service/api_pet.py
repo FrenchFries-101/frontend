@@ -10,7 +10,7 @@ fake_db = {
             "skin_id": 1,
             "name": "默认狗狗",
             "description": "初始皮肤",
-            "gif_url": "dog1.gif",
+            "gif_url": "resources/icons/dog1.gif",
             "unlock_level": 1,
             "owned": True,
             "current": True
@@ -19,7 +19,7 @@ fake_db = {
             "skin_id": 3,
             "name": "金色狗狗",
             "description": "金色毛发的狗狗",
-            "gif_url": "dog1.gif",
+            "gif_url": "resources/icons/dog1.gif",
             "unlock_level": 3,
             "owned": True,
             "current": False
@@ -28,7 +28,7 @@ fake_db = {
             "skin_id": 4,
             "name": "蓝色狗狗",
             "description": "蓝色毛发的狗狗",
-            "gif_url": "dog1.gif",
+            "gif_url": "resources/icons/dog1.gif",
             "unlock_level": 5,
             "owned": True,
             "current": False
@@ -37,7 +37,7 @@ fake_db = {
             "skin_id": 5,
             "name": "紫色狗狗",
             "description": "紫色毛发的狗狗",
-            "gif_url": "dog1.gif",
+            "gif_url": "resources/icons/dog1.gif",
             "unlock_level": 8,
             "owned": True,
             "current": False
@@ -46,7 +46,7 @@ fake_db = {
             "skin_id": 2,
             "name": "阳光狗狗",
             "description": "2级解锁",
-            "gif_url": "dog2.gif",
+            "gif_url": "resources/icons/dog2.gif",
             "unlock_level": 2,
             "owned": False,
             "current": False
