@@ -16,6 +16,7 @@ import random
 class MainWindow(QWidget):
     exit_signal = Signal()  # 新增信号
     start_test_signal = Signal(int,int,int,int)
+    start_ted_signal = Signal(int, str, str)
     current_cam=0
     current_test=0
     current_section=0
@@ -346,6 +347,10 @@ class MainWindow(QWidget):
         self.user = user
         self.user_name = user['username']
         self.ui.label_13.setText(self.user_name)
+        # 更新排行榜页面的用户信息
+        if hasattr(self, 'rank_page'):
+            print("MainWindow set_user called, updating rank page")
+            self.rank_page.set_user(user)
 
     def clear_data(self):
         # 清空用户名

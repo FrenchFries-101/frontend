@@ -153,3 +153,59 @@ def get_rank_list():
     except Exception as e:
         print("获取排行榜失败:", e)
         return []
+
+def get_user_rank(user_id):
+    try:
+        res = requests.get(f"{BASE_URL}/rank/user/{user_id}")
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("获取用户排名失败:", e)
+        return {"rank": 0, "points": 0}
+
+def get_ted_talks():
+    try:
+        res = requests.get(f"{BASE_URL}/ted/talks")
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("获取TED演讲失败:", e)
+        return []
+
+def get_ted_questions(talk_id):
+    try:
+        res = requests.get(
+            f"{BASE_URL}/ted/questions",
+            params={"talk_id": talk_id}
+        )
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("获取TED问题失败:", e)
+        return []
+
+def submit_ted_answer(data):
+    try:
+        res = requests.post(
+            f"{BASE_URL}/ted/submit",
+            json=data
+        )
+        return res.json()
+    except Exception as e:
+        print("提交TED答案失败:", e)
+        return None
+
+def get_ted_analysis(talk_id, user_id):
+    try:
+        res = requests.get(
+            f"{BASE_URL}/ted/analysis",
+            params={
+                "talk_id": talk_id,
+                "user_id": user_id
+            }
+        )
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("获取TED分析失败:", e)
+        return None
