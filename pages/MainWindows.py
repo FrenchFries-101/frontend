@@ -9,6 +9,7 @@ from pages.SpeakingPage import SpeakingPanel
 from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
 from pages.RankPage import RankPage
 from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
+from pages.WordGamePages import *
 from utils.path_utils import resource_path
 import session
 import random
@@ -50,6 +51,18 @@ class MainWindow(QWidget):
         self.setup_sidebar_tree()
         self.ui.navTree.itemClicked.connect(self.on_nav_item_clicked)
 
+        self.game_menu = GameMenuPage(self)
+        self.start_page = StartGamePage(self)
+        self.join_page = JoinPage(self)
+        self.board_page = BoardPage(self)
+        self.instruction_page = InstructionPage(self)
+
+        self.ui.stackedWidget.addWidget(self.game_menu)
+        self.ui.stackedWidget.addWidget(self.start_page)
+        self.ui.stackedWidget.addWidget(self.join_page)
+        self.ui.stackedWidget.addWidget(self.board_page)
+        self.ui.stackedWidget.addWidget(self.instruction_page)
+
         # 如果你保留了 Exit_button 就连上；删掉也不会报错
         if hasattr(self.ui, "Exit_button"):
             self.ui.Exit_button.clicked.connect(self.exit_to_login)
@@ -73,6 +86,8 @@ class MainWindow(QWidget):
         }
         if key in route:
             self.ui.stackedWidget.setCurrentIndex(route[key])
+        elif key == "game_menu":
+            self.ui.stackedWidget.setCurrentWidget(self.game_menu)
 
     def setup_sidebar_tree(self):
         tree = self.ui.navTree
@@ -85,19 +100,40 @@ class MainWindow(QWidget):
         team = QTreeWidgetItem(["Team Work"])
         pets = QTreeWidgetItem(["Pets Home"])
 
-        wl = QTreeWidgetItem(["Word List"]); wl.setData(0, Qt.UserRole, "word_list")
-        li = QTreeWidgetItem(["Listening"]); li.setData(0, Qt.UserRole, "listening")
-        sp = QTreeWidgetItem(["Speaking"]); sp.setData(0, Qt.UserRole, "speaking")
-        ds = QTreeWidgetItem(["Discussion"]); ds.setData(0, Qt.UserRole, "discussion")
-        rk = QTreeWidgetItem(["Leaderboard"]); rk.setData(0, Qt.UserRole, "rank")
-        learning.addChildren([wl, li, sp, ds, rk])
+        wl = QTreeWidgetItem(["Word List"])
+        wl.setData(0, Qt.UserRole, "word_list")
 
-        t1 = QTreeWidgetItem(["Team Slot 1"]); t1.setData(0, Qt.UserRole, "team_1")
-        t2 = QTreeWidgetItem(["Team Slot 2"]); t2.setData(0, Qt.UserRole, "team_2")
+        li = QTreeWidgetItem(["Listening"])
+        li.setData(0, Qt.UserRole, "listening")
+
+        sp = QTreeWidgetItem(["Speaking"])
+        sp.setData(0, Qt.UserRole, "speaking")
+
+        ds = QTreeWidgetItem(["Discussion"])
+        ds.setData(0, Qt.UserRole, "discussion")
+
+        rk = QTreeWidgetItem(["Leaderboard"])
+        rk.setData(0, Qt.UserRole, "rank")
+
+        game = QTreeWidgetItem(["Game"])
+        game.setData(0, Qt.UserRole, "game_menu")
+
+        learning.addChildren([wl, li, sp, ds, rk, game])
+
+        t1 = QTreeWidgetItem(["Team Slot 1"])
+        t1.setData(0, Qt.UserRole, "team_1")
+
+        t2 = QTreeWidgetItem(["Team Slot 2"])
+        t2.setData(0, Qt.UserRole, "team_2")
+
         team.addChildren([t1, t2])
 
-        p1 = QTreeWidgetItem(["Pet Slot 1"]); p1.setData(0, Qt.UserRole, "pet_1")
-        p2 = QTreeWidgetItem(["Pet Slot 2"]); p2.setData(0, Qt.UserRole, "pet_2")
+        p1 = QTreeWidgetItem(["Pet Slot 1"])
+        p1.setData(0, Qt.UserRole, "pet_1")
+
+        p2 = QTreeWidgetItem(["Pet Slot 2"])
+        p2.setData(0, Qt.UserRole, "pet_2")
+
         pets.addChildren([p1, p2])
 
         tree.addTopLevelItems([learning, team, pets])
@@ -417,3 +453,15 @@ class MainWindow(QWidget):
             9: "The simple traffic technique that reduces congestion and saves time",
             10: "Creator-produced content on modern challenges and opportunities",
         }
+
+    def goto(self, page):
+        if page == "game_menu":
+            self.ui.stackedWidget.setCurrentWidget(self.game_menu)
+        elif page == "start":
+            self.ui.stackedWidget.setCurrentWidget(self.start_page)
+        elif page == "join":
+            self.ui.stackedWidget.setCurrentWidget(self.join_page)
+        elif page == "board":
+            self.ui.stackedWidget.setCurrentWidget(self.board_page)
+        elif page == "instruction":
+            self.ui.stackedWidget.setCurrentWidget(self.instruction_page)
