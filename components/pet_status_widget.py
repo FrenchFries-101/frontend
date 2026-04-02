@@ -10,6 +10,9 @@ import requests
 
 BASE_URL = "http://127.0.0.1:8000/pet_module"
 
+#
+
+
 def get_pet_status(user_id: int) -> dict:
     """
     GET /pet/status?user_id={user_id}
