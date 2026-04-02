@@ -42,7 +42,7 @@ class DesktopCalendar(QWidget):
         # 标题栏
         title_layout = QHBoxLayout()
         
-        self.title_label = QLabel("📅 每日便签")
+        self.title_label = QLabel("📅 Daily Notes")
         self.title_label.setStyleSheet("""
             QLabel {
                 color: white;
@@ -127,7 +127,7 @@ class DesktopCalendar(QWidget):
         
         # 星期标题
         week_layout = QHBoxLayout()
-        weekdays = ["日", "一", "二", "三", "四", "五", "六"]
+        weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
         for day in weekdays:
             label = QLabel(day)
             label.setStyleSheet("""
@@ -181,7 +181,7 @@ class DesktopCalendar(QWidget):
                 item.widget().deleteLater()
         
         # 更新月份标签
-        month_name = self.current_date.toString("yyyy年MM月")
+        month_name = self.current_date.toString("MMMM yyyy")
         self.month_label.setText(month_name)
         
         # 获取当月第一天
@@ -345,7 +345,7 @@ class TaskEditDialog(QDialog):
         layout.setSpacing(15)
         
         # 日期标签
-        date_label = QLabel(f"📝 {self.date.toString('yyyy年MM月dd日')} 的任务")
+        date_label = QLabel(f"📝 Tasks for {self.date.toString('MMMM d, yyyy')}")
         date_label.setStyleSheet("""
             QLabel {
                 font-size: 18px;
@@ -356,7 +356,7 @@ class TaskEditDialog(QDialog):
         
         # 任务编辑框
         self.task_edit = QTextEdit()
-        self.task_edit.setPlaceholderText("请输入今日任务...")
+        self.task_edit.setPlaceholderText("Enter your daily tasks...")
         self.task_edit.setMinimumHeight(200)
         
         # 加载现有任务

@@ -69,6 +69,11 @@ class MainWindow(QWidget):
 
     def exit_to_login(self):
         self.exit_signal.emit()
+    
+    def open_desktop_calendar(self):
+        self.parent().desktop_calendar.show()
+        self.parent().desktop_calendar.raise_()
+        self.parent().desktop_calendar.activateWindow()
 
         # self.ui.btn_listening.clicked.connect(
         #     lambda: self.ui.stackedWidget.setCurrentIndex(3)
@@ -82,12 +87,16 @@ class MainWindow(QWidget):
             "discussion": 3,
             "rank": 4,
             "calendar": 5,
+            "desktop_calendar": 6,
 
         }
         if key in route:
-            self.ui.stackedWidget.setCurrentIndex(route[key])
-            if key == "listening":
-                self._show_ielts_mode()
+            if key == "desktop_calendar":
+                self.open_desktop_calendar()
+            else:
+                self.ui.stackedWidget.setCurrentIndex(route[key])
+                if key == "listening":
+                    self._show_ielts_mode()
 
 
 
@@ -107,8 +116,9 @@ class MainWindow(QWidget):
         sp = QTreeWidgetItem(["Speaking"]); sp.setData(0, Qt.UserRole, "speaking")
         ds = QTreeWidgetItem(["Discussion"]); ds.setData(0, Qt.UserRole, "discussion")
         ca = QTreeWidgetItem(["Calendar"]); ca.setData(0, Qt.UserRole, "calendar")
+        dc = QTreeWidgetItem(["Desktop Calendar"]); dc.setData(0, Qt.UserRole, "desktop_calendar")
         rk = QTreeWidgetItem(["Leaderboard"]); rk.setData(0, Qt.UserRole, "rank")
-        learning.addChildren([wl, li, sp, ds, ca])
+        learning.addChildren([wl, li, sp, ds, ca, dc])
 
 
 

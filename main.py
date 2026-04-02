@@ -10,6 +10,7 @@ from utils.loading_overlay import LoadingOverlay
 from PySide6.QtWidgets import QSystemTrayIcon, QMenu
 from PySide6.QtGui import QAction, QIcon
 from floating_icon import FloatingIcon
+from desktop_calendar import DesktopCalendar
 
 from pages.TedTestWindow import TedTestWindow
 
@@ -19,6 +20,7 @@ class AppWindow(QMainWindow):
         super().__init__()
         self.test_page = IELTSTestWindow()
         self.ted_test_page = TedTestWindow()
+        self.desktop_calendar = DesktopCalendar()
 
         self.stack = QStackedWidget()
 
