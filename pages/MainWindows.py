@@ -8,6 +8,7 @@ from pages.ForumPages import ForumWindow
 from pages.SpeakingPage import SpeakingPanel
 from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
 from pages.RankPage import RankPage
+from pages.PetPages import PetHomePage, PetSkinPage
 from pages.GroupPlazaPage import GroupPlazaPage
 from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
 
@@ -51,6 +52,7 @@ class MainWindow(QWidget):
         self.init_forum_page()
         self.init_speaking_page()
         self.init_rank_page()
+        self.init_pet_pages()
         self.init_group_plaza_page()
 
         if hasattr(self.ui, "pushButton_8"):
@@ -63,6 +65,7 @@ class MainWindow(QWidget):
         self.setup_sidebar_tree()
 
         self.ui.navTree.itemClicked.connect(self.on_nav_item_clicked)
+
 
         # 如果你保留了 Exit_button 就连上；删掉也不会报错
         if hasattr(self.ui, "Exit_button"):
@@ -97,6 +100,10 @@ class MainWindow(QWidget):
             self.open_desktop_calendar()
         elif key in route:
             self.ui.stackedWidget.setCurrentIndex(route[key])
+            if key == "listening":
+                self._show_ielts_mode()
+
+
 
 
     def setup_sidebar_tree(self):
@@ -126,6 +133,10 @@ class MainWindow(QWidget):
         my_group.addChildren([gc, tb])
         team.addChildren([my_group, group_plaza])
 
+        t1 = QTreeWidgetItem(["Team Slot 1"]); t1.setData(0, Qt.UserRole, "team_1")
+
+        t2 = QTreeWidgetItem(["Team Slot 2"]); t2.setData(0, Qt.UserRole, "team_2")
+        team.addChildren([t1, t2])
         p1 = QTreeWidgetItem(["Services"]); p1.setData(0, Qt.UserRole, "services")
         p2 = QTreeWidgetItem(["Skin Home"]); p2.setData(0, Qt.UserRole, "skin_home")
 
@@ -136,6 +147,7 @@ class MainWindow(QWidget):
         team.setExpanded(True)
         my_group.setExpanded(True)
         pets.setExpanded(True)
+
 
 
 
@@ -174,6 +186,10 @@ class MainWindow(QWidget):
         self.group_plaza_page = GroupPlazaPage()
         self.ui.stackedWidget.removeWidget(self.ui.GroupPlaza)
         self.ui.stackedWidget.insertWidget(6, self.group_plaza_page)
+
+    def init_pet_pages(self):
+        self.pet_home_page = None
+        self.pet_skin_page = None
 
     def start_test(self):
 
@@ -394,9 +410,17 @@ class MainWindow(QWidget):
         self.user_name = user['username']
         self.ui.label_13.setText(self.user_name)
         # 更新排行榜页面的用户信息
-        if hasattr(self, 'rank_page'):
+        if hasattr(self, 'rank_page') and hasattr(self.rank_page, 'set_user'):
             print("MainWindow set_user called, updating rank page")
             self.rank_page.set_user(user)
+        # 初始化 pet 页面（需要 user_id）
+        if self.pet_home_page is None:
+            user_id = user.get("id", 0)
+            print(f"[PetPages] Initializing pet pages for user_id={user_id}")
+            self.pet_home_page = PetHomePage(user_id)
+            self.pet_skin_page = PetSkinPage(user_id)
+            self.ui.stackedWidget.addWidget(self.pet_home_page)
+            self.ui.stackedWidget.addWidget(self.pet_skin_page)
 
     def clear_data(self):
         # 清空用户名

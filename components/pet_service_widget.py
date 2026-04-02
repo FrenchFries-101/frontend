@@ -294,15 +294,17 @@ class PetServiceWidget(QWidget):
             return """
                 QPushButton {
                     background-color: #B3886B; color: white; border: none;
-                    border-radius: 8px; padding: 0px 20px;
+                    border-radius: 8px; padding: 0px 20px; margin: 0px;
                     font-size: 14px; font-weight: bold;
+                    text-align: center;
                 }
             """
         return """
             QPushButton {
                 background-color: #FFF6EA; color: #B3886B; border: 1px solid #B3886B;
-                border-radius: 8px; padding: 0px 20px;
+                border-radius: 8px; padding: 0px 20px; margin: 0px;
                 font-size: 14px;
+                text-align: center;
             }
             QPushButton:hover {
                 background-color: #F5E6D3;
