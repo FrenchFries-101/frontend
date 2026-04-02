@@ -107,6 +107,7 @@ class MainWindow(QWidget):
         sp = QTreeWidgetItem(["Speaking"]); sp.setData(0, Qt.UserRole, "speaking")
         ds = QTreeWidgetItem(["Discussion"]); ds.setData(0, Qt.UserRole, "discussion")
         ca = QTreeWidgetItem(["Calendar"]); ca.setData(0, Qt.UserRole, "calendar")
+        rk = QTreeWidgetItem(["Leaderboard"]); rk.setData(0, Qt.UserRole, "rank")
         learning.addChildren([wl, li, sp, ds, ca])
 
 
