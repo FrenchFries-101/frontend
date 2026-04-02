@@ -1,5 +1,6 @@
 # components/pet_service_widget.py
 # 宠物服务组件：分类按钮栏 + 服务列表（含冷却倒计时）
+#最新
 
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFrame
@@ -163,7 +164,7 @@ class PetServiceWidget(QWidget):
         name_label.setStyleSheet("color: #333333; font-size: 14px; font-weight: bold; background: transparent;")
         left_layout.addWidget(name_label)
 
-        effect_label = QLabel(f"+{svc['vitality_effect']} 活力值")
+        effect_label = QLabel(f"+{svc['vitality_effect']} Vitality")
         effect_label.setStyleSheet("color: #008A73; font-size: 11px; background: transparent;")
         left_layout.addWidget(effect_label)
         card_layout.addLayout(left_layout)
@@ -171,7 +172,7 @@ class PetServiceWidget(QWidget):
         card_layout.addStretch()
 
         # 右侧：积分消耗
-        cost_label = QLabel(f"-{svc['points_cost']} 积分")
+        cost_label = QLabel(f"-{svc['points_cost']} Points")
         cost_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         cost_label.setStyleSheet("color: #F28D40; font-size: 15px; font-weight: bold; background: transparent;")
         card_layout.addWidget(cost_label)
@@ -196,7 +197,16 @@ class PetServiceWidget(QWidget):
             self.service_applied.emit(result)
             self._refresh_cooldowns()
         else:
-            print(f"[服务] {result['message']}")
+            self._show_error_on_card(card, result.get("message", "操作失败"))
+
+    def _show_error_on_card(self, card: QFrame, message: str):
+        """在卡片上临时显示错误提示，2 秒后自动恢复"""
+        effect_label = card.layout().itemAt(0).layout().itemAt(1).widget()
+        effect_label.setText(message)
+        effect_label.setStyleSheet("color: #E76F51; font-size: 11px; background: transparent;")
+        card.setStyleSheet(self._svc_card_style(active=True, cooldown=False, error=True))
+        # 2 秒后恢复
+        QTimer.singleShot(2000, lambda: self._restore_card_from_error(card))
 
     # ============ 冷却倒计时 ============
 
@@ -218,15 +228,6 @@ class PetServiceWidget(QWidget):
                 card.setStyleSheet(self._svc_card_style(active=True, cooldown=False))
                 self._restore_card_text(card, sid)
 
-    def _get_service_info(self, service_id: int):
-        """根据 service_id 查找服务名和消耗积分"""
-        from service.api_pet_service import _services
-        for services in _services.values():
-            for s in services:
-                if s["service_id"] == service_id:
-                    return s["name"], s["points_cost"]
-        return None, None
-
     # ============ 按钮文本 ============
 
     def _set_card_cooldown(self, card: QFrame, remaining: int):
@@ -238,9 +239,9 @@ class PetServiceWidget(QWidget):
         effect_label = layout.itemAt(0).layout().itemAt(1).widget()
         cost_label = layout.itemAt(2).widget()
 
-        name_label.setText("冷却中...")
+        name_label.setText("Cooldown...")
         name_label.setStyleSheet("color: #AAAAAA; font-size: 14px; font-weight: bold; background: transparent;")
-        effect_label.setText(f"还需等待 {remaining} 秒")
+        effect_label.setText(f"{remaining}s remaining")
         effect_label.setStyleSheet("color: #CCCCCC; font-size: 11px; background: transparent;")
         cost_label.setText("")
 
@@ -256,18 +257,33 @@ class PetServiceWidget(QWidget):
 
         name_label.setText(svc_name)
         name_label.setStyleSheet("color: #333333; font-size: 14px; font-weight: bold; background: transparent;")
-        effect_label.setText(f"+{vitality_effect} 活力值")
+        effect_label.setText(f"+{vitality_effect} Vitality")
         effect_label.setStyleSheet("color: #008A73; font-size: 11px; background: transparent;")
-        cost_label.setText(f"-{points_cost} 积分")
+        cost_label.setText(f"-{points_cost} Points")
         cost_label.setStyleSheet("color: #FFB347; font-size: 15px; font-weight: bold; background: transparent;")
+
+    def _restore_card_from_error(self, card: QFrame):
+        """从错误提示状态恢复卡片原始内容"""
+        sid = card.property("service_id")
+        if not sid:
+            return
+        remaining = get_remaining_cooldown(self.user_id, sid)
+        if remaining > 0:
+            self._refresh_cooldowns()
+        else:
+            svc_name, points_cost, vitality_effect = self._get_service_info(sid)
+            if svc_name:
+                effect_label = card.layout().itemAt(0).layout().itemAt(1).widget()
+                effect_label.setText(f"+{vitality_effect} 活力值")
+                effect_label.setStyleSheet("color: #008A73; font-size: 11px; background: transparent;")
+                card.setStyleSheet(self._svc_card_style(active=True, cooldown=False))
 
     def _get_service_info(self, service_id: int):
         """根据 service_id 查找服务信息"""
-        from service.api_pet_service import _services
-        for services in _services.values():
-            for s in services:
-                if s["service_id"] == service_id:
-                    return s["name"], s["points_cost"], s["vitality_effect"]
+        from service.api_pet_service import _services_cache
+        s = _services_cache.get(service_id)
+        if s:
+            return s["name"], s["points_cost"], s["vitality_effect"]
         return None, None, None
 
     # ============ 样式 ============
@@ -278,23 +294,33 @@ class PetServiceWidget(QWidget):
             return """
                 QPushButton {
                     background-color: #B3886B; color: white; border: none;
-                    border-radius: 8px; padding: 0px 20px;
+                    border-radius: 8px; padding: 0px 20px; margin: 0px;
                     font-size: 14px; font-weight: bold;
+                    text-align: center;
                 }
             """
         return """
             QPushButton {
                 background-color: #FFF6EA; color: #B3886B; border: 1px solid #B3886B;
-                border-radius: 8px; padding: 0px 20px;
+                border-radius: 8px; padding: 0px 20px; margin: 0px;
                 font-size: 14px;
+                text-align: center;
             }
             QPushButton:hover {
                 background-color: #F5E6D3;
             }
         """
 
-    def _svc_card_style(self, active: bool = True, cooldown: bool = False) -> str:
+    def _svc_card_style(self, active: bool = True, cooldown: bool = False, error: bool = False) -> str:
         """服务卡片样式"""
+        if error:
+            return """
+                QFrame#serviceCard {
+                    background-color: #FFF5F0;
+                    border: 1px solid #E76F51;
+                    border-radius: 10px;
+                }
+            """
         if cooldown:
             return """
                 QFrame#serviceCard {

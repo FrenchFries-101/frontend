@@ -10,6 +10,7 @@ from utils.loading_overlay import LoadingOverlay
 from PySide6.QtWidgets import QSystemTrayIcon, QMenu
 from PySide6.QtGui import QAction, QIcon
 from floating_icon import FloatingIcon
+from desktop_calendar import DesktopCalendar
 
 from pages.TedTestWindow import TedTestWindow
 
@@ -19,6 +20,7 @@ class AppWindow(QMainWindow):
         super().__init__()
         self.test_page = IELTSTestWindow()
         self.ted_test_page = TedTestWindow()
+        self.desktop_calendar = DesktopCalendar()
 
         self.stack = QStackedWidget()
 
@@ -45,6 +47,7 @@ class AppWindow(QMainWindow):
         self.main_page.exit_signal.connect(self.slide_to_login)
         self.main_page.start_test_signal.connect(self.slide_to_test)
         self.main_page.start_ted_signal.connect(self.slide_to_ted)
+        self.main_page.open_desktop_calendar_signal.connect(self.show_desktop_calendar)
         self.test_page.exit_test_signal.connect(self.slide_back_to_main)
         self.ted_test_page.exit_signal.connect(self.slide_back_to_main)
 
@@ -297,6 +300,11 @@ class AppWindow(QMainWindow):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.loading.resize(self.size())
+
+    def show_desktop_calendar(self):
+        self.desktop_calendar.show()
+        self.desktop_calendar.raise_()
+        self.desktop_calendar.activateWindow()
 
     def load_main_data(self):
         self.main_page.load_data()

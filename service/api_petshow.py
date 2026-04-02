@@ -1,56 +1,50 @@
 # service/api_petshow.py
-import random
+# 宠物展示相关接口 —— 对接后端真实 API
 
-# 模拟数据库
-_pet_db = {
-    1: {
-        "skin_id": 1,
-        "name": "DOGName",
-        "gif_url": "resources/icons/dog.gif",
-        "vitality": 50
-    }
-}
+import requests
 
-_quotes_db = {
-    1: { "low": ["我好饿", "我好累"],
-         "medium": ["今天背单词了吗？"],
-         "high": ["状态良好，继续努力"] }
-}
+from service.api import PET_BASE_URL
+
 
 def get_current_skin(user_id: int) -> dict:
-    """获取当前宠物皮肤"""
-    pet = _pet_db.get(user_id)
-    if pet:
-        return {
-            "skin_id": pet["skin_id"],
-            "name": pet["name"],
-            "gif_url": pet["gif_url"]
-        }
-    return {}
+    """获取当前宠物皮肤 GET /pet/current_skin?user_id={user_id}"""
+    try:
+        res = requests.get(
+            f"{PET_BASE_URL}/pet/current_skin",
+            params={"user_id": user_id}
+        )
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("获取当前皮肤失败:", e)
+        return {}
 
 def modify_pet_name(user_id: int, new_name: str) -> dict:
-    """修改宠物名字"""
-    pet = _pet_db.get(user_id)
-    if pet:
-        pet["name"] = new_name
-        return {"success": True, "message": "名称修改成功"}
-    return {"success": False, "message": "用户不存在"}
+    """修改宠物名字 POST /pet/modify_name"""
+    try:
+        res = requests.post(
+            f"{PET_BASE_URL}/pet/modify_name",
+            json={
+                "user_id": str(user_id),
+                "name": new_name
+            }
+        )
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("修改宠物名称失败:", e)
+        return {"success": False, "message": f"请求失败: {e}"}
+
 
 def get_pet_quote(user_id: int) -> dict:
-    """根据活力值返回随机语录"""
-    pet = _pet_db.get(user_id)
-    if not pet:
+    """获取语录 GET /pet/quote?user_id={user_id}"""
+    try:
+        res = requests.get(
+            f"{PET_BASE_URL}/pet/quote",
+            params={"user_id": user_id}
+        )
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("获取语录失败:", e)
         return {}
-    vitality = pet["vitality"]
-    if vitality < 30:
-        zone = "low"
-    elif vitality <= 70:
-        zone = "medium"
-    else:
-        zone = "high"
-    content = random.choice(_quotes_db[1][zone])
-    return {
-        "quote_id": random.randint(1, 100),
-        "content": content,
-        "vitality_zone": zone
-    }

@@ -1,74 +1,38 @@
 # pet_api.py
-# 模拟宠物皮肤接口,后面改成真的后端接口
+# 宠物皮肤接口 —— 对接后端真实 API
 
+import requests
 from typing import List, Dict
 
-# 模拟数据库
-fake_db = {
-    "skins": [
-        {
-            "skin_id": 1,
-            "name": "默认狗狗",
-            "description": "初始皮肤",
-            "gif_url": "resources/icons/dog1.gif",
-            "unlock_level": 1,
-            "owned": True,
-            "current": True
-        },
-        {
-            "skin_id": 3,
-            "name": "金色狗狗",
-            "description": "金色毛发的狗狗",
-            "gif_url": "resources/icons/dog1.gif",
-            "unlock_level": 3,
-            "owned": True,
-            "current": False
-        },
-        {
-            "skin_id": 4,
-            "name": "蓝色狗狗",
-            "description": "蓝色毛发的狗狗",
-            "gif_url": "resources/icons/dog1.gif",
-            "unlock_level": 5,
-            "owned": True,
-            "current": False
-        },
-        {
-            "skin_id": 5,
-            "name": "紫色狗狗",
-            "description": "紫色毛发的狗狗",
-            "gif_url": "resources/icons/dog1.gif",
-            "unlock_level": 8,
-            "owned": True,
-            "current": False
-        },
-        {
-            "skin_id": 2,
-            "name": "阳光狗狗",
-            "description": "2级解锁",
-            "gif_url": "resources/icons/dog2.gif",
-            "unlock_level": 2,
-            "owned": False,
-            "current": False
-        }
-    ]
-}
+from service.api import PET_BASE_URL
+
 
 def get_user_skins(user_id: int) -> List[Dict]:
-    # 这里只返回全部皮肤，忽略 user_id
-    return fake_db["skins"]
+    """获取用户皮肤列表 GET /pet/skins?user_id={user_id}"""
+    try:
+        res = requests.get(
+            f"{PET_BASE_URL}/pet/skins",
+            params={"user_id": user_id}
+        )
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("获取皮肤列表失败:", e)
+        return []
+
 
 def set_current_skin(user_id: int, skin_id: int) -> Dict:
-    # 查找皮肤
-    skin = next((s for s in fake_db["skins"] if s["skin_id"] == skin_id), None)
-    if not skin:
-        return {"success": False, "message": "皮肤不存在"}
-
-    if not skin["owned"]:
-        return {"success": False, "message": "该皮肤尚未解锁"}
-
-    # 设置当前皮肤
-    for s in fake_db["skins"]:
-        s["current"] = False
-    skin["current"] = True
-    return {"success": True, "message": "皮肤切换成功"}
+    """设置当前皮肤 POST /pet/current_skin"""
+    try:
+        res = requests.post(
+            f"{PET_BASE_URL}/pet/current_skin",
+            json={
+                "user_id": str(user_id),
+                "skin_id": skin_id
+            }
+        )
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("设置当前皮肤失败:", e)
+        return {"success": False, "message": f"请求失败: {e}"}

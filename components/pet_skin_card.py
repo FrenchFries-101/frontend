@@ -76,20 +76,20 @@ class PetSkinCard(QFrame):
     def _update_button(self):
         """按钮状态"""
         if not self.skin_data["owned"]:
-            self.button.setText("未解锁")
+            self.button.setText("Locked")
             self.button.setEnabled(False)
             self.button.setStyleSheet(
-                "background-color: #DFE0DF; color: #888888; border-radius: 8px; padding:5px;")
+                "background-color: #DFE0DF; color: #888888; border-radius: 8px; padding: 5px; margin: 0px; text-align: center;")
         elif self.skin_data["current"]:
-            self.button.setText("当前皮肤")
+            self.button.setText("In Use")
             self.button.setEnabled(False)
             self.button.setStyleSheet(
-                "background-color: #B3886B; color: white; border-radius: 8px; padding:5px;")
+                "background-color: #B3886B; color: white; border-radius: 8px; padding: 5px; margin: 0px; text-align: center;")
         else:
-            self.button.setText("设置为当前")
+            self.button.setText("Set as Current")
             self.button.setEnabled(True)
             self.button.setStyleSheet(
-                "background-color: #FFF6EA; color: #B3886B; border: 1px solid #B3886B; border-radius: 8px; padding:5px;")
+                "background-color: #FFF6EA; color: #B3886B; border: 1px solid #B3886B; border-radius: 8px; padding: 5px; margin: 0px; text-align: center;")
 
     def _on_click(self):
         print("点击按钮")
@@ -102,6 +102,8 @@ class PetSkinCard(QFrame):
                 self.on_skin_change(self.skin_data["skin_id"])
         else:
             print("切换失败:", result["message"])
+
+
 
 
 class PetSkinTestPage(QWidget):

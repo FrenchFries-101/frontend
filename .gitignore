@@ -1,6 +1,8 @@
+# Python cache - 绝对不要上传
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
-*.pyd
-.DS_Store
+*.pyc
+
+# PyCharm 项目文件（也建议加上）
 .idea/
