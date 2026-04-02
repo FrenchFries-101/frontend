@@ -218,15 +218,6 @@ class PetServiceWidget(QWidget):
                 card.setStyleSheet(self._svc_card_style(active=True, cooldown=False))
                 self._restore_card_text(card, sid)
 
-    def _get_service_info(self, service_id: int):
-        """根据 service_id 查找服务名和消耗积分"""
-        from service.api_pet_service import _services
-        for services in _services.values():
-            for s in services:
-                if s["service_id"] == service_id:
-                    return s["name"], s["points_cost"]
-        return None, None
-
     # ============ 按钮文本 ============
 
     def _set_card_cooldown(self, card: QFrame, remaining: int):
@@ -263,11 +254,10 @@ class PetServiceWidget(QWidget):
 
     def _get_service_info(self, service_id: int):
         """根据 service_id 查找服务信息"""
-        from service.api_pet_service import _services
-        for services in _services.values():
-            for s in services:
-                if s["service_id"] == service_id:
-                    return s["name"], s["points_cost"], s["vitality_effect"]
+        from service.api_pet_service import _services_cache
+        s = _services_cache.get(service_id)
+        if s:
+            return s["name"], s["points_cost"], s["vitality_effect"]
         return None, None, None
 
     # ============ 样式 ============
