@@ -10,7 +10,6 @@ from service.api import get_cambridge_list, get_tests, get_sections, get_ted_tal
 from pages.RankPage import RankPage
 from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
 from utils.path_utils import resource_path
-from components.calendar_widget import CalendarWidget
 import session
 import random
 from PySide6.QtGui import QPixmap, QIcon, QMovie
@@ -20,6 +19,7 @@ class MainWindow(QWidget):
     exit_signal = Signal()  # 新增信号
     start_test_signal = Signal(int,int,int,int)
     start_ted_signal = Signal(int, str, str)
+    open_desktop_calendar_signal = Signal()  # 打开桌面日历信号
     current_cam=0
     current_test=0
     current_section=0
@@ -49,7 +49,6 @@ class MainWindow(QWidget):
         self.init_forum_page()
         self.init_speaking_page()
         self.init_rank_page()
-        self.init_calendar_page()
 
         if hasattr(self.ui, "pushButton_8"):
             self.ui.pushButton_8.clicked.connect(self._show_ted_mode)
@@ -71,9 +70,7 @@ class MainWindow(QWidget):
         self.exit_signal.emit()
     
     def open_desktop_calendar(self):
-        self.parent().desktop_calendar.show()
-        self.parent().desktop_calendar.raise_()
-        self.parent().desktop_calendar.activateWindow()
+        self.open_desktop_calendar_signal.emit()
 
         # self.ui.btn_listening.clicked.connect(
         #     lambda: self.ui.stackedWidget.setCurrentIndex(3)
@@ -86,17 +83,14 @@ class MainWindow(QWidget):
             "speaking": 2,
             "discussion": 3,
             "rank": 4,
-            "calendar": 5,
-            "desktop_calendar": 6,
 
         }
-        if key in route:
-            if key == "desktop_calendar":
-                self.open_desktop_calendar()
-            else:
-                self.ui.stackedWidget.setCurrentIndex(route[key])
-                if key == "listening":
-                    self._show_ielts_mode()
+        if key == "desktop_calendar":
+            self.open_desktop_calendar()
+        elif key in route:
+            self.ui.stackedWidget.setCurrentIndex(route[key])
+            if key == "listening":
+                self._show_ielts_mode()
 
 
 
@@ -115,10 +109,9 @@ class MainWindow(QWidget):
         li = QTreeWidgetItem(["Listening"]); li.setData(0, Qt.UserRole, "listening")
         sp = QTreeWidgetItem(["Speaking"]); sp.setData(0, Qt.UserRole, "speaking")
         ds = QTreeWidgetItem(["Discussion"]); ds.setData(0, Qt.UserRole, "discussion")
-        ca = QTreeWidgetItem(["Calendar"]); ca.setData(0, Qt.UserRole, "calendar")
-        dc = QTreeWidgetItem(["Desktop Calendar"]); dc.setData(0, Qt.UserRole, "desktop_calendar")
+        dc = QTreeWidgetItem(["Calendar"]); dc.setData(0, Qt.UserRole, "desktop_calendar")
         rk = QTreeWidgetItem(["Leaderboard"]); rk.setData(0, Qt.UserRole, "rank")
-        learning.addChildren([wl, li, sp, ds, ca, dc])
+        learning.addChildren([wl, li, sp, ds, dc])
 
 
 
@@ -163,10 +156,6 @@ class MainWindow(QWidget):
     def init_rank_page(self):
         self.rank_page = RankPage()
         self.ui.stackedWidget.addWidget(self.rank_page)
-    
-    def init_calendar_page(self):
-        self.calendar_page = CalendarWidget()
-        self.ui.stackedWidget.addWidget(self.calendar_page)
 
     def start_test(self):
         self.start_test_signal.emit()

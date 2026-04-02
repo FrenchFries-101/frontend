@@ -23,7 +23,7 @@ class DesktopCalendar(QWidget):
         self.main_frame = QFrame()
         self.main_frame.setStyleSheet("""
             QFrame {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: rgba(242, 141, 64, 0.8);
                 border-radius: 15px;
                 border: 2px solid rgba(255, 255, 255, 0.3);
             }
@@ -304,7 +304,7 @@ class TaskEditDialog(QDialog):
         self.init_ui()
     
     def init_ui(self):
-        self.setWindowTitle(f"编辑 {self.date.toString('yyyy年MM月dd日')} 的任务")
+        self.setWindowTitle("Edit")
         self.setMinimumWidth(400)
         self.setStyleSheet("""
             QDialog {
@@ -350,6 +350,7 @@ class TaskEditDialog(QDialog):
             QLabel {
                 font-size: 18px;
                 font-weight: bold;
+                color: #333333;
             }
         """)
         layout.addWidget(date_label)
