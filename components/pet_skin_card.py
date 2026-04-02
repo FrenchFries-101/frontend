@@ -104,6 +104,8 @@ class PetSkinCard(QFrame):
             print("切换失败:", result["message"])
 
 
+
+
 class PetSkinTestPage(QWidget):
     """测试页面，带滚动条"""
     def __init__(self, user_id=1):
