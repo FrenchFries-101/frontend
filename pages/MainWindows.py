@@ -21,6 +21,7 @@ class MainWindow(QWidget):
     exit_signal = Signal()  # 新增信号
     start_test_signal = Signal(int,int,int,int)
     start_ted_signal = Signal(int, str, str)
+    open_desktop_calendar_signal = Signal()  # 打开桌面日历信号
     current_cam=0
     current_test=0
     current_section=0
@@ -71,6 +72,9 @@ class MainWindow(QWidget):
 
     def exit_to_login(self):
         self.exit_signal.emit()
+    
+    def open_desktop_calendar(self):
+        self.open_desktop_calendar_signal.emit()
 
         # self.ui.btn_listening.clicked.connect(
         #     lambda: self.ui.stackedWidget.setCurrentIndex(3)
@@ -89,8 +93,9 @@ class MainWindow(QWidget):
             "services": 8,
             "skin_home": 9,
         }
-
-        if key in route:
+        if key == "desktop_calendar":
+            self.open_desktop_calendar()
+        elif key in route:
             self.ui.stackedWidget.setCurrentIndex(route[key])
 
 
@@ -110,7 +115,9 @@ class MainWindow(QWidget):
         li = QTreeWidgetItem(["Listening"]); li.setData(0, Qt.UserRole, "listening")
         sp = QTreeWidgetItem(["Speaking"]); sp.setData(0, Qt.UserRole, "speaking")
         ds = QTreeWidgetItem(["Discussion"]); ds.setData(0, Qt.UserRole, "discussion")
-        learning.addChildren([wl, li, sp, ds])
+        dc = QTreeWidgetItem(["Calendar"]); dc.setData(0, Qt.UserRole, "desktop_calendar")
+        rk = QTreeWidgetItem(["Leaderboard"]); rk.setData(0, Qt.UserRole, "rank")
+        learning.addChildren([wl, li, sp, ds, dc])
 
         my_group = QTreeWidgetItem(["My Group"])
         group_plaza = QTreeWidgetItem(["Group Plaza"]); group_plaza.setData(0, Qt.UserRole, "group_plaza")
