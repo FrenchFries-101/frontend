@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame,
-    QScrollArea, QProgressBar, QGridLayout, QSizePolicy
+    QScrollArea, QGridLayout, QSizePolicy
 )
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont
@@ -8,6 +8,7 @@ from PySide6.QtGui import QFont
 from components.pet_current_widget import PetWidget
 from components.pet_service_widget import PetServiceWidget
 from components.pet_skin_card import PetSkinCard
+from components.pet_status_widget import PetStatusWidget
 from service.api_pet import get_user_skins
 
 
@@ -21,14 +22,14 @@ class PetHomePage(QWidget):
 
     ┌──────────────────────────────────────────────────┐
     │  🐾 宠物主页                                      │
-    ├──────────────────────────────────────────────────┤
-    │  Lv.1   [████████░░ 活力 50/100]   ⭐ 500 积分   │
     ├──────────────┬───────────────────────────────────┤
-    │              │  [食物]  [清洁]  [陪玩]             │
-    │   [Pet GIF]  │  ┌───────────────────────────┐    │
+    │  [Status]    │                                   │
+    │  等级/经验/活力│  [食物]  [清洁]  [陪玩]             │
+    ├──────────────┤  ┌───────────────────────────┐    │
     │              │  │ 投喂水       -1 积分       │    │
-    │  DOGName ✏   │  └───────────────────────────┘    │
-    │ "今天背单词了"│  ...                             │
+    │   [Pet GIF]  │  └───────────────────────────┘    │
+    │  DOGName ✏   │  ...                             │
+    │ "今天背单词了"│                                   │
     └──────────────┴───────────────────────────────────┘
 
     Signals:
@@ -47,78 +48,18 @@ class PetHomePage(QWidget):
 
         # ========== 创建子组件 ==========
         self._create_title()
-        self._create_status_bar()
         self._create_content_area()
 
         # ========== 按顺序添加到布局 ==========
         main_layout.addWidget(self.title_label)
-        main_layout.addWidget(self.status_bar)
         main_layout.addWidget(self.content_area, stretch=1)
 
     # ---- 创建子组件 ----
 
     def _create_title(self):
-        self.title_label = QLabel("🐾 宠物主页")
+        self.title_label = QLabel("🐾 Pet Home")
         self.title_label.setFont(QFont("", 18, QFont.Weight.Bold))
         self.title_label.setStyleSheet("color: #B3886B; background: transparent;")
-
-    def _create_status_bar(self):
-        self.status_bar = QFrame()
-        self.status_bar.setFixedHeight(50)
-        self.status_bar.setStyleSheet("""
-            QFrame {
-                background-color: white;
-                border: 1px solid #F0E0D0;
-                border-radius: 12px;
-            }
-        """)
-        bar_layout = QHBoxLayout(self.status_bar)
-        bar_layout.setContentsMargins(20, 8, 20, 8)
-
-        # 等级
-        self.level_label = QLabel("Lv.1")
-        self.level_label.setFont(QFont("", 13, QFont.Weight.Bold))
-        self.level_label.setStyleSheet("color: #B3886B; background: transparent;")
-        bar_layout.addWidget(self.level_label)
-
-        bar_layout.addSpacing(30)
-
-        # 活力值
-        vitality_title = QLabel("活力值")
-        vitality_title.setStyleSheet("color: #666; font-size: 12px; background: transparent;")
-        bar_layout.addWidget(vitality_title)
-
-        self.vitality_bar = QProgressBar()
-        self.vitality_bar.setFixedWidth(200)
-        self.vitality_bar.setFixedHeight(18)
-        self.vitality_bar.setTextVisible(True)
-        self.vitality_bar.setRange(0, 100)
-        self.vitality_bar.setValue(50)
-        self.vitality_bar.setStyleSheet("""
-            QProgressBar {
-                border: 1px solid #E8E8E8;
-                border-radius: 9px;
-                background-color: #F5F5F5;
-                text-align: center;
-                font-size: 11px;
-                color: #008A73;
-            }
-            QProgressBar::chunk {
-                background-color: #008A73;
-                border-radius: 9px;
-            }
-        """)
-        bar_layout.addWidget(self.vitality_bar)
-
-        bar_layout.addSpacing(30)
-
-        # 积分
-        self.points_label = QLabel("⭐ 500 积分")
-        self.points_label.setFont(QFont("", 13, QFont.Weight.Bold))
-        self.points_label.setStyleSheet("color: #F28D40; background: transparent;")
-        bar_layout.addWidget(self.points_label)
-
-        bar_layout.addStretch()
 
     def _create_content_area(self):
         self.content_area = QWidget()
@@ -126,11 +67,35 @@ class PetHomePage(QWidget):
         content_layout.setContentsMargins(0, 0, 0, 0)
         content_layout.setSpacing(20)
 
-        # 左侧 —— 宠物展示（固定宽度卡片）
+        # ====== 左侧：状态 + 宠物展示 ======
+        left_panel = QWidget()
+        left_panel.setFixedWidth(380)
+        left_layout = QVBoxLayout(left_panel)
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        left_layout.setSpacing(15)
+
+        # 左上 —— 状态面板
+        status_container = QFrame()
+        status_container.setObjectName("statusContainer")
+        status_container.setStyleSheet("""
+            QFrame#statusContainer {
+                background-color: white;
+                border: 1px solid #F0E0D0;
+                border-radius: 15px;
+            }
+        """)
+        status_layout = QVBoxLayout(status_container)
+        status_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.status_widget = PetStatusWidget(self.user_id)
+        status_layout.addWidget(self.status_widget)
+        left_layout.addWidget(status_container)
+
+        # 左下 —— 宠物展示
         pet_container = QFrame()
-        pet_container.setFixedWidth(320)
+        pet_container.setObjectName("petContainer")
         pet_container.setStyleSheet("""
-            QFrame {
+            QFrame#petContainer {
                 background-color: white;
                 border: 1px solid #F0E0D0;
                 border-radius: 15px;
@@ -141,12 +106,15 @@ class PetHomePage(QWidget):
 
         self.pet_widget = PetWidget(self.user_id)
         pet_layout.addWidget(self.pet_widget)
-        content_layout.addWidget(pet_container)
+        left_layout.addWidget(pet_container, stretch=1)
 
-        # 右侧 —— 宠物服务
+        content_layout.addWidget(left_panel)
+
+        # ====== 右侧：宠物服务 ======
         service_container = QFrame()
+        service_container.setObjectName("serviceContainer")
         service_container.setStyleSheet("""
-            QFrame {
+            QFrame#serviceContainer {
                 background-color: white;
                 border: 1px solid #F0E0D0;
                 border-radius: 15px;
@@ -155,7 +123,7 @@ class PetHomePage(QWidget):
         service_inner = QVBoxLayout(service_container)
         service_inner.setContentsMargins(15, 15, 15, 15)
 
-        service_title = QLabel("宠物服务")
+        service_title = QLabel("Pet Services")
         service_title.setFont(QFont("", 14, QFont.Weight.Bold))
         service_title.setStyleSheet("color: #333; background: transparent; margin-bottom: 5px;")
         service_inner.addWidget(service_title)
@@ -169,9 +137,8 @@ class PetHomePage(QWidget):
     # ---- 事件回调 ----
 
     def _on_service_applied(self, result: dict):
-        """服务使用成功 → 刷新状态栏"""
-        self.vitality_bar.setValue(result.get("new_vitality", 50))
-        self.points_label.setText(f"⭐ {result.get('new_points', 500)} 积分")
+        """服务使用成功 → 刷新状态组件"""
+        self.status_widget.refresh()
 
 
 # ============================================================
@@ -218,7 +185,7 @@ class PetSkinPage(QWidget):
     # ---- 创建子组件 ----
 
     def _create_title(self):
-        self.title_label = QLabel("🐾 宠物皮肤")
+        self.title_label = QLabel("🐾 Pet Skins")
         self.title_label.setFont(QFont("", 18, QFont.Weight.Bold))
         self.title_label.setStyleSheet("color: #B3886B; background: transparent;")
 

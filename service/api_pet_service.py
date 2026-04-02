@@ -13,6 +13,9 @@ _services_cache: Dict[int, dict] = {}
 # 本地冷却记录: {(user_id, service_id): 上次使用的时间戳}
 _cooldowns: Dict[tuple, float] = {}
 
+# 内部固定冷却时间（秒）
+COOLDOWN_SECONDS = 20
+
 
 def get_service_categories() -> List[Dict]:
     """获取服务分类列表 GET /pet/service_categories"""
@@ -65,12 +68,8 @@ def apply_service(user_id: int, service_id: int) -> Dict:
 
 
 def get_remaining_cooldown(user_id: int, service_id: int) -> int:
-    """获取某个服务的剩余冷却秒数（基于本地记录计算）"""
-    service = _services_cache.get(service_id)
-    if not service:
-        return 0
-
+    """获取某个服务的剩余冷却秒数（内部固定 20 秒）"""
     key = (user_id, service_id)
     last_use = _cooldowns.get(key, 0)
-    remaining = int(service["cooldown_seconds"] - (time.time() - last_use))
+    remaining = int(COOLDOWN_SECONDS - (time.time() - last_use))
     return max(0, remaining)
