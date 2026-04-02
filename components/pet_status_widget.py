@@ -2,7 +2,7 @@
 # pet_status_widget.py
 # 宠物状态组件：等级、经验条、活力条、经验增长速率
 
-from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout, QSizePolicy
+from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout, QSizePolicy
 from PySide6.QtCore import Qt, QTimer, QRectF
 from PySide6.QtGui import QFont, QPainter, QLinearGradient, QColor, QPainterPath, QBrush, QPen
 
