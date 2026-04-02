@@ -21,3 +21,7 @@ def gain_roll(user_id):
 
 def roll(user_id):
     return requests.post(f"{BASE}/roll", params={"user_id": user_id}).json()
+
+
+def get_quiz_question(user_id):
+    return requests.get(f"{BASE}/quiz-question", params={"user_id": user_id}).json()
