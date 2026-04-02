@@ -420,7 +420,7 @@ QLabel#label, QLabel#label_4, QLabel#label_13{
            <item>
             <widget class="QStackedWidget" name="stackedWidget">
              <property name="currentIndex">
-              <number>1</number>
+              <number>9</number>
              </property>
              <widget class="QWidget" name="Recite_page">
               <widget class="QWidget" name="verticalLayoutWidget">
@@ -646,8 +646,8 @@ QLabel#label, QLabel#label_4, QLabel#label_13{
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>869</width>
-                       <height>417</height>
+                       <width>96</width>
+                       <height>42</height>
                       </rect>
                      </property>
                      <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,4">
@@ -661,8 +661,8 @@ QLabel#label, QLabel#label_4, QLabel#label_13{
                           <rect>
                            <x>0</x>
                            <y>0</y>
-                           <width>169</width>
-                           <height>399</height>
+                           <width>97</width>
+                           <height>212</height>
                           </rect>
                          </property>
                          <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -708,8 +708,8 @@ QLabel#label, QLabel#label_4, QLabel#label_13{
                           <rect>
                            <x>0</x>
                            <y>0</y>
-                           <width>676</width>
-                           <height>399</height>
+                           <width>534</width>
+                           <height>280</height>
                           </rect>
                          </property>
                          <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -1014,6 +1014,12 @@ QLabel#label, QLabel#label_4, QLabel#label_13{
                </property>
               </widget>
              </widget>
+             <widget class="QWidget" name="GroupDiscuss"/>
+             <widget class="QWidget" name="GroupTask"/>
+             <widget class="QWidget" name="GroupPlaza"/>
+             <widget class="QWidget" name="Rank"/>
+             <widget class="QWidget" name="PetService"/>
+             <widget class="QWidget" name="PetSkin"/>
             </widget>
            </item>
           </layout>
