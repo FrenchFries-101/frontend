@@ -386,6 +386,10 @@ class MainWindow(QWidget):
         self.user = user
         self.user_name = user['username']
         self.ui.label_13.setText(self.user_name)
+        # 更新排行榜页面的用户信息
+        if hasattr(self, 'rank_page'):
+            print("MainWindow set_user called, updating rank page")
+            self.rank_page.set_user(user)
 
     def clear_data(self):
         # 清空用户名

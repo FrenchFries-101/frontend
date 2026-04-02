@@ -202,7 +202,18 @@ def get_rank_list():
         return []
 
 
+def get_user_rank(user_id):
+    try:
+        res = requests.get(f"{BASE_URL}/rank/user/{user_id}")
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("获取用户排名失败:", e)
+        return {"rank": 0, "points": 0}
+
+
 # ---- Group Plaza ----
+
 
 def get_groups(search=None, page=1, page_size=20):
     try:
