@@ -10,6 +10,7 @@ from service.api import get_cambridge_list, get_tests, get_sections, get_ted_tal
 from pages.RankPage import RankPage
 from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
 from utils.path_utils import resource_path
+from components.calendar_widget import CalendarWidget
 import session
 import random
 from PySide6.QtGui import QPixmap, QIcon, QMovie
@@ -48,6 +49,7 @@ class MainWindow(QWidget):
         self.init_forum_page()
         self.init_speaking_page()
         self.init_rank_page()
+        self.init_calendar_page()
 
         if hasattr(self.ui, "pushButton_8"):
             self.ui.pushButton_8.clicked.connect(self._show_ted_mode)
@@ -79,6 +81,7 @@ class MainWindow(QWidget):
             "speaking": 2,
             "discussion": 3,
             "rank": 4,
+            "calendar": 5,
 
         }
         if key in route:
@@ -103,8 +106,8 @@ class MainWindow(QWidget):
         li = QTreeWidgetItem(["Listening"]); li.setData(0, Qt.UserRole, "listening")
         sp = QTreeWidgetItem(["Speaking"]); sp.setData(0, Qt.UserRole, "speaking")
         ds = QTreeWidgetItem(["Discussion"]); ds.setData(0, Qt.UserRole, "discussion")
-        rk = QTreeWidgetItem(["Leaderboard"]); rk.setData(0, Qt.UserRole, "rank")
-        learning.addChildren([wl, li, sp, ds])
+        ca = QTreeWidgetItem(["Calendar"]); ca.setData(0, Qt.UserRole, "calendar")
+        learning.addChildren([wl, li, sp, ds, ca])
 
 
 
@@ -149,6 +152,10 @@ class MainWindow(QWidget):
     def init_rank_page(self):
         self.rank_page = RankPage()
         self.ui.stackedWidget.addWidget(self.rank_page)
+    
+    def init_calendar_page(self):
+        self.calendar_page = CalendarWidget()
+        self.ui.stackedWidget.addWidget(self.calendar_page)
 
     def start_test(self):
         self.start_test_signal.emit()
