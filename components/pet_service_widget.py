@@ -1,5 +1,6 @@
 # components/pet_service_widget.py
 # 宠物服务组件：分类按钮栏 + 服务列表（含冷却倒计时）
+#最新
 
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFrame
