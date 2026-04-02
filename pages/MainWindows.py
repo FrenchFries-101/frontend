@@ -8,6 +8,7 @@ from pages.ForumPages import ForumWindow
 from pages.SpeakingPage import SpeakingPanel
 from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
 from pages.RankPage import RankPage
+from pages.PetPages import PetHomePage, PetSkinPage
 from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
 from utils.path_utils import resource_path
 import session
@@ -39,16 +40,26 @@ class MainWindow(QWidget):
 
         #self.load_qss()
         self.load_icons()
+        self.init_top_bar()
 
         self.ui.pushButton_14.clicked.connect(self.start_test)
+
 
         self.init_recite_page()
         self.init_forum_page()
         self.init_speaking_page()
         self.init_rank_page()
+        self.init_pet_pages()
+
+        if hasattr(self.ui, "pushButton_8"):
+            self.ui.pushButton_8.clicked.connect(self._show_ted_mode)
+        if hasattr(self.ui, "pushButton_7"):
+            self.ui.pushButton_7.clicked.connect(self._show_ielts_mode)
+
 
         self.setup_sidebar_tree()
         self.ui.navTree.itemClicked.connect(self.on_nav_item_clicked)
+
 
         # 如果你保留了 Exit_button 就连上；删掉也不会报错
         if hasattr(self.ui, "Exit_button"):
@@ -70,9 +81,15 @@ class MainWindow(QWidget):
             "speaking": 2,
             "discussion": 3,
             "rank": 4,
+            "pet_1": 5,
+            "pet_2": 6,
         }
         if key in route:
             self.ui.stackedWidget.setCurrentIndex(route[key])
+            if key == "listening":
+                self._show_ielts_mode()
+
+
 
     def setup_sidebar_tree(self):
         tree = self.ui.navTree
@@ -93,6 +110,7 @@ class MainWindow(QWidget):
         learning.addChildren([wl, li, sp, ds, rk])
 
         t1 = QTreeWidgetItem(["Team Slot 1"]); t1.setData(0, Qt.UserRole, "team_1")
+
         t2 = QTreeWidgetItem(["Team Slot 2"]); t2.setData(0, Qt.UserRole, "team_2")
         team.addChildren([t1, t2])
 
@@ -102,6 +120,7 @@ class MainWindow(QWidget):
 
         tree.addTopLevelItems([learning, team, pets])
         learning.setExpanded(True)
+
 
     def on_nav_item_clicked(self, item, column):
         if item.childCount() > 0:
@@ -131,6 +150,10 @@ class MainWindow(QWidget):
     def init_rank_page(self):
         self.rank_page = RankPage()
         self.ui.stackedWidget.addWidget(self.rank_page)
+
+    def init_pet_pages(self):
+        self.pet_home_page = None
+        self.pet_skin_page = None
 
     def start_test(self):
         self.start_test_signal.emit()
@@ -349,6 +372,18 @@ class MainWindow(QWidget):
         self.user = user
         self.user_name = user['username']
         self.ui.label_13.setText(self.user_name)
+        # 更新排行榜页面的用户信息
+        if hasattr(self, 'rank_page') and hasattr(self.rank_page, 'set_user'):
+            print("MainWindow set_user called, updating rank page")
+            self.rank_page.set_user(user)
+        # 初始化 pet 页面（需要 user_id）
+        if self.pet_home_page is None:
+            user_id = user.get("id", 0)
+            print(f"[PetPages] Initializing pet pages for user_id={user_id}")
+            self.pet_home_page = PetHomePage(user_id)
+            self.pet_skin_page = PetSkinPage(user_id)
+            self.ui.stackedWidget.addWidget(self.pet_home_page)
+            self.ui.stackedWidget.addWidget(self.pet_skin_page)
 
     def clear_data(self):
         # 清空用户名
@@ -417,3 +452,39 @@ class MainWindow(QWidget):
             9: "The simple traffic technique that reduces congestion and saves time",
             10: "Creator-produced content on modern challenges and opportunities",
         }
+
+        talk_id = int(talk.get("talk_id") or talk.get("id") or 0)
+        title = talk.get("title") or f"TED Talk {talk_id}"
+        audio_path = talk.get("audio_path") or ""
+        subtitle = _TALK_SUBTITLES.get(talk_id, "")
+
+        card = QFrame()
+        card.setObjectName("test_card")
+        card.setMinimumHeight(90)
+
+        card_layout = QHBoxLayout(card)
+
+        left_layout = QVBoxLayout()
+        left_layout.setSpacing(6)
+
+        title_label = QLabel(title)
+        title_label.setObjectName("label_7")
+        left_layout.addWidget(title_label)
+
+        if subtitle:
+            subtitle_label = QLabel(subtitle)
+            subtitle_label.setObjectName("label_8")
+            subtitle_label.setWordWrap(True)
+            left_layout.addWidget(subtitle_label)
+
+        open_btn = QPushButton("Open")
+        open_btn.clicked.connect(
+            lambda _, tid=talk_id, t=title, a=audio_path: self.start_ted_signal.emit(tid, t, a)
+        )
+
+        card_layout.addLayout(left_layout)
+        card_layout.addStretch()
+        card_layout.addWidget(open_btn)
+
+        return card
+

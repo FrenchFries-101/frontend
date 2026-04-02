@@ -79,17 +79,17 @@ class PetSkinCard(QFrame):
             self.button.setText("Locked")
             self.button.setEnabled(False)
             self.button.setStyleSheet(
-                "background-color: #DFE0DF; color: #888888; border-radius: 8px; padding:5px;")
+                "background-color: #DFE0DF; color: #888888; border-radius: 8px; padding: 5px; margin: 0px; text-align: center;")
         elif self.skin_data["current"]:
             self.button.setText("In Use")
             self.button.setEnabled(False)
             self.button.setStyleSheet(
-                "background-color: #B3886B; color: white; border-radius: 8px; padding:5px;")
+                "background-color: #B3886B; color: white; border-radius: 8px; padding: 5px; margin: 0px; text-align: center;")
         else:
             self.button.setText("Set as Current")
             self.button.setEnabled(True)
             self.button.setStyleSheet(
-                "background-color: #FFF6EA; color: #B3886B; border: 1px solid #B3886B; border-radius: 8px; padding:5px;")
+                "background-color: #FFF6EA; color: #B3886B; border: 1px solid #B3886B; border-radius: 8px; padding: 5px; margin: 0px; text-align: center;")
 
     def _on_click(self):
         print("点击按钮")

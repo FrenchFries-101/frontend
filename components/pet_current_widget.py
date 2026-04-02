@@ -20,7 +20,7 @@ class PetWidget(QWidget):
         self.layout = QVBoxLayout(self)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.layout.setSpacing(10)
-        self.layout.setContentsMargins(0, 25, 0, 0) #调整上下左右间距
+        self.layout.setContentsMargins(0, 5, 0, 0) #调整上下左右间距
 
         # ========== 创建子组件 ==========
         self._create_gif_area()
@@ -68,8 +68,10 @@ class PetWidget(QWidget):
         self.edit_icon.setCursor(Qt.CursorShape.PointingHandCursor)
         self.edit_icon.setStyleSheet("""
             QPushButton {
-                background: transparent; border: none; padding: 0px;
+                background: transparent; border: none;
+                padding: 0px; margin: 0px;
                 color: #B3886B; font-size: 12px;
+                text-align: center;
             }
             QPushButton:hover {
                 background-color: rgba(179, 136, 107, 0.15); border-radius: 11px;
@@ -103,6 +105,8 @@ class PetWidget(QWidget):
             QPushButton {
                 background-color: #B3886B; color: white; border: none;
                 border-radius: 14px; font-size: 14px; font-weight: bold;
+                padding: 0px; margin: 0px;
+                text-align: center;
             }
             QPushButton:hover { background-color: #9A7055; }
         """)
@@ -117,6 +121,8 @@ class PetWidget(QWidget):
             QPushButton {
                 background-color: #DFE0DF; color: #666; border: none;
                 border-radius: 14px; font-size: 14px; font-weight: bold;
+                padding: 0px; margin: 0px;
+                text-align: center;
             }
             QPushButton:hover { background-color: #C8C8C8; }
         """)
@@ -154,12 +160,13 @@ class PetWidget(QWidget):
         self.skin_id = data.get("skin_id")
         self.name_label.setText(data.get("name", ""))
         self.gif_url = data.get("gif_url")
-        self.set_gif(self.gif_url)
+        if self.gif_url:
+            self.set_gif(self.gif_url)
         self.update_quote()
 
     def set_gif(self, gif_path: str):
         """加载图片/GIF"""
-        if not os.path.isabs(gif_path):
+        if not gif_path or not os.path.isabs(gif_path):
             gif_path = os.path.join(
                 os.path.dirname(os.path.dirname(os.path.abspath(__file__))), gif_path
             )

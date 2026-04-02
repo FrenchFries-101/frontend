@@ -4,14 +4,14 @@
 import requests
 from typing import List, Dict
 
-from service.api import BASE_URL
+from service.api import PET_BASE_URL
 
 
 def get_user_skins(user_id: int) -> List[Dict]:
     """获取用户皮肤列表 GET /pet/skins?user_id={user_id}"""
     try:
         res = requests.get(
-            f"{BASE_URL}/pet/skins",
+            f"{PET_BASE_URL}/pet/skins",
             params={"user_id": user_id}
         )
         res.raise_for_status()
@@ -25,7 +25,7 @@ def set_current_skin(user_id: int, skin_id: int) -> Dict:
     """设置当前皮肤 POST /pet/current_skin"""
     try:
         res = requests.post(
-            f"{BASE_URL}/pet/current_skin",
+            f"{PET_BASE_URL}/pet/current_skin",
             json={
                 "user_id": str(user_id),
                 "skin_id": skin_id

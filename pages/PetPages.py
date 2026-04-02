@@ -195,7 +195,10 @@ class PetSkinPage(QWidget):
         self.scroll_area.setStyleSheet("""
             QScrollArea {
                 border: none;
-                background: transparent;
+                background: #FFF6EA;
+            }
+            QScrollArea > QWidget > QWidget {
+                background: #FFF6EA;
             }
             QScrollBar:vertical {
                 width: 8px;
@@ -208,6 +211,7 @@ class PetSkinPage(QWidget):
         """)
 
         scroll_widget = QWidget()
+        scroll_widget.setStyleSheet("background: #FFF6EA;")
         self.grid_layout = QGridLayout(scroll_widget)
         self.grid_layout.setSpacing(15)
         self.grid_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
