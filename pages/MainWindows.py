@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QFrame, QLabel, QHBoxLayout, QSizePolicy, QProgressBar, QTreeWidgetItem
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Signal, QSize, Qt, QUrl
-from PySide6.QtGui import QPixmap, QIcon
+from PySide6.QtGui import QPixmap, QIcon, QMovie
 
 from pages.RecitePages import RecitePage
 from pages.ForumPages import ForumWindow
@@ -10,12 +10,10 @@ from service.api import get_cambridge_list, get_tests, get_sections, get_ted_tal
 from pages.RankPage import RankPage
 from pages.PetPages import PetHomePage, PetSkinPage
 from pages.GroupPlazaPage import GroupPlazaPage
-from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
-
+from pages.WordGamePages import *
 from utils.path_utils import resource_path
 import session
 import random
-from PySide6.QtGui import QPixmap, QIcon, QMovie
 
 
 class MainWindow(QWidget):
@@ -66,6 +64,17 @@ class MainWindow(QWidget):
 
         self.ui.navTree.itemClicked.connect(self.on_nav_item_clicked)
 
+        self.game_menu = GameMenuPage(self)
+        self.start_page = StartGamePage(self)
+        self.join_page = JoinPage(self)
+        self.board_page = BoardPage(self)
+        self.instruction_page = InstructionPage(self)
+
+        self.ui.stackedWidget.addWidget(self.game_menu)
+        self.ui.stackedWidget.addWidget(self.start_page)
+        self.ui.stackedWidget.addWidget(self.join_page)
+        self.ui.stackedWidget.addWidget(self.board_page)
+        self.ui.stackedWidget.addWidget(self.instruction_page)
 
         # 如果你保留了 Exit_button 就连上；删掉也不会报错
         if hasattr(self.ui, "Exit_button"):
@@ -102,9 +111,8 @@ class MainWindow(QWidget):
             self.ui.stackedWidget.setCurrentIndex(route[key])
             if key == "listening":
                 self._show_ielts_mode()
-
-
-
+        elif key == "game_menu":
+            self.ui.stackedWidget.setCurrentWidget(self.game_menu)
 
     def setup_sidebar_tree(self):
         tree = self.ui.navTree
@@ -116,29 +124,50 @@ class MainWindow(QWidget):
         learning = QTreeWidgetItem(["Learning Task"])
         team = QTreeWidgetItem(["Team Work"])
         pets = QTreeWidgetItem(["Pets Home"])
-        rank = QTreeWidgetItem(["Leaderboard"]); rank.setData(0, Qt.UserRole, "rank")
+        rank = QTreeWidgetItem(["Leaderboard"])
+        rank.setData(0, Qt.UserRole, "rank")
 
-        wl = QTreeWidgetItem(["Word List"]); wl.setData(0, Qt.UserRole, "word_list")
-        li = QTreeWidgetItem(["Listening"]); li.setData(0, Qt.UserRole, "listening")
-        sp = QTreeWidgetItem(["Speaking"]); sp.setData(0, Qt.UserRole, "speaking")
-        ds = QTreeWidgetItem(["Discussion"]); ds.setData(0, Qt.UserRole, "discussion")
-        dc = QTreeWidgetItem(["Calendar"]); dc.setData(0, Qt.UserRole, "desktop_calendar")
-        rk = QTreeWidgetItem(["Leaderboard"]); rk.setData(0, Qt.UserRole, "rank")
-        learning.addChildren([wl, li, sp, ds, dc])
+        wl = QTreeWidgetItem(["Word List"])
+        wl.setData(0, Qt.UserRole, "word_list")
+
+        li = QTreeWidgetItem(["Listening"])
+        li.setData(0, Qt.UserRole, "listening")
+
+        sp = QTreeWidgetItem(["Speaking"])
+        sp.setData(0, Qt.UserRole, "speaking")
+
+        ds = QTreeWidgetItem(["Discussion"])
+        ds.setData(0, Qt.UserRole, "discussion")
+
+        dc = QTreeWidgetItem(["Calendar"])
+        dc.setData(0, Qt.UserRole, "desktop_calendar")
+
+        rk = QTreeWidgetItem(["Leaderboard"])
+        rk.setData(0, Qt.UserRole, "rank")
+
+        game = QTreeWidgetItem(["Game"])
+        game.setData(0, Qt.UserRole, "game_menu")
+
+        learning.addChildren([wl, li, sp, ds, dc, rk, game])
 
         my_group = QTreeWidgetItem(["My Group"])
-        group_plaza = QTreeWidgetItem(["Group Plaza"]); group_plaza.setData(0, Qt.UserRole, "group_plaza")
-        gc = QTreeWidgetItem(["Group Chat"]); gc.setData(0, Qt.UserRole, "group_chat")
-        tb = QTreeWidgetItem(["Task Board"]); tb.setData(0, Qt.UserRole, "task_board")
+        group_plaza = QTreeWidgetItem(["Group Plaza"])
+        group_plaza.setData(0, Qt.UserRole, "group_plaza")
+
+        gc = QTreeWidgetItem(["Group Chat"])
+        gc.setData(0, Qt.UserRole, "group_chat")
+
+        tb = QTreeWidgetItem(["Task Board"])
+        tb.setData(0, Qt.UserRole, "task_board")
+
         my_group.addChildren([gc, tb])
         team.addChildren([my_group, group_plaza])
 
-        t1 = QTreeWidgetItem(["Team Slot 1"]); t1.setData(0, Qt.UserRole, "team_1")
+        p1 = QTreeWidgetItem(["Services"])
+        p1.setData(0, Qt.UserRole, "services")
 
-        t2 = QTreeWidgetItem(["Team Slot 2"]); t2.setData(0, Qt.UserRole, "team_2")
-        team.addChildren([t1, t2])
-        p1 = QTreeWidgetItem(["Services"]); p1.setData(0, Qt.UserRole, "services")
-        p2 = QTreeWidgetItem(["Skin Home"]); p2.setData(0, Qt.UserRole, "skin_home")
+        p2 = QTreeWidgetItem(["Skin Home"])
+        p2.setData(0, Qt.UserRole, "skin_home")
 
         pets.addChildren([p1, p2])
 
@@ -561,3 +590,14 @@ class MainWindow(QWidget):
 
         return card
 
+    def goto(self, page):
+        if page == "game_menu":
+            self.ui.stackedWidget.setCurrentWidget(self.game_menu)
+        elif page == "start":
+            self.ui.stackedWidget.setCurrentWidget(self.start_page)
+        elif page == "join":
+            self.ui.stackedWidget.setCurrentWidget(self.join_page)
+        elif page == "board":
+            self.ui.stackedWidget.setCurrentWidget(self.board_page)
+        elif page == "instruction":
+            self.ui.stackedWidget.setCurrentWidget(self.instruction_page)
