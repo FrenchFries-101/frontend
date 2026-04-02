@@ -23,7 +23,7 @@ class DesktopCalendar(QWidget):
         self.main_frame = QFrame()
         self.main_frame.setStyleSheet("""
             QFrame {
-                background: rgba(242, 141, 64, 0.8);
+                background: #FFF3E8;
                 border-radius: 15px;
                 border: 2px solid rgba(255, 255, 255, 0.3);
             }
@@ -45,7 +45,7 @@ class DesktopCalendar(QWidget):
         self.title_label = QLabel("📅 Daily Notes")
         self.title_label.setStyleSheet("""
             QLabel {
-                color: white;
+                color: #333333;
                 font-size: 18px;
                 font-weight: bold;
                 font-family: 'Microsoft YaHei', sans-serif;
@@ -57,15 +57,15 @@ class DesktopCalendar(QWidget):
         self.close_btn.setFixedSize(30, 30)
         self.close_btn.setStyleSheet("""
             QPushButton {
-                background: rgba(255, 255, 255, 0.2);
+                background: rgba(0, 0, 0, 0.1);
                 border: none;
                 border-radius: 15px;
-                color: white;
+                color: #333333;
                 font-size: 16px;
                 font-weight: bold;
             }
             QPushButton:hover {
-                background: rgba(255, 255, 255, 0.4);
+                background: rgba(0, 0, 0, 0.2);
             }
         """)
         self.close_btn.clicked.connect(self.close)
@@ -82,14 +82,14 @@ class DesktopCalendar(QWidget):
         self.prev_btn.setFixedSize(40, 30)
         self.prev_btn.setStyleSheet("""
             QPushButton {
-                background: rgba(255, 255, 255, 0.2);
+                background: rgba(0, 0, 0, 0.1);
                 border: none;
                 border-radius: 15px;
-                color: white;
+                color: #333333;
                 font-size: 14px;
             }
             QPushButton:hover {
-                background: rgba(255, 255, 255, 0.4);
+                background: rgba(0, 0, 0, 0.2);
             }
         """)
         
@@ -97,21 +97,21 @@ class DesktopCalendar(QWidget):
         self.next_btn.setFixedSize(40, 30)
         self.next_btn.setStyleSheet("""
             QPushButton {
-                background: rgba(255, 255, 255, 0.2);
+                background: rgba(0, 0, 0, 0.1);
                 border: none;
                 border-radius: 15px;
-                color: white;
+                color: #333333;
                 font-size: 14px;
             }
             QPushButton:hover {
-                background: rgba(255, 255, 255, 0.4);
+                background: rgba(0, 0, 0, 0.2);
             }
         """)
         
         self.month_label = QLabel()
         self.month_label.setStyleSheet("""
             QLabel {
-                color: white;
+                color: #333333;
                 font-size: 16px;
                 font-weight: bold;
                 font-family: 'Microsoft YaHei', sans-serif;
@@ -132,7 +132,7 @@ class DesktopCalendar(QWidget):
             label = QLabel(day)
             label.setStyleSheet("""
                 QLabel {
-                    color: rgba(255, 255, 255, 0.8);
+                    color: #555555;
                     font-size: 12px;
                     font-weight: bold;
                 }
@@ -204,11 +204,6 @@ class DesktopCalendar(QWidget):
                     date = QDate(self.current_date.year(), self.current_date.month(), day)
                     date_str = str(day)
                     
-                    # 检查是否有任务
-                    task = self.get_task(date)
-                    if task:
-                        date_str += f"\n{task[:8]}..." if len(task) > 8 else f"\n{task}"
-                    
                     btn = QPushButton(date_str)
                     btn.setMinimumSize(45, 45)
                     
@@ -216,30 +211,30 @@ class DesktopCalendar(QWidget):
                     if date == QDate.currentDate():
                         btn.setStyleSheet("""
                             QPushButton {
-                                background: rgba(255, 255, 255, 0.9);
+                                background: rgba(0, 0, 0, 0.1);
                                 border: none;
                                 border-radius: 10px;
-                                color: #667eea;
+                                color: #333333;
                                 font-size: 14px;
                                 font-weight: bold;
                                 text-align: center;
                             }
                             QPushButton:hover {
-                                background: white;
+                                background: rgba(0, 0, 0, 0.2);
                             }
                         """)
                     else:
                         btn.setStyleSheet("""
                             QPushButton {
-                                background: rgba(255, 255, 255, 0.2);
+                                background: rgba(0, 0, 0, 0.05);
                                 border: none;
                                 border-radius: 10px;
-                                color: white;
+                                color: #333333;
                                 font-size: 14px;
                                 text-align: center;
                             }
                             QPushButton:hover {
-                                background: rgba(255, 255, 255, 0.4);
+                                background: rgba(0, 0, 0, 0.15);
                             }
                         """)
                     
@@ -369,11 +364,47 @@ class TaskEditDialog(QDialog):
         layout.addWidget(self.task_edit)
         
         # 按钮
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        button_box.accepted.connect(self.accept)
-        button_box.rejected.connect(self.reject)
+        button_layout = QHBoxLayout()
         
-        layout.addWidget(button_box)
+        self.ok_btn = QPushButton("OK")
+        self.ok_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.2);
+                border: none;
+                border-radius: 10px;
+                color: #333333;
+                font-size: 14px;
+                padding: 8px 20px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background: rgba(255, 255, 255, 0.4);
+            }
+        """)
+        self.ok_btn.clicked.connect(self.accept)
+        
+        self.cancel_btn = QPushButton("Cancel")
+        self.cancel_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.2);
+                border: none;
+                border-radius: 10px;
+                color: #333333;
+                font-size: 14px;
+                padding: 8px 20px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background: rgba(255, 255, 255, 0.4);
+            }
+        """)
+        self.cancel_btn.clicked.connect(self.reject)
+        
+        button_layout.addStretch()
+        button_layout.addWidget(self.ok_btn)
+        button_layout.addWidget(self.cancel_btn)
+        
+        layout.addLayout(button_layout)
         
         self.setLayout(layout)
     
