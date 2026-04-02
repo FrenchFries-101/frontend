@@ -20,7 +20,8 @@ def get_pet_status(user_id: int) -> dict:
             f"{BASE_URL}/pet/status",
             params={"user_id": user_id}   # query参数用params=
         )
-        raw = response.json()      # 后端原始数据
+        raw = response.json()
+        # 后端原始数据
 
         # 字段名转换 + 字符串转数字
         return {
