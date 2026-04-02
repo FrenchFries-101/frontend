@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>953</width>
+    <width>1208</width>
     <height>647</height>
    </rect>
   </property>
@@ -418,16 +418,6 @@ QLabel#label, QLabel#label_4, QLabel#label_13{
          <widget class="QWidget" name="PageArea" native="true">
           <layout class="QVBoxLayout" name="verticalLayout_13">
            <item>
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>Listening Test</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignmentFlag::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item>
             <widget class="QStackedWidget" name="stackedWidget">
              <property name="currentIndex">
               <number>1</number>
@@ -541,94 +531,93 @@ QLabel#label, QLabel#label_4, QLabel#label_13{
               </widget>
              </widget>
              <widget class="QWidget" name="favourite_page">
-              <layout class="QVBoxLayout" name="verticalLayout_3">
+              <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,1">
                <item>
                 <widget class="QWidget" name="widget" native="true">
-                 <widget class="QWidget" name="horizontalLayoutWidget_2">
-                  <property name="geometry">
-                   <rect>
-                    <x>-1</x>
-                    <y>9</y>
-                    <width>741</width>
-                    <height>46</height>
-                   </rect>
+                 <layout class="QVBoxLayout" name="verticalLayout_13">
+                  <property name="spacing">
+                   <number>8</number>
                   </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_3">
-                   <item>
-                    <spacer name="verticalSpacer_11">
-                     <property name="orientation">
-                      <enum>Qt::Orientation::Vertical</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>40</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="pushButton_9">
-                     <property name="text">
-                      <string>Sequential practice</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <spacer name="verticalSpacer_7">
-                     <property name="orientation">
-                      <enum>Qt::Orientation::Vertical</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>40</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="pushButton_8">
-                     <property name="text">
-                      <string>Section practice</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <spacer name="verticalSpacer_9">
-                     <property name="orientation">
-                      <enum>Qt::Orientation::Vertical</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>40</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="pushButton_7">
-                     <property name="text">
-                      <string>Topic practice</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <spacer name="verticalSpacer_12">
-                     <property name="orientation">
-                      <enum>Qt::Orientation::Vertical</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>40</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                  </layout>
-                 </widget>
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <widget class="QLabel" name="label_3">
+                    <property name="text">
+                     <string>Listening Test</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignmentFlag::AlignCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,1,1,1,1">
+                    <item>
+                     <spacer name="verticalSpacer_11">
+                      <property name="orientation">
+                       <enum>Qt::Orientation::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="pushButton_8">
+                      <property name="text">
+                       <string>TED Talk</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <spacer name="verticalSpacer_9">
+                      <property name="orientation">
+                       <enum>Qt::Orientation::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="pushButton_7">
+                      <property name="text">
+                       <string>IELTS Test</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <spacer name="verticalSpacer_12">
+                      <property name="orientation">
+                       <enum>Qt::Orientation::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
                 </widget>
                </item>
                <item>
@@ -657,8 +646,8 @@ QLabel#label, QLabel#label_4, QLabel#label_13{
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>660</width>
-                       <height>455</height>
+                       <width>869</width>
+                       <height>417</height>
                       </rect>
                      </property>
                      <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,4">
@@ -672,8 +661,8 @@ QLabel#label, QLabel#label_4, QLabel#label_13{
                           <rect>
                            <x>0</x>
                            <y>0</y>
-                           <width>127</width>
-                           <height>437</height>
+                           <width>169</width>
+                           <height>399</height>
                           </rect>
                          </property>
                          <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -719,8 +708,8 @@ QLabel#label, QLabel#label_4, QLabel#label_13{
                           <rect>
                            <x>0</x>
                            <y>0</y>
-                           <width>534</width>
-                           <height>425</height>
+                           <width>676</width>
+                           <height>399</height>
                           </rect>
                          </property>
                          <layout class="QVBoxLayout" name="verticalLayout_5">
