@@ -1,11 +1,15 @@
 # advanced_pet_skin_test.py
+import os
+import tempfile
 import sys
 from PySide6.QtWidgets import (
     QApplication, QWidget, QLabel, QVBoxLayout, QScrollArea, QPushButton, QFrame
 )
 from PySide6.QtGui import QPixmap, QMovie, QFont, QColor
 from PySide6.QtCore import Qt, QSize
+import requests
 from service.api_pet import get_user_skins, set_current_skin
+from service.api import BASE_URL
 
 
 class PetSkinCard(QFrame):
@@ -67,7 +71,28 @@ class PetSkinCard(QFrame):
         """
 
     def _set_gif(self, gif_path: str):
-        """加载 GIF 动画"""
+        """加载 GIF 动画，支持后端URL"""
+        if gif_path.startswith("/"):
+            gif_path = f"{BASE_URL}{gif_path}"
+
+        # URL形式：先下载到本地临时文件
+        if gif_path.startswith("http://") or gif_path.startswith("https://"):
+            try:
+                res = requests.get(gif_path, timeout=10)
+                res.raise_for_status()
+                _, ext = os.path.splitext(gif_path)
+                tmp = tempfile.NamedTemporaryFile(suffix=ext or ".gif", delete=False)
+                tmp.write(res.content)
+                tmp.close()
+                gif_path = tmp.name
+            except Exception as e:
+                print(f"[PetSkinCard] 下载GIF失败: {e}")
+                return
+
+        if not os.path.exists(gif_path):
+            print(f"[PetSkinCard] 文件不存在: {gif_path}")
+            return
+
         self.movie = QMovie(gif_path)
         self.movie.setScaledSize(QSize(150, 150))
         self.gif_label.setMovie(self.movie)
