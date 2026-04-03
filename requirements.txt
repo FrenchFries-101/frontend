@@ -1,1 +1,6 @@
+PySide6
+requests
+numpy
+sounddevice
+soundfile
 requests>=2.31.0
