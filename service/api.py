@@ -5,8 +5,8 @@ BASE_URL = "http://127.0.0.1:8000"
 #BASE_URL = "http://124.233.33.28:8787"
 
 # Pet 模块后端路由前缀
-PET_BASE_URL = BASE_URL
-# PET_BASE_URL = f"{BASE_URL}/pet_module"
+# PET_BASE_URL = BASE_URL
+PET_BASE_URL = f"{BASE_URL}/pet_module"
 
 def get_cambridge_list():
     res = requests.get(f"{BASE_URL}/listening/cambridge")

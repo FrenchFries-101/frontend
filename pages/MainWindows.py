@@ -93,11 +93,13 @@ class MainWindow(QWidget):
             "group_chat": 4,
             "task_board": 5,
             "group_plaza": 6,
-            "services": 8,
-            "skin_home": 9,
         }
         if key == "desktop_calendar":
             self.open_desktop_calendar()
+        elif key == "services" and self.pet_home_page:
+            self.ui.stackedWidget.setCurrentWidget(self.pet_home_page)
+        elif key == "skin_home" and self.pet_skin_page:
+            self.ui.stackedWidget.setCurrentWidget(self.pet_skin_page)
         elif key in route:
             self.ui.stackedWidget.setCurrentIndex(route[key])
             if key == "listening":

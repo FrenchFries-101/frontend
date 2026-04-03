@@ -9,6 +9,35 @@ from PySide6.QtCore import Qt, QTimer, QSize
 import requests
 from service.api_petshow import get_current_skin, modify_pet_name, get_pet_quote
 from service.api import BASE_URL
+from utils.path_utils import resource_path
+
+
+def _resolve_gif(gif_url: str, skin_id: int) -> str | None:
+    """解析 GIF 路径：优先后端 URL，失败则回退本地 fox_{skin_id}.gif"""
+    if gif_url and gif_url.startswith("/"):
+        gif_url = f"{BASE_URL}{gif_url}"
+
+    if gif_url and (gif_url.startswith("http://") or gif_url.startswith("https://")):
+        try:
+            res = requests.get(gif_url, timeout=10)
+            res.raise_for_status()
+            _, ext = os.path.splitext(gif_url)
+            tmp = tempfile.NamedTemporaryFile(suffix=ext or ".gif", delete=False)
+            tmp.write(res.content)
+            tmp.close()
+            print(f"[PetWidget] skin_id={skin_id} → 使用后端图片: {gif_url}")
+            return tmp.name
+        except Exception as e:
+            print(f"[PetWidget] 后端图片下载失败({e})，尝试本地回退")
+
+    # 回退本地
+    local_path = resource_path(f"resources/icons/fox_{skin_id}.gif")
+    if os.path.exists(local_path):
+        print(f"[PetWidget] skin_id={skin_id} → 使用本地回退: {local_path}")
+        return local_path
+
+    print(f"[PetWidget] skin_id={skin_id} → 后端和本地均无可用图片")
+    return None
 
 
 class PetWidget(QWidget):
@@ -162,36 +191,13 @@ class PetWidget(QWidget):
         data = get_current_skin(self.user_id)
         self.skin_id = data.get("skin_id")
         self.name_label.setText(data.get("name", ""))
-        self.gif_url = data.get("gif_url")
-        if self.gif_url:
-            self.set_gif(self.gif_url)
+        self.set_gif(data.get("gif_url", ""), self.skin_id)
         self.update_quote()
 
-    def set_gif(self, gif_path: str):
-        """加载图片/GIF，支持本地路径和后端URL"""
+    def set_gif(self, gif_url: str, skin_id: int = 1):
+        """加载图片/GIF，优先后端URL，失败回退本地"""
+        gif_path = _resolve_gif(gif_url, skin_id)
         if not gif_path:
-            return
-
-        # 如果是相对路径（如 /static/pet_gifs/xxx.gif），拼接后端URL下载
-        if gif_path.startswith("/"):
-            gif_path = f"{BASE_URL}{gif_path}"
-
-        # URL形式：先下载到本地临时文件
-        if gif_path.startswith("http://") or gif_path.startswith("https://"):
-            try:
-                res = requests.get(gif_path, timeout=10)
-                res.raise_for_status()
-                _, ext = os.path.splitext(gif_path)
-                tmp = tempfile.NamedTemporaryFile(suffix=ext or ".gif", delete=False)
-                tmp.write(res.content)
-                tmp.close()
-                gif_path = tmp.name
-            except Exception as e:
-                print(f"[PetWidget] 下载GIF失败: {e}")
-                return
-
-        if not os.path.exists(gif_path):
-            print(f"[PetWidget] 文件不存在: {gif_path}")
             return
 
         _, ext = os.path.splitext(gif_path)
