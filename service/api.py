@@ -128,10 +128,14 @@ def login(username, password):
                 "password": password
             }
         )
+        if res.status_code == 401:
+            raise Exception("Incorrect username or password")
+        res.raise_for_status()
         return res.json()
+    except requests.exceptions.ConnectionError:
+        raise Exception("Cannot connect to server — please make sure the backend is running")
     except Exception as e:
-        print("登录失败:", e)
-        return None
+        raise
 def get_current_user(token):
     try:
         res = requests.get(
@@ -140,6 +144,7 @@ def get_current_user(token):
                 "Authorization": f"Bearer {token}"
             }
         )
+        res.raise_for_status()
         return res.json()
     except Exception as e:
         print("获取用户失败:", e)
