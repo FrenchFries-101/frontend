@@ -4,13 +4,17 @@ from PySide6.QtWidgets import (
     QSizePolicy, QSpacerItem, QScrollArea
 )
 from utils.path_utils import resource_path
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import Qt, QSize, Signal
 from PySide6.QtGui import QPixmap, QIcon, QColor
-from service.api_word import get_categories, get_subcategories, get_words  # 接口
+from service.api_word import get_categories, get_subcategories, get_words, add_user_points
 from PySide6.QtGui import QMovie
+from pages.SpellDialog import SpellDialog
+from datetime import datetime
+import session
 
 
 class RecitePage(QWidget):
+    points_changed = Signal(int)   # emits new points total after a word is memorized
     def __init__(self):
         super().__init__()
         print("开始加载背单词界面")
@@ -20,8 +24,12 @@ class RecitePage(QWidget):
         self.english = resource_path("resources/icons/graduate.gif")
         self.science = resource_path("resources/icons/science.gif")
 
-        # 全局中文显示开关状态
+        # Global Chinese display toggle
         self.show_chinese_global = False
+
+        # Spelling feature: track completed words (english -> timestamp) across loads
+        self.completed_words = {}    # english -> timestamp string
+        self.word_item_refs = {}     # english -> ts_label widget (rebuilt per load_words)
 
         self.init_ui()
         # self.init_data()
@@ -332,6 +340,7 @@ QWidget#CategoryCard:hover QLabel#cat_text {
 
     def show_categories(self):
         self.clear_container()
+        self.word_list = None   # prevent stale reference to deleted widget
         self.page_state = "category"
         self.title_back_btn.setVisible(False)
         self.switch_widget.setVisible(False)
@@ -471,6 +480,7 @@ QWidget#CategoryCard:hover QLabel#cat_text {
         # 单词列表
         self.word_list = QListWidget()
         self.word_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
+        self.word_list.itemDoubleClicked.connect(self._on_word_double_click)
         self.container.addWidget(self.word_list)
         self.load_words()
 
@@ -482,7 +492,6 @@ QWidget#CategoryCard:hover QLabel#cat_text {
 
     # 切换函数
     def toggle_chinese(self):
-
         self.show_chinese_global = not self.show_chinese_global
 
         if self.show_chinese_global:
@@ -490,8 +499,17 @@ QWidget#CategoryCard:hover QLabel#cat_text {
         else:
             self.chinese_btn.setIcon(self.icon_chinese_off)
 
-        # 重新加载单词
-        self.load_words()
+        # Toggle cn_label visibility in-place — no HTTP request, no widget recreation
+        if not self.word_list:
+            return
+        for i in range(self.word_list.count()):
+            item = self.word_list.item(i)
+            widget = self.word_list.itemWidget(item)
+            if widget:
+                cn = widget.findChild(QLabel, "cn_label")
+                if cn:
+                    cn.setVisible(self.show_chinese_global)
+                    item.setSizeHint(widget.sizeHint())
 
     # ---------------- 加载单词列表 ----------------
     def load_words(self):
@@ -499,13 +517,13 @@ QWidget#CategoryCard:hover QLabel#cat_text {
             return
 
         self.word_list.clear()
+        self.word_item_refs = {}
         words = self.get_words(self.current_sub)
 
         for w in words:
             word_widget = QWidget()
-            word_widget.setObjectName("WordCard")  # ??? 必加
+            word_widget.setObjectName("WordCard")
 
-            # ? 卡片样式
             word_widget.setStyleSheet("""
                 QWidget {
                     background: white;
@@ -555,41 +573,88 @@ QWidget#WordCard * {
             """)
 
             word_layout = QVBoxLayout(word_widget)
-            word_layout.setContentsMargins(10, 8, 10, 8)  # ? 留白！！
-            word_layout.setSpacing(6)  # ? 行间距！！
+            word_layout.setContentsMargins(10, 8, 10, 8)
+            word_layout.setSpacing(6)
 
-            # ---------------- 英文 ----------------
+            # ---------------- Top row: English word + timestamp ----------------
+            top_row = QHBoxLayout()
+            top_row.setSpacing(8)
+
             en_label = QLabel(w["english"])
             en_label.setStyleSheet("""
                 font-size:16px;
                 font-weight:600;
                 color:#222;
             """)
-            en_label.setAlignment(Qt.AlignLeft)
+            en_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
 
-            # ---------------- 中文 ----------------
+            ts_label = QLabel()
+            ts_label.setStyleSheet("font-size:11px; color:#ff6b81;")
+            ts_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+
+            # Restore timestamp if word was previously completed
+            english_key = w["english"]
+            if english_key in self.completed_words:
+                ts_label.setText(f'finished at {self.completed_words[english_key]}')
+                ts_label.setVisible(True)
+            else:
+                ts_label.setVisible(False)
+
+            self.word_item_refs[english_key] = ts_label
+
+            top_row.addWidget(en_label)
+            top_row.addStretch()
+            top_row.addWidget(ts_label)
+
+            # ---------------- Chinese definition ----------------
             cn_label = QLabel(w["chinese"])
+            cn_label.setObjectName("cn_label")
             cn_label.setStyleSheet("""
                 font-size:14px;
                 color:#666;
             """)
             cn_label.setWordWrap(True)
             cn_label.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-
-            # ---------------- 加入布局 ----------------
-            word_layout.addWidget(en_label)
-            word_layout.addWidget(cn_label)
-
             cn_label.setVisible(self.show_chinese_global)
+
+            # ---------------- Assemble ----------------
+            word_layout.addLayout(top_row)
+            word_layout.addWidget(cn_label)
 
             # ---------------- ListItem ----------------
             item = QListWidgetItem()
-
-            # ?? 关键：自动高度（不要写死50）
+            item.setData(Qt.UserRole, w)
             item.setSizeHint(word_widget.sizeHint())
 
             self.word_list.addItem(item)
             self.word_list.setItemWidget(item, word_widget)
+
+
+    def _on_word_double_click(self, item):
+        """Open spell dialog on double-click; mark word finished and award points if correct."""
+        word_data = item.data(Qt.UserRole)
+        if not word_data:
+            return
+
+        dlg = SpellDialog(word_data, self)
+        if dlg.exec() == SpellDialog.Accepted:
+            ts = datetime.now().strftime("%Y-%m-%d %H:%M")
+            english_key = word_data["english"]
+            is_new = english_key not in self.completed_words
+
+            self.completed_words[english_key] = ts
+
+            ts_label = self.word_item_refs.get(english_key)
+            if ts_label:
+                ts_label.setText(f"finished at {ts}")
+                ts_label.setVisible(True)
+
+            if is_new:
+                user_id = session.user["id"] if session.user else None
+                if user_id:
+                    result = add_user_points(user_id)
+                    if result and result.get("points") is not None:
+                        self.points_changed.emit(result["points"])
 
 
 if __name__ == "__main__":

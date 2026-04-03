@@ -6,10 +6,14 @@ from PySide6.QtGui import QPixmap, QIcon, QMovie
 from pages.RecitePages import RecitePage
 from pages.ForumPages import ForumWindow
 from pages.SpeakingPage import SpeakingPanel
-from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
+from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks, get_user_rank
 from pages.RankPage import RankPage
 from pages.PetPages import PetHomePage, PetSkinPage
 from pages.GroupPlazaPage import GroupPlazaPage
+from pages.GroupChatPage import GroupChatPage
+from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
+
+
 from pages.WordGamePages import *
 from utils.path_utils import resource_path
 import session
@@ -51,7 +55,9 @@ class MainWindow(QWidget):
         self.init_speaking_page()
         self.init_rank_page()
         self.init_pet_pages()
+        self.init_group_chat_page()
         self.init_group_plaza_page()
+
 
         if hasattr(self.ui, "pushButton_8"):
             self.ui.pushButton_8.setText("TED Talk")
@@ -102,11 +108,13 @@ class MainWindow(QWidget):
             "group_chat": 4,
             "task_board": 5,
             "group_plaza": 6,
-            "services": 8,
-            "skin_home": 9,
         }
         if key == "desktop_calendar":
             self.open_desktop_calendar()
+        elif key == "services" and self.pet_home_page:
+            self.ui.stackedWidget.setCurrentWidget(self.pet_home_page)
+        elif key == "skin_home" and self.pet_skin_page:
+            self.ui.stackedWidget.setCurrentWidget(self.pet_skin_page)
         elif key in route:
             self.ui.stackedWidget.setCurrentIndex(route[key])
             if key == "listening":
@@ -194,6 +202,7 @@ class MainWindow(QWidget):
         self.recite_page = RecitePage()
         self.ui.stackedWidget.removeWidget(self.ui.Recite_page)
         self.ui.stackedWidget.insertWidget(0, self.recite_page)
+        self.recite_page.points_changed.connect(self.update_coin_label)
 
     def init_forum_page(self):
         self.forum_page = ForumWindow()
@@ -211,6 +220,11 @@ class MainWindow(QWidget):
         self.ui.stackedWidget.insertWidget(7, self.rank_page)
 
 
+    def init_group_chat_page(self):
+        self.group_chat_page = GroupChatPage()
+        self.ui.stackedWidget.removeWidget(self.ui.GroupDiscuss)
+        self.ui.stackedWidget.insertWidget(4, self.group_chat_page)
+
     def init_group_plaza_page(self):
         self.group_plaza_page = GroupPlazaPage()
         self.ui.stackedWidget.removeWidget(self.ui.GroupPlaza)
@@ -221,6 +235,7 @@ class MainWindow(QWidget):
         self.pet_skin_page = None
 
     def start_test(self):
+
 
         self.start_test_signal.emit()
 
@@ -438,6 +453,11 @@ class MainWindow(QWidget):
         self.user = user
         self.user_name = user['username']
         self.ui.label_13.setText(self.user_name)
+        try:
+            rank_data = get_user_rank(user['id'])
+            self.update_coin_label(rank_data.get("points", 0))
+        except Exception:
+            pass
         # 更新排行榜页面的用户信息
         if hasattr(self, 'rank_page') and hasattr(self.rank_page, 'set_user'):
             print("MainWindow set_user called, updating rank page")
@@ -450,6 +470,9 @@ class MainWindow(QWidget):
             self.pet_skin_page = PetSkinPage(user_id)
             self.ui.stackedWidget.addWidget(self.pet_home_page)
             self.ui.stackedWidget.addWidget(self.pet_skin_page)
+
+    def update_coin_label(self, points: int):
+        self.ui.coinValueLabel.setText(str(points))
 
     def clear_data(self):
         # 清空用户名

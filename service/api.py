@@ -5,8 +5,8 @@ BASE_URL = "http://127.0.0.1:8000"
 #BASE_URL = "http://124.233.33.28:8787"
 
 # Pet 模块后端路由前缀
-PET_BASE_URL = BASE_URL
-# PET_BASE_URL = f"{BASE_URL}/pet_module"
+# PET_BASE_URL = BASE_URL
+PET_BASE_URL = f"{BASE_URL}/pet_module"
 
 def get_cambridge_list():
     res = requests.get(f"{BASE_URL}/listening/cambridge")
@@ -131,10 +131,14 @@ def login(username, password):
                 "password": password
             }
         )
+        if res.status_code == 401:
+            raise Exception("Incorrect username or password")
+        res.raise_for_status()
         return res.json()
+    except requests.exceptions.ConnectionError:
+        raise Exception("Cannot connect to server — please make sure the backend is running")
     except Exception as e:
-        print("登录失败:", e)
-        return None
+        raise
 def get_current_user(token):
     try:
         res = requests.get(
@@ -143,6 +147,7 @@ def get_current_user(token):
                 "Authorization": f"Bearer {token}"
             }
         )
+        res.raise_for_status()
         return res.json()
     except Exception as e:
         print("获取用户失败:", e)
@@ -215,7 +220,81 @@ def get_user_rank(user_id):
         return {"rank": 0, "points": 0}
 
 
+def get_user_groups(user_id):
+    urls = [
+        f"{BASE_URL}/groups/chat/user/{user_id}/groups",
+        f"{BASE_URL}/groups/user/{user_id}/groups",
+    ]
+
+    last_error = None
+    for url in urls:
+        try:
+            res = requests.get(url)
+            if res.status_code == 404:
+                continue
+            res.raise_for_status()
+            return res.json()
+        except Exception as e:
+            last_error = e
+
+    print("获取用户小组失败:", last_error)
+    return {"user_id": user_id, "groups": [], "total_count": 0}
+
+
+def get_group_messages(group_id, before=None, limit=50):
+    urls = [
+        f"{BASE_URL}/groups/chat/{group_id}/messages",
+        f"{BASE_URL}/groups/{group_id}/messages",
+    ]
+    params = {"limit": limit}
+    if before:
+        params["before"] = before
+
+    last_error = None
+    for url in urls:
+        try:
+            res = requests.get(url, params=params)
+            if res.status_code == 404:
+                continue
+            res.raise_for_status()
+            return res.json()
+        except Exception as e:
+            last_error = e
+
+    print("获取群消息失败:", last_error)
+    return {"messages": []}
+
+
+def send_group_message(group_id, sender_id, content, message_type="text"):
+    urls = [
+        f"{BASE_URL}/groups/chat/{group_id}/messages/send",
+        f"{BASE_URL}/groups/{group_id}/messages/send",
+    ]
+    payload = {
+        "sender_id": sender_id,
+        "content": content,
+        "message_type": message_type,
+    }
+
+    last_error = None
+    for url in urls:
+        try:
+            res = requests.post(url, json=payload)
+            if res.status_code == 404:
+                continue
+            res.raise_for_status()
+            return res.json()
+        except Exception as e:
+            last_error = e
+
+    print("发送群消息失败:", last_error)
+    return {"success": False, "message": "发送失败"}
+
+
+
 # ---- Group Plaza ----
+
+
 
 
 def get_groups(search=None, page=1, page_size=20):
