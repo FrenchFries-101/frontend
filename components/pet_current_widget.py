@@ -61,7 +61,7 @@ class PetWidget(QWidget):
         self._create_timer()
 
         # ========== 按顺序添加到布局 ==========
-        self.layout.addWidget(self.quote_label)
+        self.layout.addWidget(self.quote_container)
         self.layout.addWidget(self.gif_label, alignment=Qt.AlignmentFlag.AlignCenter)
         self.layout.addWidget(self.name_slot)
 
@@ -174,11 +174,28 @@ class PetWidget(QWidget):
         slot_layout.addWidget(self.edit_row_widget)
 
     def _create_quote_area(self):
-        """创建语录区域"""
+        """创建语录区域（漫画气泡样式）"""
+        self.quote_container = QWidget()
+        self.quote_container.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.quote_container.setFixedHeight(60)
+
+        bubble_path = resource_path("resources/icons/bubble.png")
+        self.quote_container.setStyleSheet(f"""
+            QWidget {{
+                border-image: url({bubble_path}) 20 20 28 20 stretch stretch;
+                border-width: 20px 20px 28px 20px;
+                background: transparent;
+            }}
+        """)
+
+        container_layout = QVBoxLayout(self.quote_container)
+        container_layout.setContentsMargins(24, 16, 24, 28)
+
         self.quote_label = QLabel()
         self.quote_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.quote_label.setWordWrap(True)
-        self.quote_label.setStyleSheet("color: #666666; background: transparent; padding: 5px;")
+        self.quote_label.setStyleSheet("color: #666666; background: transparent; border: none;")
+        container_layout.addWidget(self.quote_label)
 
     def _create_timer(self):
         """创建定时刷新语录"""
