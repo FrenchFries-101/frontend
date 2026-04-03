@@ -6,7 +6,7 @@ from PySide6.QtGui import QPixmap, QIcon
 from pages.RecitePages import RecitePage
 from pages.ForumPages import ForumWindow
 from pages.SpeakingPage import SpeakingPanel
-from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
+from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks, get_user_rank
 from pages.RankPage import RankPage
 from pages.GroupPlazaPage import GroupPlazaPage
 from pages.GroupChatPage import GroupChatPage
@@ -157,6 +157,7 @@ class MainWindow(QWidget):
         self.recite_page = RecitePage()
         self.ui.stackedWidget.removeWidget(self.ui.Recite_page)
         self.ui.stackedWidget.insertWidget(0, self.recite_page)
+        self.recite_page.points_changed.connect(self.update_coin_label)
 
     def init_forum_page(self):
         self.forum_page = ForumWindow()
@@ -403,10 +404,18 @@ class MainWindow(QWidget):
         self.user = user
         self.user_name = user['username']
         self.ui.label_13.setText(self.user_name)
+        try:
+            rank_data = get_user_rank(user['id'])
+            self.update_coin_label(rank_data.get("points", 0))
+        except Exception:
+            pass
         # 更新排行榜页面的用户信息
         if hasattr(self, 'rank_page'):
             print("MainWindow set_user called, updating rank page")
             self.rank_page.set_user(user)
+
+    def update_coin_label(self, points: int):
+        self.ui.coinValueLabel.setText(str(points))
 
     def clear_data(self):
         # 清空用户名
