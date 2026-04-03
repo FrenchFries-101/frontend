@@ -1,11 +1,14 @@
 # pet_widget.py
 import os
+import tempfile
 from PySide6.QtWidgets import (
     QWidget, QLabel, QVBoxLayout, QPushButton, QLineEdit, QHBoxLayout
 )
 from PySide6.QtGui import QMovie, QFont, QPixmap
 from PySide6.QtCore import Qt, QTimer, QSize
+import requests
 from service.api_petshow import get_current_skin, modify_pet_name, get_pet_quote
+from service.api import BASE_URL
 
 
 class PetWidget(QWidget):
@@ -165,11 +168,28 @@ class PetWidget(QWidget):
         self.update_quote()
 
     def set_gif(self, gif_path: str):
-        """加载图片/GIF"""
-        if not gif_path or not os.path.isabs(gif_path):
-            gif_path = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__))), gif_path
-            )
+        """加载图片/GIF，支持本地路径和后端URL"""
+        if not gif_path:
+            return
+
+        # 如果是相对路径（如 /static/pet_gifs/xxx.gif），拼接后端URL下载
+        if gif_path.startswith("/"):
+            gif_path = f"{BASE_URL}{gif_path}"
+
+        # URL形式：先下载到本地临时文件
+        if gif_path.startswith("http://") or gif_path.startswith("https://"):
+            try:
+                res = requests.get(gif_path, timeout=10)
+                res.raise_for_status()
+                _, ext = os.path.splitext(gif_path)
+                tmp = tempfile.NamedTemporaryFile(suffix=ext or ".gif", delete=False)
+                tmp.write(res.content)
+                tmp.close()
+                gif_path = tmp.name
+            except Exception as e:
+                print(f"[PetWidget] 下载GIF失败: {e}")
+                return
+
         if not os.path.exists(gif_path):
             print(f"[PetWidget] 文件不存在: {gif_path}")
             return
