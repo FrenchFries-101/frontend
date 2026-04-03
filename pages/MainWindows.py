@@ -8,7 +8,11 @@ from pages.ForumPages import ForumWindow
 from pages.SpeakingPage import SpeakingPanel
 from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
 from pages.RankPage import RankPage
+from pages.GroupPlazaPage import GroupPlazaPage
+from pages.GroupChatPage import GroupChatPage
 from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
+
+
 from utils.path_utils import resource_path
 import session
 import random
@@ -19,6 +23,7 @@ class MainWindow(QWidget):
     exit_signal = Signal()  # 新增信号
     start_test_signal = Signal(int,int,int,int)
     start_ted_signal = Signal(int, str, str)
+    open_desktop_calendar_signal = Signal()  # 打开桌面日历信号
     current_cam=0
     current_test=0
     current_section=0
@@ -48,16 +53,20 @@ class MainWindow(QWidget):
         self.init_forum_page()
         self.init_speaking_page()
         self.init_rank_page()
+        self.init_group_chat_page()
+        self.init_group_plaza_page()
+
 
         if hasattr(self.ui, "pushButton_8"):
+            self.ui.pushButton_8.setText("TED Talk")
             self.ui.pushButton_8.clicked.connect(self._show_ted_mode)
         if hasattr(self.ui, "pushButton_7"):
+            self.ui.pushButton_7.setText("IELTS Test")
             self.ui.pushButton_7.clicked.connect(self._show_ielts_mode)
 
-
         self.setup_sidebar_tree()
-        self.ui.navTree.itemClicked.connect(self.on_nav_item_clicked)
 
+        self.ui.navTree.itemClicked.connect(self.on_nav_item_clicked)
 
         # 如果你保留了 Exit_button 就连上；删掉也不会报错
         if hasattr(self.ui, "Exit_button"):
@@ -67,6 +76,9 @@ class MainWindow(QWidget):
 
     def exit_to_login(self):
         self.exit_signal.emit()
+    
+    def open_desktop_calendar(self):
+        self.open_desktop_calendar_signal.emit()
 
         # self.ui.btn_listening.clicked.connect(
         #     lambda: self.ui.stackedWidget.setCurrentIndex(3)
@@ -78,14 +90,17 @@ class MainWindow(QWidget):
             "listening": 1,
             "speaking": 2,
             "discussion": 3,
-            "rank": 4,
-
+            "rank": 7,
+            "group_chat": 4,
+            "task_board": 5,
+            "group_plaza": 6,
+            "services": 8,
+            "skin_home": 9,
         }
-        if key in route:
+        if key == "desktop_calendar":
+            self.open_desktop_calendar()
+        elif key in route:
             self.ui.stackedWidget.setCurrentIndex(route[key])
-            if key == "listening":
-                self._show_ielts_mode()
-
 
 
     def setup_sidebar_tree(self):
@@ -98,27 +113,34 @@ class MainWindow(QWidget):
         learning = QTreeWidgetItem(["Learning Task"])
         team = QTreeWidgetItem(["Team Work"])
         pets = QTreeWidgetItem(["Pets Home"])
+        rank = QTreeWidgetItem(["Leaderboard"]); rank.setData(0, Qt.UserRole, "rank")
 
         wl = QTreeWidgetItem(["Word List"]); wl.setData(0, Qt.UserRole, "word_list")
         li = QTreeWidgetItem(["Listening"]); li.setData(0, Qt.UserRole, "listening")
         sp = QTreeWidgetItem(["Speaking"]); sp.setData(0, Qt.UserRole, "speaking")
         ds = QTreeWidgetItem(["Discussion"]); ds.setData(0, Qt.UserRole, "discussion")
+        dc = QTreeWidgetItem(["Calendar"]); dc.setData(0, Qt.UserRole, "desktop_calendar")
         rk = QTreeWidgetItem(["Leaderboard"]); rk.setData(0, Qt.UserRole, "rank")
-        learning.addChildren([wl, li, sp, ds])
+        learning.addChildren([wl, li, sp, ds, dc])
 
+        my_group = QTreeWidgetItem(["My Group"])
+        group_plaza = QTreeWidgetItem(["Group Plaza"]); group_plaza.setData(0, Qt.UserRole, "group_plaza")
+        gc = QTreeWidgetItem(["Group Chat"]); gc.setData(0, Qt.UserRole, "group_chat")
+        tb = QTreeWidgetItem(["Task Board"]); tb.setData(0, Qt.UserRole, "task_board")
+        my_group.addChildren([gc, tb])
+        team.addChildren([my_group, group_plaza])
 
+        p1 = QTreeWidgetItem(["Services"]); p1.setData(0, Qt.UserRole, "services")
+        p2 = QTreeWidgetItem(["Skin Home"]); p2.setData(0, Qt.UserRole, "skin_home")
 
-        t1 = QTreeWidgetItem(["Team Slot 1"]); t1.setData(0, Qt.UserRole, "team_1")
-
-        t2 = QTreeWidgetItem(["Team Slot 2"]); t2.setData(0, Qt.UserRole, "team_2")
-        team.addChildren([t1, t2])
-
-        p1 = QTreeWidgetItem(["Pet Slot 1"]); p1.setData(0, Qt.UserRole, "pet_1")
-        p2 = QTreeWidgetItem(["Pet Slot 2"]); p2.setData(0, Qt.UserRole, "pet_2")
         pets.addChildren([p1, p2])
 
-        tree.addTopLevelItems([learning, rk, team, pets])
+        tree.addTopLevelItems([learning, team, pets, rank])
         learning.setExpanded(True)
+        team.setExpanded(True)
+        my_group.setExpanded(True)
+        pets.setExpanded(True)
+
 
 
     def on_nav_item_clicked(self, item, column):
@@ -148,9 +170,23 @@ class MainWindow(QWidget):
 
     def init_rank_page(self):
         self.rank_page = RankPage()
-        self.ui.stackedWidget.addWidget(self.rank_page)
+        self.ui.stackedWidget.removeWidget(self.ui.Rank)
+        self.ui.stackedWidget.insertWidget(7, self.rank_page)
+
+
+    def init_group_chat_page(self):
+        self.group_chat_page = GroupChatPage()
+        self.ui.stackedWidget.removeWidget(self.ui.GroupDiscuss)
+        self.ui.stackedWidget.insertWidget(4, self.group_chat_page)
+
+    def init_group_plaza_page(self):
+        self.group_plaza_page = GroupPlazaPage()
+        self.ui.stackedWidget.removeWidget(self.ui.GroupPlaza)
+        self.ui.stackedWidget.insertWidget(6, self.group_plaza_page)
 
     def start_test(self):
+
+
         self.start_test_signal.emit()
 
     #这里要不再加上一个清空原本的卡片界面，直接生成剑20的界面
@@ -440,38 +476,74 @@ class MainWindow(QWidget):
             10: "Creator-produced content on modern challenges and opportunities",
         }
 
-        talk_id = int(talk.get("talk_id") or talk.get("id") or 0)
-        title = talk.get("title") or f"TED Talk {talk_id}"
-        audio_path = talk.get("audio_path") or ""
-        subtitle = _TALK_SUBTITLES.get(talk_id, "")
+        talk_id = int(talk.get("talk_id", 0))
+        title = str(talk.get("title") or f"TED Talk {talk_id}")
+        audio_path = str(talk.get("audio_path") or "")
+        subtitle = _TALK_SUBTITLES.get(talk_id, "Explore ideas, language, and stories through TED talks.")
 
         card = QFrame()
-        card.setObjectName("test_card")
-        card.setMinimumHeight(90)
+        card.setObjectName("ted_card")
+        card.setMinimumHeight(120)
 
-        card_layout = QHBoxLayout(card)
+        row = QHBoxLayout(card)
+        row.setContentsMargins(14, 12, 14, 12)
+        row.setSpacing(12)
 
-        left_layout = QVBoxLayout()
-        left_layout.setSpacing(6)
+        text_col = QVBoxLayout()
+        text_col.setSpacing(6)
 
         title_label = QLabel(title)
-        title_label.setObjectName("label_7")
-        left_layout.addWidget(title_label)
+        title_label.setStyleSheet("font-size: 16px; font-weight: 700; color: #3b2f18;")
 
-        if subtitle:
-            subtitle_label = QLabel(subtitle)
-            subtitle_label.setObjectName("label_8")
-            subtitle_label.setWordWrap(True)
-            left_layout.addWidget(subtitle_label)
+        subtitle_label = QLabel(subtitle)
+        subtitle_label.setWordWrap(True)
+        subtitle_label.setStyleSheet("font-size: 12px; color: #7a6640;")
 
-        open_btn = QPushButton("Open")
-        open_btn.clicked.connect(
-            lambda _, tid=talk_id, t=title, a=audio_path: self.start_ted_signal.emit(tid, t, a)
+        text_col.addWidget(title_label)
+        text_col.addWidget(subtitle_label)
+
+        start_btn = QPushButton("Start TED")
+        start_btn.setMinimumWidth(110)
+        start_btn.setStyleSheet(
+            """
+            QPushButton {
+                border: 1px solid #f1d38a;
+                border-radius: 8px;
+                padding: 8px 12px;
+                background: #ffe8a8;
+                color: #5b4518;
+                font-weight: 700;
+            }
+            QPushButton:hover {
+                background: #ffe08e;
+                border: 1px solid #dfb75b;
+            }
+            QPushButton:pressed {
+                background: #f8d36e;
+            }
+            """
         )
 
-        card_layout.addLayout(left_layout)
-        card_layout.addStretch()
-        card_layout.addWidget(open_btn)
+        start_btn.clicked.connect(
+            lambda _, tid=talk_id, tt=title, ap=audio_path: self.start_ted_signal.emit(tid, tt, ap)
+        )
+
+        row.addLayout(text_col, 1)
+        row.addWidget(start_btn, 0, Qt.AlignVCenter)
+
+        card.setStyleSheet(
+            """
+            QFrame#ted_card {
+                background: #fffaf0;
+                border: 1px solid #ffe08e;
+                border-radius: 12px;
+            }
+            QFrame#ted_card:hover {
+                border: 1px solid #dfb75b;
+                background: #fff3d4;
+            }
+            """
+        )
 
         return card
 

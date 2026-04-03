@@ -2,8 +2,8 @@ import requests
 
 # BASE_URL = "http://124.233.33.28:8787"
 BASE_URL = "http://127.0.0.1:8000"
-#BASE_URL = "http://124.233.33.28:8787"
-BASE_URL = "http://127.0.0.1:8000"
+# BASE_URL = "http://124.233.33.28:8787"
+
 
 def get_cambridge_list():
     res = requests.get(f"{BASE_URL}/listening/cambridge")
@@ -201,6 +201,7 @@ def get_rank_list():
         print("获取排行榜失败:", e)
         return []
 
+
 def get_user_rank(user_id):
     try:
         res = requests.get(f"{BASE_URL}/rank/user/{user_id}")
@@ -210,49 +211,164 @@ def get_user_rank(user_id):
         print("获取用户排名失败:", e)
         return {"rank": 0, "points": 0}
 
-def get_ted_talks():
+
+def get_user_groups(user_id):
+    urls = [
+        f"{BASE_URL}/groups/chat/user/{user_id}/groups",
+        f"{BASE_URL}/groups/user/{user_id}/groups",
+    ]
+
+    last_error = None
+    for url in urls:
+        try:
+            res = requests.get(url)
+            if res.status_code == 404:
+                continue
+            res.raise_for_status()
+            return res.json()
+        except Exception as e:
+            last_error = e
+
+    print("获取用户小组失败:", last_error)
+    return {"user_id": user_id, "groups": [], "total_count": 0}
+
+
+def get_group_messages(group_id, before=None, limit=50):
+    urls = [
+        f"{BASE_URL}/groups/chat/{group_id}/messages",
+        f"{BASE_URL}/groups/{group_id}/messages",
+    ]
+    params = {"limit": limit}
+    if before:
+        params["before"] = before
+
+    last_error = None
+    for url in urls:
+        try:
+            res = requests.get(url, params=params)
+            if res.status_code == 404:
+                continue
+            res.raise_for_status()
+            return res.json()
+        except Exception as e:
+            last_error = e
+
+    print("获取群消息失败:", last_error)
+    return {"messages": []}
+
+
+def send_group_message(group_id, sender_id, content, message_type="text"):
+    urls = [
+        f"{BASE_URL}/groups/chat/{group_id}/messages/send",
+        f"{BASE_URL}/groups/{group_id}/messages/send",
+    ]
+    payload = {
+        "sender_id": sender_id,
+        "content": content,
+        "message_type": message_type,
+    }
+
+    last_error = None
+    for url in urls:
+        try:
+            res = requests.post(url, json=payload)
+            if res.status_code == 404:
+                continue
+            res.raise_for_status()
+            return res.json()
+        except Exception as e:
+            last_error = e
+
+    print("发送群消息失败:", last_error)
+    return {"success": False, "message": "发送失败"}
+
+
+
+# ---- Group Plaza ----
+
+
+
+
+def get_groups(search=None, page=1, page_size=20):
     try:
-        res = requests.get(f"{BASE_URL}/ted/talks")
+        params = {"page": page, "page_size": page_size}
+        if search:
+            params["search"] = search
+        res = requests.get(f"{BASE_URL}/groups", params=params)
         res.raise_for_status()
         return res.json()
     except Exception as e:
-        print("获取TED演讲失败:", e)
-        return []
+        print("获取小组列表失败:", e)
+        return {"groups": [], "total_count": 0}
 
-def get_ted_questions(talk_id):
+
+def create_group(group_name, max_members, group_icon=None, password=None, user_id=None):
     try:
-        res = requests.get(
-            f"{BASE_URL}/ted/questions",
-            params={"talk_id": talk_id}
-        )
+        payload = {
+            "group_name": group_name,
+            "max_members": max_members,
+        }
+        if group_icon:
+            payload["group_icon"] = group_icon
+        if password:
+            payload["password"] = password
+        if user_id is not None:
+            payload["user_id"] = user_id
+
+        res = requests.post(f"{BASE_URL}/groups/create", json=payload)
         res.raise_for_status()
         return res.json()
     except Exception as e:
-        print("获取TED问题失败:", e)
-        return []
+        print("创建小组失败:", e)
+        return {"success": False, "message": "创建小组失败"}
 
-def submit_ted_answer(data):
-    try:
-        res = requests.post(
-            f"{BASE_URL}/ted/submit",
-            json=data
-        )
-        return res.json()
-    except Exception as e:
-        print("提交TED答案失败:", e)
-        return None
 
-def get_ted_analysis(talk_id, user_id):
+
+def join_group(group_id, password=None, user_id=None):
     try:
-        res = requests.get(
-            f"{BASE_URL}/ted/analysis",
-            params={
-                "talk_id": talk_id,
-                "user_id": user_id
-            }
-        )
+        payload = {
+            "group_id": group_id,
+            "password": password or "",
+        }
+        if user_id is not None:
+            payload["user_id"] = user_id
+        res = requests.post(f"{BASE_URL}/groups/join", json=payload)
         res.raise_for_status()
         return res.json()
     except Exception as e:
-        print("获取TED分析失败:", e)
-        return None
+        print("加入小组失败:", e)
+        return {"success": False, "message": "加入小组失败"}
+
+
+
+def get_group_members(group_id):
+    try:
+        res = requests.get(f"{BASE_URL}/groups/{group_id}/members")
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("获取小组成员失败:", e)
+        return {"members": []}
+
+
+def upload_group_icon(group_id, image_path=None, image_base64=None):
+    try:
+        if image_path:
+            with open(image_path, "rb") as f:
+                files = {"image": (image_path.split("/")[-1].split("\\")[-1], f, "application/octet-stream")}
+                res = requests.post(f"{BASE_URL}/groups/{group_id}/icon", files=files)
+        elif image_base64:
+            res = requests.post(
+                f"{BASE_URL}/groups/{group_id}/icon",
+                data={"image_base64": image_base64}
+            )
+        else:
+            return {"success": False, "message": "未选择图片"}
+
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("上传小组头像失败:", e)
+        return {"success": False, "message": "上传小组头像失败"}
+
+
