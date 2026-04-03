@@ -9,7 +9,9 @@ from pages.SpeakingPage import SpeakingPanel
 from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
 from pages.RankPage import RankPage
 from pages.GroupPlazaPage import GroupPlazaPage
+from pages.GroupChatPage import GroupChatPage
 from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
+
 
 from utils.path_utils import resource_path
 import session
@@ -51,7 +53,9 @@ class MainWindow(QWidget):
         self.init_forum_page()
         self.init_speaking_page()
         self.init_rank_page()
+        self.init_group_chat_page()
         self.init_group_plaza_page()
+
 
         if hasattr(self.ui, "pushButton_8"):
             self.ui.pushButton_8.setText("TED Talk")
@@ -170,12 +174,18 @@ class MainWindow(QWidget):
         self.ui.stackedWidget.insertWidget(7, self.rank_page)
 
 
+    def init_group_chat_page(self):
+        self.group_chat_page = GroupChatPage()
+        self.ui.stackedWidget.removeWidget(self.ui.GroupDiscuss)
+        self.ui.stackedWidget.insertWidget(4, self.group_chat_page)
+
     def init_group_plaza_page(self):
         self.group_plaza_page = GroupPlazaPage()
         self.ui.stackedWidget.removeWidget(self.ui.GroupPlaza)
         self.ui.stackedWidget.insertWidget(6, self.group_plaza_page)
 
     def start_test(self):
+
 
         self.start_test_signal.emit()
 
