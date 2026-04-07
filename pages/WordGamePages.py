@@ -5,7 +5,10 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QTimer, QSize
 from PySide6.QtGui import QPixmap, QMovie
-from service.api_word_game import join, cancel, status, gain_roll, roll, get_quiz_question
+from service.api_word_game import (
+    join, cancel, status, gain_roll, roll, get_quiz_question,
+    single_start, single_status, single_gain_roll, single_roll, single_get_quiz_question
+)
 from pages.WordGameQuiz import QuizChallengeDialog
 from utils.path_utils import resource_path
 import session
@@ -292,14 +295,17 @@ class GameMenuPage(BasePage):
         btn_row = QHBoxLayout()
         btn_row.setSpacing(14)
 
-        btn_start = QPushButton("Start Game")
+        btn_single = QPushButton("Single Mode")
+        btn_multi = QPushButton("Multiplayer Mode")
         btn_instruction = QPushButton("Instruction")
 
-        btn_start.setFixedWidth(180)
+        btn_single.setFixedWidth(180)
+        btn_multi.setFixedWidth(180)
         btn_instruction.setFixedWidth(180)
 
         btn_row.addStretch(1)
-        btn_row.addWidget(btn_start)
+        btn_row.addWidget(btn_single)
+        btn_row.addWidget(btn_multi)
         btn_row.addWidget(btn_instruction)
         btn_row.addStretch(1)
 
@@ -307,7 +313,8 @@ class GameMenuPage(BasePage):
         self.content_layout.addLayout(btn_row)
         self.content_layout.addStretch(1)
 
-        btn_start.clicked.connect(lambda: parent.goto("start"))
+        btn_single.clicked.connect(lambda: parent.goto("single_board"))
+        btn_multi.clicked.connect(lambda: parent.goto("start"))
         btn_instruction.clicked.connect(lambda: parent.goto("instruction"))
 
 
@@ -342,7 +349,7 @@ class InstructionPage(BasePage):
 # =========================
 class StartGamePage(BasePage):
     def __init__(self, parent):
-        super().__init__(parent, "Start Game")
+        super().__init__(parent, "Multiplayer Mode")
 
         btn_row = QHBoxLayout()
         btn_row.setSpacing(14)
@@ -765,17 +772,17 @@ class BoardWidget(QFrame):
             self.total_cells = total_cells
             self.build_board()
 
-    def update_board(self, red_pos, blue_pos, total_cells=None):
+    def update_board(self, red_pos=None, blue_pos=None, total_cells=None):
         if total_cells is not None:
             self.set_total_cells(total_cells)
 
-        red_pos = max(0, min(int(red_pos), self.total_cells - 1))
-        blue_pos = max(0, min(int(blue_pos), self.total_cells - 1))
+        norm_red = None if red_pos is None else max(0, min(int(red_pos), self.total_cells - 1))
+        norm_blue = None if blue_pos is None else max(0, min(int(blue_pos), self.total_cells - 1))
 
         for i, cell in enumerate(self.cells):
             cell.set_state(
-                has_red=(i == red_pos),
-                has_blue=(i == blue_pos),
+                has_red=(norm_red is not None and i == norm_red),
+                has_blue=(norm_blue is not None and i == norm_blue),
                 is_start=(i == 0),
                 is_goal=(i == self.total_cells - 1)
             )
@@ -868,10 +875,18 @@ class GameSidePanel(QFrame):
         self.movie = None
         self.set_dice_face(1)
 
-    def set_info(self, team: str, rolls: int, pos: int):
+    def set_info(self, team: str, rolls: int, pos: int, extra_text: str = None):
         self.team_label.setText(f"My Team: {team.capitalize() if team else '-'}")
         self.roll_label.setText(f"Available Rolls: {rolls}")
         self.pos_label.setText(f"Position: {pos + 1}")
+        if extra_text:
+            self.last_dice_text.setText(extra_text)
+
+    def set_single_info(self, day: int, rolls: int, pos: int, pending_points: int = 0):
+        self.team_label.setText(f"Mode: Single | Day {day}")
+        self.roll_label.setText(f"Available Rolls: {rolls}")
+        self.pos_label.setText(f"Position: {pos + 1}")
+        self.last_dice_text.setText(f"Earned: {pending_points}")
 
     def set_tip(self, text: str):
         self.tip_label.setText(text)
@@ -909,6 +924,284 @@ class GameSidePanel(QFrame):
         self.dice_label.setMovie(self.movie)
         self.movie.start()
         self.last_dice_text.setText(f"Step: {n}")
+
+# =========================
+# Single Player Board
+# =========================
+class SingleBoardPage(BasePage):
+    def __init__(self, parent):
+        super().__init__(parent, "Single Mode")
+
+        self.board = BoardWidget(total_cells=84, columns=10)
+        self.board.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.board_scroll = QScrollArea()
+        self.board_scroll.setWidgetResizable(True)
+        self.board_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.board_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.board_scroll.setStyleSheet("""
+            QScrollArea {
+                border: none;
+                background: transparent;
+            }
+        """)
+        self.board_scroll.setWidget(self.board)
+        self.board_scroll.setFixedHeight(360)
+
+        self.side_panel = GameSidePanel()
+        self.side_panel.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+
+        top_row = QHBoxLayout()
+        top_row.setSpacing(14)
+        top_row.addWidget(self.board_scroll, 1)
+        top_row.addWidget(self.side_panel, 0)
+        self.content_layout.addLayout(top_row)
+
+        btn_row = QHBoxLayout()
+        btn_row.setSpacing(10)
+
+        self.start_btn = QPushButton("Start Game")
+        self.gain_btn = QPushButton("Gain 1 Roll")
+        self.roll_btn = QPushButton("Roll Dice")
+        self.milestone_btn = QPushButton("Milestones")
+        self.refresh_btn = QPushButton("Refresh")
+
+        self.start_btn.setFixedWidth(170)
+        self.gain_btn.setFixedWidth(140)
+        self.roll_btn.setFixedWidth(140)
+        self.milestone_btn.setFixedWidth(140)
+        self.refresh_btn.setFixedWidth(120)
+        self.milestone_btn.setToolTip("View milestone rewards")
+
+        btn_row.addStretch(1)
+        btn_row.addWidget(self.start_btn)
+        btn_row.addWidget(self.gain_btn)
+        btn_row.addWidget(self.roll_btn)
+        btn_row.addWidget(self.milestone_btn)
+        btn_row.addWidget(self.refresh_btn)
+        btn_row.addStretch(1)
+        self.content_layout.addLayout(btn_row)
+
+        self.start_btn.clicked.connect(self.start_game)
+        self.gain_btn.clicked.connect(self.gain_one_roll)
+        self.roll_btn.clicked.connect(self.roll_dice)
+        self.milestone_btn.clicked.connect(self.show_milestone_info)
+        self.refresh_btn.clicked.connect(self.refresh_board)
+
+        self.add_bottom_back("game_menu")
+
+        self.is_rolling = False
+        self.last_finished_game_id = None
+        self.refresh_board()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.refresh_board()
+
+    def start_game(self):
+        user_id = safe_user_id()
+        if user_id is None:
+            QMessageBox.warning(self, "Warning", "Please log in first.")
+            return
+
+        try:
+            res = single_start(user_id)
+            game = res.get("game")
+            if not game:
+                raise Exception("Failed to create a single-player game.")
+
+            show_light_message(
+                self,
+                "Single Mode",
+                "Single-player game is ready.\nYou can now answer questions and roll the dice."
+            )
+            self.refresh_board()
+        except Exception as e:
+            QMessageBox.warning(self, "Single Mode", str(e))
+
+    def refresh_board(self):
+        user_id = safe_user_id()
+        if user_id is None:
+            self.reset_board_view("Please log in first.")
+            return
+
+        try:
+            res = single_status(user_id)
+            game = res.get("game")
+            last_game = res.get("last_game")
+
+            if not game:
+                self.start_btn.setEnabled(True)
+                self.gain_btn.setEnabled(False)
+                self.roll_btn.setEnabled(False)
+                self.refresh_btn.setEnabled(True)
+
+                if last_game and last_game.get("status") == "finished":
+                    game_id = last_game.get("id")
+                    if self.last_finished_game_id != game_id:
+                        self.last_finished_game_id = game_id
+                        tip = (
+                            f"Game finished.\n"
+                            f"Earned points: {last_game.get('pending_reward_points', 0)}"
+                        )
+                        show_light_message(self, "Single Mode Finished", tip)
+                    self.board.update_board(last_game.get("current_position", 0), None, last_game.get("total_cells", 84))
+                    self.side_panel.set_single_info(
+                        day=last_game.get("current_day", 1),
+                        rolls=last_game.get("available_rolls", 0),
+                        pos=last_game.get("current_position", 0),
+                        pending_points=last_game.get("pending_reward_points", 0)
+                    )
+                    self.side_panel.set_tip("Last single-player game has finished. Start a new one to play again.")
+                    return
+
+                self.last_finished_game_id = None
+                self.reset_board_view("No active single-player game. Click 'Start Game' to begin.")
+                return
+
+            self.last_finished_game_id = None
+            total_cells = game.get("total_cells", 84)
+            current_pos = game.get("current_position", 0)
+            available_rolls = game.get("available_rolls", 0)
+            current_day = game.get("current_day", 1)
+            pending_reward_points = game.get("pending_reward_points", 0)
+            today_roll_gained = game.get("today_roll_gained", 0)
+            status_value = game.get("status", "active")
+
+            self.board.update_board(current_pos, None, total_cells)
+            self.side_panel.set_single_info(current_day, available_rolls, current_pos, pending_reward_points)
+            self.side_panel.set_tip(
+                f"Single mode active. Today gained rolls: {today_roll_gained} / 3."
+            )
+
+            self.start_btn.setEnabled(False)
+            if not self.is_rolling:
+                self.gain_btn.setEnabled(status_value == "active")
+                self.roll_btn.setEnabled(status_value == "active" and available_rolls > 0)
+                self.refresh_btn.setEnabled(True)
+
+        except Exception as e:
+            self.reset_board_view(f"Failed to load single-player game data: {e}")
+
+    def gain_one_roll(self):
+        user_id = safe_user_id()
+        if user_id is None:
+            QMessageBox.warning(self, "Warning", "Please log in first.")
+            return
+
+        if self.is_rolling:
+            return
+
+        try:
+            res_status = single_status(user_id)
+            game = res_status.get("game")
+
+            if not game:
+                show_light_message(self, "Single Mode", "Please start a single-player game first.")
+                return
+
+            today_count = game.get("today_roll_gained", 0) or 0
+            if today_count >= 3:
+                show_light_message(
+                    self,
+                    "Daily Limit Reached",
+                    "You have already gained 3 rolls today.\nYou cannot start another quiz today."
+                )
+                self.side_panel.set_tip("Daily limit reached. You have already gained 3 rolls today.")
+                return
+
+            quiz = QuizChallengeDialog(
+                fetch_question_callback=lambda: single_get_quiz_question(user_id),
+                parent=self,
+                target_streak=5
+            )
+            result = quiz.exec()
+
+            if result == QuizChallengeDialog.Accepted:
+                res = single_gain_roll(user_id)
+                if res.get("detail"):
+                    raise Exception(res["detail"])
+
+                remaining = res.get("remaining_gain_times_today", 0)
+                tip_text = (
+                    f"Great job! You answered 5 correctly and gained 1 roll.\n"
+                    f"You can gain {remaining} more time(s) today."
+                )
+                self.side_panel.set_tip(tip_text)
+                show_light_message(self, "Success", tip_text)
+                self.refresh_board()
+            else:
+                self.side_panel.set_tip("Quiz ended. You can challenge again.")
+
+        except Exception as e:
+            QMessageBox.warning(self, "Gain Roll Failed", str(e))
+
+    def roll_dice(self):
+        user_id = safe_user_id()
+        if user_id is None:
+            QMessageBox.warning(self, "Warning", "Please log in first.")
+            return
+
+        if self.is_rolling:
+            return
+
+        try:
+            self.is_rolling = True
+            self.start_btn.setEnabled(False)
+            self.gain_btn.setEnabled(False)
+            self.roll_btn.setEnabled(False)
+            self.refresh_btn.setEnabled(False)
+
+            res = single_roll(user_id)
+            step = res.get("step")
+
+            if step is not None:
+                self.side_panel.play_dice_result(step)
+
+                rewards = res.get("new_rewards", []) or []
+                if rewards:
+                    reward_text = "\n".join([f"- {r.get('title')}: +{r.get('points')}" for r in rewards])
+                    self.side_panel.set_tip(f"Rolling... Step = {step}\nRewards unlocked!")
+                    show_light_message(self, "Rewards Unlocked", reward_text)
+                else:
+                    self.side_panel.set_tip(f"Rolling... Step = {step}")
+
+                def finish_roll():
+                    self.is_rolling = False
+                    self.refresh_board()
+
+                QTimer.singleShot(1000, finish_roll)
+            else:
+                self.is_rolling = False
+                self.side_panel.set_tip("Roll completed.")
+                self.refresh_board()
+
+        except Exception as e:
+            self.is_rolling = False
+            self.refresh_btn.setEnabled(True)
+            QMessageBox.warning(self, "Roll Failed", str(e))
+            self.refresh_board()
+
+    def reset_board_view(self, tip="No active single-player game."):
+        self.board.update_board(0, None, 84)
+        self.side_panel.set_single_info(day=1, rolls=0, pos=0, pending_points=0)
+        self.side_panel.set_dice_face(1)
+        self.side_panel.set_tip(tip)
+        self.start_btn.setEnabled(True)
+        self.gain_btn.setEnabled(False)
+        self.roll_btn.setEnabled(False)
+        self.refresh_btn.setEnabled(True)
+
+    def show_milestone_info(self):
+        text = (
+            "Milestone Rewards\n\n"
+            "Day 1: Reach Cell 10 -> +20 points\n"
+            "Day 2: Reach Cell 20 -> +30 points\n"
+            "Day 3: Reach Cell 35 -> +50 points\n\n"
+            "Complete the game -> +100 points"
+        )
+        show_light_message(self, "Milestone Rewards", text)
+
 
 # =========================
 # Game Board
