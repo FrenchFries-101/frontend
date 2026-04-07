@@ -8,6 +8,7 @@ from PySide6.QtGui import QFont
 from components.pet_current_widget import PetWidget
 from components.pet_service_widget import PetServiceWidget
 from components.pet_skin_card import PetSkinCard
+from components.pet_skin_detail import PetSkinDetailPage
 from components.pet_status_widget import PetStatusWidget
 from service.api_pet import get_user_skins
 
@@ -43,16 +44,42 @@ class PetHomePage(QWidget):
         self.user_id = user_id
 
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(20, 20, 20, 20)
-        main_layout.setSpacing(15)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+
+        # ========== 滚动区域 ==========
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setStyleSheet("""
+            QScrollArea { border: none; background: #FFF6EA; }
+            QScrollBar:vertical {
+                width: 8px; background: transparent;
+            }
+            QScrollBar::handle:vertical {
+                background: #D0C0B0; border-radius: 4px; min-height: 30px;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0px;
+            }
+        """)
+
+        scroll_content = QWidget()
+        scroll_content.setStyleSheet("background: #FFF6EA;")
+        content_layout = QVBoxLayout(scroll_content)
+        content_layout.setContentsMargins(20, 20, 20, 20)
+        content_layout.setSpacing(15)
 
         # ========== 创建子组件 ==========
         self._create_title()
         self._create_content_area()
 
         # ========== 按顺序添加到布局 ==========
-        main_layout.addWidget(self.title_label)
-        main_layout.addWidget(self.content_area, stretch=1)
+        content_layout.addWidget(self.title_label)
+        content_layout.addWidget(self.content_area)
+        content_layout.addStretch()
+
+        scroll.setWidget(scroll_content)
+        main_layout.addWidget(scroll)
 
     # ---- 创建子组件 ----
 
@@ -147,18 +174,7 @@ class PetHomePage(QWidget):
 
 class PetSkinPage(QWidget):
     """
-    宠物皮肤页
-
-    ┌──────────────────────────────────────────────────┐
-    │  🐾 宠物皮肤                                      │
-    ├──────────────────────────────────────────────────┤
-    │  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
-    │  │  [GIF]   │  │  [GIF]   │  │  [GIF]   │       │
-    │  │ 默认狗狗  │  │ 金色狗狗  │  │ 蓝色狗狗  │       │
-    │  │ 初始皮肤  │  │ 金色毛发  │  │ 蓝色毛发  │       │
-    │  │[当前皮肤] │  │[设为当前] │  │[设为当前] │       │
-    │  └──────────┘  └──────────┘  └──────────┘       │
-    └──────────────────────────────────────────────────┘
+    宠物皮肤页 —— 网格列表 + 详情页切换
 
     Signals:
         skin_changed(int): 皮肤切换成功后触发
@@ -169,33 +185,38 @@ class PetSkinPage(QWidget):
     def __init__(self, user_id: int = 1, parent=None):
         super().__init__(parent)
         self.user_id = user_id
+        self.detail_page = None
 
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(20, 20, 20, 20)
-        main_layout.setSpacing(15)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
 
-        # ========== 创建子组件 ==========
-        self._create_title()
-        self._create_skin_grid()
+        # ========== 列表层 ==========
+        self.list_widget = QWidget()
+        self.list_widget.setStyleSheet("background: #FFF6EA;")
+        list_layout = QVBoxLayout(self.list_widget)
+        list_layout.setContentsMargins(20, 20, 20, 20)
+        list_layout.setSpacing(15)
 
-        # ========== 按顺序添加到布局 ==========
-        main_layout.addWidget(self.title_label)
-        main_layout.addWidget(self.scroll_area, stretch=1)
-
-    # ---- 创建子组件 ----
-
-    def _create_title(self):
         self.title_label = QLabel("🐾 Pet Skins")
         self.title_label.setFont(QFont("", 18, QFont.Weight.Bold))
         self.title_label.setStyleSheet("color: #B3886B; background: transparent;")
+        list_layout.addWidget(self.title_label)
 
-    def _create_skin_grid(self):
+        self._create_skin_grid(list_layout)
+
+        main_layout.addWidget(self.list_widget)
+
+    def _create_skin_grid(self, parent_layout):
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setStyleSheet("""
             QScrollArea {
                 border: none;
-                background: transparent;
+                background: #FFF6EA;
+            }
+            QScrollArea > QWidget > QWidget {
+                background: #FFF6EA;
             }
             QScrollBar:vertical {
                 width: 8px;
@@ -208,26 +229,58 @@ class PetSkinPage(QWidget):
         """)
 
         scroll_widget = QWidget()
+        scroll_widget.setStyleSheet("background: #FFF6EA;")
         self.grid_layout = QGridLayout(scroll_widget)
         self.grid_layout.setSpacing(15)
         self.grid_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
 
         self.scroll_area.setWidget(scroll_widget)
 
-        # 加载皮肤卡片
         self.cards = []
         self._load_skins()
+
+        parent_layout.addWidget(self.scroll_area, stretch=1)
 
     def _load_skins(self):
         skins = get_user_skins(self.user_id)
         col_count = 3
 
         for i, skin in enumerate(skins):
-            card = PetSkinCard(skin, self.user_id, on_skin_change=self._on_skin_changed)
-            # 居中对齐
+            card = PetSkinCard(
+                skin, self.user_id,
+                on_skin_change=self._on_skin_changed,
+                on_view_detail=self._show_detail
+            )
             self.grid_layout.addWidget(card, i // col_count, i % col_count,
                                        Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
             self.cards.append(card)
+
+    # ---- 页面切换 ----
+
+    def _show_detail(self, skin_data: dict):
+        """显示皮肤详情页"""
+        self.list_widget.hide()
+
+        if self.detail_page is not None:
+            self.detail_page.deleteLater()
+
+        self.detail_page = PetSkinDetailPage(self.user_id, skin_data)
+        self.detail_page.back_btn.clicked.connect(self._back_to_list)
+        self.layout().addWidget(self.detail_page)
+
+    def _back_to_list(self):
+        """返回列表"""
+        if self.detail_page:
+            self.detail_page.deleteLater()
+            self.detail_page = None
+        self.list_widget.show()
+        self._refresh_cards()
+
+    def _refresh_cards(self):
+        """刷新所有卡片状态"""
+        for card in self.cards:
+            card.setStyleSheet(card._get_style())
+            card._update_action_button()
 
     # ---- 事件回调 ----
 
@@ -237,7 +290,7 @@ class PetSkinPage(QWidget):
             if card.skin_data["skin_id"] != skin_id:
                 card.skin_data["current"] = False
                 card.setStyleSheet(card._get_style())
-                card._update_button()
+                card._update_action_button()
         self.skin_changed.emit(skin_id)
 
 

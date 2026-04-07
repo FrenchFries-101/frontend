@@ -5,7 +5,7 @@ import time
 import requests
 from typing import Dict, List
 
-from service.api import BASE_URL
+from service.api import PET_BASE_URL
 
 # 本地服务缓存（用于组件查找服务信息）
 _services_cache: Dict[int, dict] = {}
@@ -20,7 +20,7 @@ COOLDOWN_SECONDS = 20
 def get_service_categories() -> List[Dict]:
     """获取服务分类列表 GET /pet/service_categories"""
     try:
-        res = requests.get(f"{BASE_URL}/pet/service_categories")
+        res = requests.get(f"{PET_BASE_URL}/pet/service_categories")
         res.raise_for_status()
         return res.json()
     except Exception as e:
@@ -32,7 +32,7 @@ def get_services_by_category(category_id: int) -> List[Dict]:
     """获取某分类下的服务 GET /pet/services?category_id={category_id}"""
     try:
         res = requests.get(
-            f"{BASE_URL}/pet/services",
+            f"{PET_BASE_URL}/pet/services",
             params={"category_id": category_id}
         )
         res.raise_for_status()
@@ -50,7 +50,7 @@ def apply_service(user_id: int, service_id: int) -> Dict:
     """使用服务 POST /pet/apply_service"""
     try:
         res = requests.post(
-            f"{BASE_URL}/pet/apply_service",
+            f"{PET_BASE_URL}/pet/apply_service",
             json={
                 "user_id": str(user_id),
                 "service_id": service_id

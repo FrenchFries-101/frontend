@@ -1,11 +1,43 @@
 # pet_widget.py
 import os
+import tempfile
 from PySide6.QtWidgets import (
     QWidget, QLabel, QVBoxLayout, QPushButton, QLineEdit, QHBoxLayout
 )
 from PySide6.QtGui import QMovie, QFont, QPixmap
 from PySide6.QtCore import Qt, QTimer, QSize
+import requests
 from service.api_petshow import get_current_skin, modify_pet_name, get_pet_quote
+from service.api import BASE_URL
+from utils.path_utils import resource_path
+
+
+def _resolve_gif(gif_url: str, skin_id: int) -> str | None:
+    """解析 GIF 路径：优先后端 URL，失败则回退本地 fox_{skin_id}.gif"""
+    if gif_url and gif_url.startswith("/"):
+        gif_url = f"{BASE_URL}{gif_url}"
+
+    if gif_url and (gif_url.startswith("http://") or gif_url.startswith("https://")):
+        try:
+            res = requests.get(gif_url, timeout=10)
+            res.raise_for_status()
+            _, ext = os.path.splitext(gif_url)
+            tmp = tempfile.NamedTemporaryFile(suffix=ext or ".gif", delete=False)
+            tmp.write(res.content)
+            tmp.close()
+            print(f"[PetWidget] skin_id={skin_id} → 使用后端图片: {gif_url}")
+            return tmp.name
+        except Exception as e:
+            print(f"[PetWidget] 后端图片下载失败({e})，尝试本地回退")
+
+    # 回退本地
+    local_path = resource_path(f"resources/icons/fox_{skin_id}.gif")
+    if os.path.exists(local_path):
+        print(f"[PetWidget] skin_id={skin_id} → 使用本地回退: {local_path}")
+        return local_path
+
+    print(f"[PetWidget] skin_id={skin_id} → 后端和本地均无可用图片")
+    return None
 
 
 class PetWidget(QWidget):
@@ -20,7 +52,7 @@ class PetWidget(QWidget):
         self.layout = QVBoxLayout(self)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.layout.setSpacing(10)
-        self.layout.setContentsMargins(0, 25, 0, 0) #调整上下左右间距
+        self.layout.setContentsMargins(0, 5, 0, 0) #调整上下左右间距
 
         # ========== 创建子组件 ==========
         self._create_gif_area()
@@ -29,7 +61,7 @@ class PetWidget(QWidget):
         self._create_timer()
 
         # ========== 按顺序添加到布局 ==========
-        self.layout.addWidget(self.quote_label)
+        self.layout.addWidget(self.quote_container)
         self.layout.addWidget(self.gif_label, alignment=Qt.AlignmentFlag.AlignCenter)
         self.layout.addWidget(self.name_slot)
 
@@ -68,8 +100,10 @@ class PetWidget(QWidget):
         self.edit_icon.setCursor(Qt.CursorShape.PointingHandCursor)
         self.edit_icon.setStyleSheet("""
             QPushButton {
-                background: transparent; border: none; padding: 0px;
+                background: transparent; border: none;
+                padding: 0px; margin: 0px;
                 color: #B3886B; font-size: 12px;
+                text-align: center;
             }
             QPushButton:hover {
                 background-color: rgba(179, 136, 107, 0.15); border-radius: 11px;
@@ -103,6 +137,8 @@ class PetWidget(QWidget):
             QPushButton {
                 background-color: #B3886B; color: white; border: none;
                 border-radius: 14px; font-size: 14px; font-weight: bold;
+                padding: 0px; margin: 0px;
+                text-align: center;
             }
             QPushButton:hover { background-color: #9A7055; }
         """)
@@ -117,6 +153,8 @@ class PetWidget(QWidget):
             QPushButton {
                 background-color: #DFE0DF; color: #666; border: none;
                 border-radius: 14px; font-size: 14px; font-weight: bold;
+                padding: 0px; margin: 0px;
+                text-align: center;
             }
             QPushButton:hover { background-color: #C8C8C8; }
         """)
@@ -136,11 +174,28 @@ class PetWidget(QWidget):
         slot_layout.addWidget(self.edit_row_widget)
 
     def _create_quote_area(self):
-        """创建语录区域"""
+        """创建语录区域（漫画气泡样式）"""
+        self.quote_container = QWidget()
+        self.quote_container.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.quote_container.setFixedHeight(60)
+
+        bubble_path = resource_path("resources/icons/bubble.png")
+        self.quote_container.setStyleSheet(f"""
+            QWidget {{
+                border-image: url({bubble_path}) 20 20 28 20 stretch stretch;
+                border-width: 20px 20px 28px 20px;
+                background: transparent;
+            }}
+        """)
+
+        container_layout = QVBoxLayout(self.quote_container)
+        container_layout.setContentsMargins(24, 16, 24, 28)
+
         self.quote_label = QLabel()
         self.quote_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.quote_label.setWordWrap(True)
-        self.quote_label.setStyleSheet("color: #666666; background: transparent; padding: 5px;")
+        self.quote_label.setStyleSheet("color: #666666; background: transparent; border: none;")
+        container_layout.addWidget(self.quote_label)
 
     def _create_timer(self):
         """创建定时刷新语录"""
@@ -153,18 +208,13 @@ class PetWidget(QWidget):
         data = get_current_skin(self.user_id)
         self.skin_id = data.get("skin_id")
         self.name_label.setText(data.get("name", ""))
-        self.gif_url = data.get("gif_url")
-        self.set_gif(self.gif_url)
+        self.set_gif(data.get("gif_url", ""), self.skin_id)
         self.update_quote()
 
-    def set_gif(self, gif_path: str):
-        """加载图片/GIF"""
-        if not os.path.isabs(gif_path):
-            gif_path = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__))), gif_path
-            )
-        if not os.path.exists(gif_path):
-            print(f"[PetWidget] 文件不存在: {gif_path}")
+    def set_gif(self, gif_url: str, skin_id: int = 1):
+        """加载图片/GIF，优先后端URL，失败回退本地"""
+        gif_path = _resolve_gif(gif_url, skin_id)
+        if not gif_path:
             return
 
         _, ext = os.path.splitext(gif_path)

@@ -3,14 +3,14 @@
 
 import requests
 
-from service.api import BASE_URL
+from service.api import PET_BASE_URL
 
 
 def get_current_skin(user_id: int) -> dict:
     """获取当前宠物皮肤 GET /pet/current_skin?user_id={user_id}"""
     try:
         res = requests.get(
-            f"{BASE_URL}/pet/current_skin",
+            f"{PET_BASE_URL}/pet/current_skin",
             params={"user_id": user_id}
         )
         res.raise_for_status()
@@ -23,7 +23,7 @@ def modify_pet_name(user_id: int, new_name: str) -> dict:
     """修改宠物名字 POST /pet/modify_name"""
     try:
         res = requests.post(
-            f"{BASE_URL}/pet/modify_name",
+            f"{PET_BASE_URL}/pet/modify_name",
             json={
                 "user_id": str(user_id),
                 "name": new_name
@@ -40,7 +40,7 @@ def get_pet_quote(user_id: int) -> dict:
     """获取语录 GET /pet/quote?user_id={user_id}"""
     try:
         res = requests.get(
-            f"{BASE_URL}/pet/quote",
+            f"{PET_BASE_URL}/pet/quote",
             params={"user_id": user_id}
         )
         res.raise_for_status()

@@ -8,7 +8,7 @@ from PySide6.QtGui import QFont, QPainter, QLinearGradient, QColor, QPainterPath
 
 import requests
 
-BASE_URL = "http://127.0.0.1:8000"
+BASE_URL = "http://127.0.0.1:8000/pet_module"
 
 #
 
