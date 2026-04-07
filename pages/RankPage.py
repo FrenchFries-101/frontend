@@ -11,15 +11,17 @@ class RankPage(QWidget):
         self.load_rank_data()
     
     def init_ui(self):
+        self.setStyleSheet("background-color: #FFF3E8;")
+        
         layout = QVBoxLayout()
         layout.setSpacing(20)
         layout.setContentsMargins(20, 20, 20, 20)
         
-        # 标题
-        title = QLabel("Leaderboard")
+        title = QLabel("🏆 Leaderboard")
         title.setObjectName("rank_title")
         title.setAlignment(Qt.AlignCenter)
-        title.setFont(QFont("Arial", 20, QFont.Bold))
+        title.setFont(QFont("Arial", 24, QFont.Bold))
+        title.setStyleSheet("color: #333333; padding: 10px;")
         layout.addWidget(title)
         
         # 排行榜表格
@@ -40,18 +42,29 @@ class RankPage(QWidget):
         self.table.setAlternatingRowColors(True)
         self.table.setStyleSheet("""
             QTableWidget {
-                background-color: #f5f5f5;
-                border-radius: 8px;
-                border: 1px solid #ddd;
+                background-color: white;
+                border-radius: 12px;
+                border: 2px solid rgba(0, 0, 0, 0.1);
             }
             QTableWidget::item {
-                padding: 10px;
+                padding: 12px;
+                font-size: 14px;
+                color: #333333;
+            }
+            QTableWidget::item:alternate {
+                background-color: #FFF8F0;
             }
             QHeaderView::section {
-                background-color: #F28D40;
-                color: white;
-                padding: 8px;
+                background-color: #FFF3E8;
+                color: #333333;
+                padding: 12px;
                 font-weight: bold;
+                font-size: 14px;
+                border: none;
+            }
+            QTableView QTableCornerButton::section {
+                background-color: #FFF3E8;
+                border: none;
             }
         """)
         
@@ -61,10 +74,10 @@ class RankPage(QWidget):
         self.user_info_frame = QFrame()
         self.user_info_frame.setStyleSheet("""
             QFrame {
-                background-color: #FFF3E0;
-                border-radius: 8px;
-                border: 1px solid #F28D40;
-                padding: 10px;
+                background-color: #FFF3E8;
+                border-radius: 12px;
+                border: 2px solid #F28D40;
+                padding: 15px;
             }
         """)
         user_info_layout = QHBoxLayout()
@@ -95,9 +108,9 @@ class RankPage(QWidget):
         print("Rank list data:", rank_list)
         print("Current user:", current_user)
         
-        # 只显示前10名
-        top_10 = rank_list[:10]
-        self.table.setRowCount(len(top_10))
+        # 显示前50名
+        top_50 = rank_list[:50]
+        self.table.setRowCount(len(top_50))
         
         # 查找当前用户的排名
         user_rank = -1
@@ -128,8 +141,8 @@ class RankPage(QWidget):
             self.user_name_label.setText(f"Username: {user_name}")
             self.user_points_label.setText(f"Points: {user_points}")
         
-        # 填充前10名数据
-        for i, user in enumerate(top_10):
+        # 填充前50名数据
+        for i, user in enumerate(top_50):
             # 排名
             rank_item = QTableWidgetItem(str(i + 1))
             rank_item.setTextAlignment(Qt.AlignCenter)
