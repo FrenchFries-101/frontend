@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QLabel, QMenu
-from PySide6.QtCore import Qt, QPoint
-from PySide6.QtGui import QCursor,QAction,QMovie
+from PySide6.QtCore import Qt, QPoint, QTimer
+from PySide6.QtGui import QCursor, QAction, QMovie
+import random
 
 
 class FloatingIcon(QWidget):
@@ -21,12 +22,54 @@ class FloatingIcon(QWidget):
         self.label = QLabel(self)
         self.label.setFixedSize(80, 80)
         self.label.setAlignment(Qt.AlignCenter)
-        self.movie = QMovie("resources/icons/Sweet run cycle.gif")
+        self.label.setStyleSheet("border: none; background: transparent;")
+        
+        # Fox GIF 列表
+        self.fox_gifs = [
+            "resources/icons/fox_1.gif",
+            "resources/icons/fox_2.gif",
+            "resources/icons/fox_3.gif",
+            "resources/icons/fox_4.gif",
+            "resources/icons/fox_5.gif",
+            "resources/icons/fox_6.gif"
+        ]
+        
+        # 随机选择一个 fox gif
+        self.current_gif_index = random.randint(0, len(self.fox_gifs) - 1)
+        self.movie = QMovie(self.fox_gifs[self.current_gif_index])
         self.movie.setScaledSize(self.label.size())
         self.label.setMovie(self.movie)
         self.movie.start()
+        
+        # 定时器，每隔一段时间随机切换 fox gif
+        self.switch_timer = QTimer()
+        self.switch_timer.timeout.connect(self.switch_fox_gif)
+        # 随机设置切换时间（10-30秒）
+        self.switch_interval = random.randint(10000, 30000)
+        self.switch_timer.start(self.switch_interval)
 
         self.show()
+    
+    def switch_fox_gif(self):
+        # 随机选择一个新的 fox gif（避免选择同一个）
+        new_index = random.randint(0, len(self.fox_gifs) - 1)
+        while new_index == self.current_gif_index and len(self.fox_gifs) > 1:
+            new_index = random.randint(0, len(self.fox_gifs) - 1)
+        
+        self.current_gif_index = new_index
+        
+        # 停止当前动画
+        self.movie.stop()
+        
+        # 加载新的 gif
+        self.movie = QMovie(self.fox_gifs[self.current_gif_index])
+        self.movie.setScaledSize(self.label.size())
+        self.label.setMovie(self.movie)
+        self.movie.start()
+        
+        # 随机设置下一次切换时间（10-30秒）
+        self.switch_interval = random.randint(10000, 30000)
+        self.switch_timer.setInterval(self.switch_interval)
 
     # 拖动
     def mousePressEvent(self, event):
