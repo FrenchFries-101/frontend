@@ -22,9 +22,11 @@ def get_service_categories() -> List[Dict]:
     try:
         res = requests.get(f"{PET_BASE_URL}/pet/service_categories")
         res.raise_for_status()
-        return res.json()
+        data = res.json()
+        print(f"[PetAPI] GET /pet/service_categories → {data}")
+        return data
     except Exception as e:
-        print("获取服务分类失败:", e)
+        print("[PetAPI] 获取服务分类失败:", e)
         return []
 
 
@@ -37,12 +39,12 @@ def get_services_by_category(category_id: int) -> List[Dict]:
         )
         res.raise_for_status()
         services = res.json()
-        # 缓存服务数据，供冷却刷新时查找
+        print(f"[PetAPI] GET /pet/services?category_id={category_id} → {services}")
         for s in services:
             _services_cache[s["service_id"]] = s
         return services
     except Exception as e:
-        print("获取服务列表失败:", e)
+        print("[PetAPI] 获取服务列表失败:", e)
         return []
 
 
@@ -58,12 +60,12 @@ def apply_service(user_id: int, service_id: int) -> Dict:
         )
         res.raise_for_status()
         result = res.json()
-        # 成功后记录冷却起始时间
+        print(f"[PetAPI] POST /pet/apply_service → {result}")
         if result.get("success"):
             _cooldowns[(user_id, service_id)] = time.time()
         return result
     except Exception as e:
-        print("应用服务失败:", e)
+        print(f"[PetAPI] 应用服务失败: {e}")
         return {"success": False, "message": f"请求失败: {e}"}
 
 
