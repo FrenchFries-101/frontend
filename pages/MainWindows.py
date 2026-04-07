@@ -467,6 +467,7 @@ class MainWindow(QWidget):
             user_id = user.get("id", 0)
             print(f"[PetPages] Initializing pet pages for user_id={user_id}")
             self.pet_home_page = PetHomePage(user_id)
+            self.pet_home_page.points_changed.connect(self.update_coin_label)
             self.pet_skin_page = PetSkinPage(user_id)
             self.ui.stackedWidget.addWidget(self.pet_home_page)
             self.ui.stackedWidget.addWidget(self.pet_skin_page)
@@ -480,6 +481,16 @@ class MainWindow(QWidget):
     def clear_data(self):
         # 清空用户名
         self.ui.label_13.setText("")
+
+        # 清空宠物页面，下次登录时用新 user_id 重建
+        if self.pet_home_page is not None:
+            self.ui.stackedWidget.removeWidget(self.pet_home_page)
+            self.pet_home_page.deleteLater()
+            self.pet_home_page = None
+        if self.pet_skin_page is not None:
+            self.ui.stackedWidget.removeWidget(self.pet_skin_page)
+            self.pet_skin_page.deleteLater()
+            self.pet_skin_page = None
 
         # 清空 Cambridge 列表
         layout = self.ui.scrollAreaWidgetContents_2.layout()

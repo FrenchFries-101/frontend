@@ -38,6 +38,7 @@ class PetHomePage(QWidget):
     """
 
     skin_changed = Signal(int)
+    points_changed = Signal(int)
 
     def __init__(self, user_id: int = 1, parent=None):
         super().__init__(parent)
@@ -164,8 +165,11 @@ class PetHomePage(QWidget):
     # ---- 事件回调 ----
 
     def _on_service_applied(self, result: dict):
-        """服务使用成功 → 刷新状态组件"""
+        """服务使用成功 → 刷新状态组件 + 通知积分变化"""
         self.status_widget.refresh()
+        new_points = result.get("new_points")
+        if new_points is not None:
+            self.points_changed.emit(int(new_points))
 
 
 # ============================================================
@@ -181,6 +185,7 @@ class PetSkinPage(QWidget):
     """
 
     skin_changed = Signal(int)
+    points_changed = Signal(int)
 
     def __init__(self, user_id: int = 1, parent=None):
         super().__init__(parent)
