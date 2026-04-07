@@ -11,6 +11,7 @@ from PySide6.QtWidgets import QSystemTrayIcon, QMenu
 from PySide6.QtGui import QAction, QIcon
 from floating_icon import FloatingIcon
 from desktop_calendar import DesktopCalendar
+from desktop_plan_widget import DesktopPlanWidget
 
 from pages.TedTestWindow import TedTestWindow
 #4/3
@@ -59,6 +60,7 @@ class AppWindow(QMainWindow):
 
         self.init_tray()
         self.floating_icon = FloatingIcon(self)
+        self.desktop_plan_widget = DesktopPlanWidget()
 
 
     def slide_to_main(self):

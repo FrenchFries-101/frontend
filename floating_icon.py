@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QWidget, QLabel, QMenu
-from PySide6.QtCore import Qt, QPoint, QTimer
-from PySide6.QtGui import QCursor, QAction, QMovie
+from PySide6.QtWidgets import QWidget, QMenu
+from PySide6.QtCore import Qt, QPoint, QTimer, QDate
+from PySide6.QtGui import QCursor, QAction, QMovie, QPainter, QPixmap
 import random
 
 
@@ -9,6 +9,7 @@ class FloatingIcon(QWidget):
         super().__init__()
         self.main_window = main_window
 
+        # 窗口大小设置为 GIF 大小
         self.setFixedSize(80, 80)
         # 无边框 + 置顶 + 不显示在任务栏
         self.setWindowFlags(
@@ -16,14 +17,9 @@ class FloatingIcon(QWidget):
             Qt.WindowStaysOnTopHint |
             Qt.Tool
         )
+        # 透明背景 - 这是关键
         self.setAttribute(Qt.WA_TranslucentBackground)
 
-        # 显示 GIF
-        self.label = QLabel(self)
-        self.label.setFixedSize(80, 80)
-        self.label.setAlignment(Qt.AlignCenter)
-        self.label.setStyleSheet("border: none; background: transparent;")
-        
         # Fox GIF 列表
         self.fox_gifs = [
             "resources/icons/fox_1.gif",
@@ -37,8 +33,8 @@ class FloatingIcon(QWidget):
         # 随机选择一个 fox gif
         self.current_gif_index = random.randint(0, len(self.fox_gifs) - 1)
         self.movie = QMovie(self.fox_gifs[self.current_gif_index])
-        self.movie.setScaledSize(self.label.size())
-        self.label.setMovie(self.movie)
+        # 连接帧变化信号
+        self.movie.frameChanged.connect(self.update)
         self.movie.start()
         
         # 定时器，每隔一段时间随机切换 fox gif
@@ -49,6 +45,21 @@ class FloatingIcon(QWidget):
         self.switch_timer.start(self.switch_interval)
 
         self.show()
+    
+    def paintEvent(self, event):
+        # 直接在窗口上绘制 GIF 帧
+        painter = QPainter(self)
+        # 确保使用抗锯齿
+        painter.setRenderHint(QPainter.SmoothPixmapTransform)
+        
+        # 获取当前帧
+        current_pixmap = self.movie.currentPixmap()
+        if not current_pixmap.isNull():
+            # 计算居中位置
+            x = (self.width() - current_pixmap.width()) // 2
+            y = (self.height() - current_pixmap.height()) // 2
+            # 直接绘制 pixmap
+            painter.drawPixmap(x, y, current_pixmap)
     
     def switch_fox_gif(self):
         # 随机选择一个新的 fox gif（避免选择同一个）
@@ -63,13 +74,20 @@ class FloatingIcon(QWidget):
         
         # 加载新的 gif
         self.movie = QMovie(self.fox_gifs[self.current_gif_index])
-        self.movie.setScaledSize(self.label.size())
-        self.label.setMovie(self.movie)
+        self.movie.frameChanged.connect(self.update)
         self.movie.start()
         
         # 随机设置下一次切换时间（10-30秒）
         self.switch_interval = random.randint(10000, 30000)
         self.switch_timer.setInterval(self.switch_interval)
+
+    def show_today_plan(self):
+        # 显示或隐藏便签
+        if hasattr(self.main_window, 'desktop_plan_widget'):
+            if self.main_window.desktop_plan_widget.isVisible():
+                self.main_window.desktop_plan_widget.hide()
+            else:
+                self.main_window.desktop_plan_widget.show()
 
     # 拖动
     def mousePressEvent(self, event):
@@ -89,17 +107,17 @@ class FloatingIcon(QWidget):
         menu = QMenu()
 
         # 创建动作
-        test_action = QAction("Hello")
+        plan_action = QAction("Today's Plan")
         logout_action = QAction("Logout")
         quit_action = QAction("Exit")
 
         # 绑定动作
-        test_action.triggered.connect(lambda: self.main_window.stack.setCurrentIndex(1))
+        plan_action.triggered.connect(self.show_today_plan)
         logout_action.triggered.connect(self.main_window.slide_to_login)
         quit_action.triggered.connect(lambda: exit())
 
         # 添加到菜单
-        menu.addAction(test_action)
+        menu.addAction(plan_action)
         menu.addAction(logout_action)
         menu.addSeparator()
         menu.addAction(quit_action)
