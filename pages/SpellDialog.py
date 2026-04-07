@@ -93,13 +93,32 @@ class SpellDialog(QDialog):
 
         # Check button — centered, compact
         btn_row = QHBoxLayout()
-        btn_row.setContentsMargins(0, 0, 0, 0)
+        btn_row.setContentsMargins(0, 10, 0, 0)  # 上面留点呼吸感
+
         self.check_btn = QPushButton("Check")
         self.check_btn.setObjectName("check_btn")
+        self.check_btn.setFixedSize(160, 44)
+        self.check_btn.setStyleSheet("""
+        QPushButton {
+            background-color: #fb7185;
+            color: white;
+            border-radius: 12px;
+            padding: 0px;
+            text-align: center;
+            font-weight: bold;
+        }
+        """)
+
+
+
         self.check_btn.clicked.connect(self._check)
+
         btn_row.addStretch()
-        btn_row.addWidget(self.check_btn)
+        btn_row.addWidget(self.check_btn, alignment=Qt.AlignCenter)
         btn_row.addStretch()
+
+
+
         layout.addLayout(btn_row)
 
         self.input.setFocus()
