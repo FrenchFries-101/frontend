@@ -8,7 +8,7 @@ from PySide6.QtGui import QFont, QPainter, QLinearGradient, QColor, QPainterPath
 
 import requests
 
-BASE_URL = "http://127.0.0.1:8000/pet_module"
+from service.api import PET_BASE_URL
 
 #
 
@@ -20,7 +20,7 @@ def get_pet_status(user_id: int) -> dict:
     """
     try:
         response = requests.get(
-            f"{BASE_URL}/pet/status",
+            f"{PET_BASE_URL}/pet/status",
             params={"user_id": user_id}   # query参数用params=
         )
         raw = response.json()
