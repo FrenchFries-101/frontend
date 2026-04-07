@@ -485,74 +485,39 @@ class MainWindow(QWidget):
             10: "Creator-produced content on modern challenges and opportunities",
         }
 
-        talk_id = int(talk.get("talk_id", 0))
-        title = str(talk.get("title") or f"TED Talk {talk_id}")
-        audio_path = str(talk.get("audio_path") or "")
-        subtitle = _TALK_SUBTITLES.get(talk_id, "Explore ideas, language, and stories through TED talks.")
+        talk_id = int(talk.get("talk_id") or talk.get("id") or 0)
+        title = talk.get("title") or f"TED Talk {talk_id}"
+        audio_path = talk.get("audio_path") or ""
+        subtitle = _TALK_SUBTITLES.get(talk_id, "")
 
         card = QFrame()
-        card.setObjectName("ted_card")
-        card.setMinimumHeight(120)
+        card.setObjectName("test_card")
+        card.setMinimumHeight(90)
 
-        row = QHBoxLayout(card)
-        row.setContentsMargins(14, 12, 14, 12)
-        row.setSpacing(12)
+        card_layout = QHBoxLayout(card)
 
-        text_col = QVBoxLayout()
-        text_col.setSpacing(6)
+        left_layout = QVBoxLayout()
+        left_layout.setSpacing(6)
 
+        if subtitle:
+            subtitle_label = QLabel(subtitle)
+            subtitle_label.setObjectName("label_7") 
+            subtitle_label.setWordWrap(True)
+            left_layout.addWidget(subtitle_label)
+
+ 
         title_label = QLabel(title)
-        title_label.setStyleSheet("font-size: 16px; font-weight: 700; color: #3b2f18;")
+        title_label.setObjectName("label_8")  
+        left_layout.addWidget(title_label)
 
-        subtitle_label = QLabel(subtitle)
-        subtitle_label.setWordWrap(True)
-        subtitle_label.setStyleSheet("font-size: 12px; color: #7a6640;")
-
-        text_col.addWidget(title_label)
-        text_col.addWidget(subtitle_label)
-
-        start_btn = QPushButton("Start TED")
-        start_btn.setMinimumWidth(110)
-        start_btn.setStyleSheet(
-            """
-            QPushButton {
-                border: 1px solid #f1d38a;
-                border-radius: 8px;
-                padding: 8px 12px;
-                background: #ffe8a8;
-                color: #5b4518;
-                font-weight: 700;
-            }
-            QPushButton:hover {
-                background: #ffe08e;
-                border: 1px solid #dfb75b;
-            }
-            QPushButton:pressed {
-                background: #f8d36e;
-            }
-            """
+        open_btn = QPushButton("Open")
+        open_btn.clicked.connect(
+            lambda _, tid=talk_id, t=title, a=audio_path: self.start_ted_signal.emit(tid, t, a)
         )
 
-        start_btn.clicked.connect(
-            lambda _, tid=talk_id, tt=title, ap=audio_path: self.start_ted_signal.emit(tid, tt, ap)
-        )
-
-        row.addLayout(text_col, 1)
-        row.addWidget(start_btn, 0, Qt.AlignVCenter)
-
-        card.setStyleSheet(
-            """
-            QFrame#ted_card {
-                background: #fffaf0;
-                border: 1px solid #ffe08e;
-                border-radius: 12px;
-            }
-            QFrame#ted_card:hover {
-                border: 1px solid #dfb75b;
-                background: #fff3d4;
-            }
-            """
-        )
+        card_layout.addLayout(left_layout)
+        card_layout.addStretch()
+        card_layout.addWidget(open_btn)
 
         return card
 
