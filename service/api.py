@@ -310,18 +310,46 @@ def get_groups(search=None, page=1, page_size=20):
         return {"groups": [], "total_count": 0}
 
 
-def create_group(group_name, max_members, group_icon=None, password=None, user_id=None):
+def create_group(
+    group_name,
+    max_members,
+    group_icon=None,
+    password=None,
+    user_id=None,
+    group_type=None,
+    study_types=None,
+    title=None,
+    description=None,
+    cover_image=None,
+    is_private=None,
+    visibility=None,
+    images=None,
+):
     try:
         payload = {
             "group_name": group_name,
             "max_members": max_members,
         }
-        if group_icon:
-            payload["group_icon"] = group_icon
-        if password:
-            payload["password"] = password
-        if user_id is not None:
-            payload["user_id"] = user_id
+        optional_fields = {
+            "group_icon": group_icon,
+            "password": password,
+            "user_id": user_id,
+            "group_type": group_type,
+            "study_types": study_types,
+            "title": title,
+            "description": description,
+            "cover_image": cover_image,
+            "is_private": is_private,
+            "visibility": visibility,
+            "images": images,
+        }
+
+        for key, value in optional_fields.items():
+            if value is None or value == "":
+                continue
+            if isinstance(value, list) and not value:
+                continue
+            payload[key] = value
 
         res = requests.post(f"{BASE_URL}/groups/create", json=payload)
         res.raise_for_status()
@@ -329,6 +357,25 @@ def create_group(group_name, max_members, group_icon=None, password=None, user_i
     except Exception as e:
         print("创建小组失败:", e)
         return {"success": False, "message": "创建小组失败"}
+
+
+def upload_group_images(images_base64):
+    try:
+        if not images_base64:
+            return {"success": False, "message": "未选择图片"}
+
+        data = [("images", item) for item in images_base64 if item]
+        if not data:
+            return {"success": False, "message": "图片数据为空"}
+
+        res = requests.post(f"{BASE_URL}/groups/upload_images", data=data)
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("上传小组介绍图片失败:", e)
+        return {"success": False, "message": "上传小组介绍图片失败"}
+
+
 
 
 
@@ -359,7 +406,61 @@ def get_group_members(group_id):
         return {"members": []}
 
 
+def create_group_task(group_id, user_id, activity_type, target_amount, reward_coins=50, start_date=None, end_date=None):
+    try:
+        payload = {
+            "user_id": user_id,
+            "activity_type": activity_type,
+            "target_amount": target_amount,
+            "reward_coins": reward_coins,
+            "start_date": start_date,
+            "end_date": end_date,
+        }
+        res = requests.post(f"{BASE_URL}/groups/{group_id}/tasks/create", json=payload)
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("创建小组任务失败:", e)
+        return {"success": False, "message": "创建小组任务失败"}
+
+
+def get_group_tasks(group_id):
+    try:
+        res = requests.get(f"{BASE_URL}/groups/{group_id}/tasks")
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("获取小组任务失败:", e)
+        return []
+
+
+def get_group_ranking(group_id):
+    try:
+        res = requests.get(f"{BASE_URL}/groups/{group_id}/ranking")
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("获取小组排行榜失败:", e)
+        return []
+
+
+def get_group_my_stats(group_id, user_id):
+    try:
+        res = requests.get(f"{BASE_URL}/groups/{group_id}/my_stats", params={"user_id": user_id})
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("获取我的小组数据失败:", e)
+        return {
+            "user_id": user_id,
+            "contribution": {},
+            "coins_earned_this_week": 0,
+            "rank_in_group": 0,
+        }
+
+
 def upload_group_icon(group_id, image_path=None, image_base64=None):
+
     try:
         if image_path:
             with open(image_path, "rb") as f:

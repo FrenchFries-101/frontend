@@ -11,7 +11,9 @@ from pages.RankPage import RankPage
 from pages.PetPages import PetHomePage, PetSkinPage
 from pages.GroupPlazaPage import GroupPlazaPage
 from pages.GroupChatPage import GroupChatPage
+from pages.GroupTaskPage import GroupTaskPage
 from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
+
 
 
 from pages.WordGamePages import *
@@ -56,7 +58,9 @@ class MainWindow(QWidget):
         self.init_rank_page()
         self.init_pet_pages()
         self.init_group_chat_page()
+        self.init_group_task_page()
         self.init_group_plaza_page()
+
 
 
         if hasattr(self.ui, "pushButton_8"):
@@ -225,10 +229,16 @@ class MainWindow(QWidget):
         self.ui.stackedWidget.removeWidget(self.ui.GroupDiscuss)
         self.ui.stackedWidget.insertWidget(4, self.group_chat_page)
 
+    def init_group_task_page(self):
+        self.group_task_page = GroupTaskPage()
+        self.ui.stackedWidget.removeWidget(self.ui.GroupTask)
+        self.ui.stackedWidget.insertWidget(5, self.group_task_page)
+
     def init_group_plaza_page(self):
         self.group_plaza_page = GroupPlazaPage()
         self.ui.stackedWidget.removeWidget(self.ui.GroupPlaza)
         self.ui.stackedWidget.insertWidget(6, self.group_plaza_page)
+
 
     def init_pet_pages(self):
         self.pet_home_page = None
