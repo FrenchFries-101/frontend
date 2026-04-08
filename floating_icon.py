@@ -35,12 +35,15 @@ class FloatingIcon(QWidget):
         self.movie = QMovie(self.fox_gifs[self.current_gif_index])
         # 连接帧变化信号
         self.movie.frameChanged.connect(self.update)
-        # 连接加载完成信号
-        self.movie.finished.connect(self.on_movie_finished)
+        # 连接第一帧加载完成信号
+        self.movie.frameChanged.connect(self.on_first_frame_loaded)
         self.movie.start()
         
         # 初始时隐藏窗口，直到 GIF 加载完成
         self.hide()
+        
+        # 标记是否已加载完成
+        self.first_frame_loaded = False
         
         # 定时器，每隔一段时间随机切换 fox gif
         self.switch_timer = QTimer()
@@ -63,10 +66,17 @@ class FloatingIcon(QWidget):
             # 直接绘制，覆盖整个窗口
             painter.drawPixmap(0, 0, pixmap)
     
-    def on_movie_finished(self):
-        # 当 GIF 加载完成后，调整窗口大小并显示
-        self.adjust_window_size()
-        self.show()
+    def on_first_frame_loaded(self):
+        # 当第一帧加载完成后，调整窗口大小并显示
+        if not self.first_frame_loaded:
+            self.first_frame_loaded = True
+            self.adjust_window_size()
+            self.show()
+            # 断开这个信号，避免重复调用
+            try:
+                self.movie.frameChanged.disconnect(self.on_first_frame_loaded)
+            except:
+                pass
     
     def adjust_window_size(self):
         # 调整窗口大小以适应 GIF
@@ -91,7 +101,9 @@ class FloatingIcon(QWidget):
         # 加载新的 gif
         self.movie = QMovie(self.fox_gifs[self.current_gif_index])
         self.movie.frameChanged.connect(self.update)
-        self.movie.finished.connect(self.on_movie_finished)
+        # 连接第一帧加载完成信号
+        self.first_frame_loaded = False
+        self.movie.frameChanged.connect(self.on_first_frame_loaded)
         self.movie.start()
         
         # 随机设置下一次切换时间（10-30秒）
