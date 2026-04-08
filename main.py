@@ -1,7 +1,7 @@
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QStackedWidget
-from PySide6.QtCore import QPropertyAnimation, QEasingCurve, QPoint, QTimer
-from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import QPropertyAnimation, QEasingCurve, QPoint, QTimer, Qt
+from PySide6.QtWidgets import QWidget, QVBoxLayout
 from pages.LoginWindows import LoginWindow
 from pages.MainWindows import MainWindow
 from pages.RegisterWindow import RegisterWindow
@@ -9,14 +9,14 @@ from pages.IELTSTestWindow import IELTSTestWindow
 from utils.loading_overlay import LoadingOverlay
 from utils.path_utils import resource_path
 from PySide6.QtWidgets import QSystemTrayIcon, QMenu
-from PySide6.QtGui import QAction, QIcon
+from PySide6.QtGui import QAction, QIcon, QCursor
 from floating_icon import FloatingIcon
 from desktop_plan_widget import DesktopPlanWidget
-
 from pages.TedTestWindow import TedTestWindow
 
 # ── 新增：导入 SplashScreen ──
 from splash_screen import SplashScreen
+# from components.title_bar import TitleBar
 
 
 class AppWindow(QMainWindow):
@@ -55,6 +55,8 @@ class AppWindow(QMainWindow):
         self.load_qss()
         self.loading = LoadingOverlay(self)
         self.loading.resize(self.size())
+        self.setWindowTitle("DIIFOX")
+        self.setWindowIcon(QIcon(resource_path("resources/icons/arctic-fox.png")))
         self.init_tray()
         self.floating_icon = FloatingIcon(self)
 
@@ -255,7 +257,7 @@ class AppWindow(QMainWindow):
 
     def init_tray(self):
         self.tray = QSystemTrayIcon(self)
-        self.tray.setIcon(QIcon(resource_path("resources/icons/unicorn.png")))
+        self.tray.setIcon(QIcon(resource_path("resources/icons/arctic-fox.png")))
         menu = QMenu()
         open_action   = QAction("Open")
         main_action   = QAction("Main Menu")
@@ -294,7 +296,7 @@ class AppWindow(QMainWindow):
         event.ignore()
         self.hide()
         self.tray.showMessage(
-            "IELTS Assistant",
+            "DIIFOX",
             "App is minimized to tray",
             QSystemTrayIcon.MessageIcon.Information,
             2000
