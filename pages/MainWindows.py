@@ -478,6 +478,10 @@ class MainWindow(QWidget):
             self.pet_home_page.points_changed.connect(self.update_coin_label)
             self.pet_skin_page = PetSkinPage(user_id)
             self.pet_explore_page = PetExplorePage(user_id)
+            # 皮肤切换后刷新主页宠物展示
+            self.pet_skin_page.skin_changed.connect(
+                lambda skin_id: self.pet_home_page.pet_widget.load_pet_data()
+            )
             # 服务使用后同步刷新探索页的活力值状态
             self.pet_home_page.status_widget.refresh()
             self.ui.stackedWidget.addWidget(self.pet_home_page)
