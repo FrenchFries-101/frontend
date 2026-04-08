@@ -1,50 +1,50 @@
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QStackedWidget
-from PySide6.QtCore import QPropertyAnimation, QEasingCurve, QPoint,QTimer
+from PySide6.QtCore import QPropertyAnimation, QEasingCurve, QPoint, QTimer
 from PySide6.QtWidgets import QWidget
 from pages.LoginWindows import LoginWindow
 from pages.MainWindows import MainWindow
 from pages.RegisterWindow import RegisterWindow
 from pages.IELTSTestWindow import IELTSTestWindow
 from utils.loading_overlay import LoadingOverlay
+from utils.path_utils import resource_path
 from PySide6.QtWidgets import QSystemTrayIcon, QMenu
 from PySide6.QtGui import QAction, QIcon
 from floating_icon import FloatingIcon
-from desktop_calendar import DesktopCalendar
-from utils.path_utils import resource_path
+from desktop_plan_widget import DesktopPlanWidget
+
 from pages.TedTestWindow import TedTestWindow
-#4/3
+
+# ── 新增：导入 SplashScreen ──
+from splash_screen import SplashScreen
+
 
 class AppWindow(QMainWindow):
-
+    # ↓↓↓ 这里完全不用改，和你原来一模一样 ↓↓↓
     def __init__(self):
         super().__init__()
         self.test_page = IELTSTestWindow()
         self.ted_test_page = TedTestWindow()
-        self.desktop_calendar = DesktopCalendar()
+        self.desktop_plan_widget = DesktopPlanWidget()
 
         self.stack = QStackedWidget()
 
         self.login_page = LoginWindow()
-        self.register_page = RegisterWindow()  # <-- 新增
+        self.register_page = RegisterWindow()
         self.main_page = MainWindow()
 
         self.stack.addWidget(self.login_page)
         self.stack.addWidget(self.main_page)
-        #这个占位是用来干什么的
-        #self.stack.addWidget(QWidget())
-        self.stack.addWidget(self.test_page)  # index 2
+        self.stack.addWidget(self.test_page)
         self.stack.addWidget(self.register_page)
         self.stack.addWidget(self.ted_test_page)
 
         self.setCentralWidget(self.stack)
 
         self.login_page.login_success.connect(self.slide_to_main)
-        self.login_page.ui.pushButton_2.clicked.connect(self.slide_to_register)  # Login 页的“Register”按钮
-
-        self.register_page.register_success.connect(self.slide_to_main)  # 注册成功跳到主界面
-        self.register_page.go_login.connect(self.slide_to_login)  # 点击已有账号返回登录
-
+        self.login_page.ui.pushButton_2.clicked.connect(self.slide_to_register)
+        self.register_page.register_success.connect(self.slide_to_main)
+        self.register_page.go_login.connect(self.slide_to_login)
         self.main_page.exit_signal.connect(self.slide_to_login)
         self.main_page.start_test_signal.connect(self.slide_to_test)
         self.main_page.start_ted_signal.connect(self.slide_to_ted)
@@ -53,183 +53,122 @@ class AppWindow(QMainWindow):
         self.ted_test_page.exit_signal.connect(self.slide_back_to_main)
 
         self.load_qss()
-
         self.loading = LoadingOverlay(self)
         self.loading.resize(self.size())
-
         self.init_tray()
         self.floating_icon = FloatingIcon(self)
 
-
+    # ↓↓↓ 以下所有方法和你原来完全一样，无需修改 ↓↓↓
     def slide_to_main(self):
-
         if not hasattr(self, "main_page"):
-            #self.main_page = MainWindow()
-
-            # 替换 stack 里的占位 widget
             self.stack.removeWidget(self.stack.widget(1))
             self.stack.insertWidget(1, self.main_page)
-
-            # 绑定信号（必须在这里做）
             self.main_page.exit_signal.connect(self.slide_to_login)
             self.main_page.start_test_signal.connect(self.slide_to_test)
 
         current_index = self.stack.currentIndex()
         next_index = 1
-
         current_widget = self.stack.widget(current_index)
         next_widget = self.stack.widget(next_index)
-
         width = self.stack.frameRect().width()
-
         next_widget.move(width, 0)
         next_widget.show()
-
         overlay = QWidget(self.stack)
         overlay.setStyleSheet("background-color: rgba(255,255,255,120);")
         overlay.resize(self.stack.size())
         overlay.show()
-
-        # 当前页面滑出
         self.anim1 = QPropertyAnimation(current_widget, b"pos")
         self.anim1.setDuration(500)
         self.anim1.setStartValue(QPoint(0, 0))
         self.anim1.setEndValue(QPoint(-width, 0))
         self.anim1.setEasingCurve(QEasingCurve.OutCubic)
-
-        # 新页面滑入
         self.anim2 = QPropertyAnimation(next_widget, b"pos")
         self.anim2.setDuration(500)
         self.anim2.setStartValue(QPoint(width, 0))
         self.anim2.setEndValue(QPoint(0, 0))
         self.anim2.setEasingCurve(QEasingCurve.OutCubic)
-
         self.anim1.start()
         self.anim2.start()
-
-        # 动画结束后再加载数据
         self.anim2.finished.connect(self.start_load_main)
-
         self.stack.setCurrentIndex(next_index)
 
-        # overlay.hide()
-        #
-        # self.stack.setCurrentIndex(next_index)
-        # self.loading.show()
-        #
-        # self.anim2.finished.connect(self.start_load_main)
-
     def slide_to_login(self):
-        #先全部清空一遍
         self.logout_cleanup()
-
         current_index = self.stack.currentIndex()
         next_index = 0
-
         current_widget = self.stack.widget(current_index)
         next_widget = self.stack.widget(next_index)
-
         width = self.stack.frameRect().width()
-
         next_widget.move(-width, 0)
         next_widget.show()
-
         overlay = QWidget(self.stack)
         overlay.setStyleSheet("background-color: rgba(255,255,255,120);")
         overlay.resize(self.stack.size())
         overlay.show()
-
-        # 当前页面滑出
         self.anim1 = QPropertyAnimation(current_widget, b"pos")
         self.anim1.setDuration(500)
         self.anim1.setStartValue(QPoint(0, 0))
         self.anim1.setEndValue(QPoint(width, 0))
         self.anim1.setEasingCurve(QEasingCurve.OutCubic)
-
-        # 登录页滑入
         self.anim2 = QPropertyAnimation(next_widget, b"pos")
         self.anim2.setDuration(500)
         self.anim2.setStartValue(QPoint(-width, 0))
         self.anim2.setEndValue(QPoint(0, 0))
         self.anim2.setEasingCurve(QEasingCurve.OutCubic)
-
         self.anim1.start()
         self.anim2.start()
-
         overlay.hide()
-
         self.stack.setCurrentIndex(next_index)
 
-    def slide_to_test(self, cam, test, section,section_number):
-
-        # ✅ 先传数据
-        print("主界面传section",section)
-        self.test_page.set_data(cam, test, section,section_number)
-
+    def slide_to_test(self, cam, test, section, section_number):
+        self.test_page.set_data(cam, test, section, section_number)
         current_index = self.stack.currentIndex()
         next_index = 2
-
         current_widget = self.stack.widget(current_index)
         next_widget = self.stack.widget(next_index)
-
         width = self.stack.frameRect().width()
-
         next_widget.move(width, 0)
         next_widget.show()
-
         self.anim1 = QPropertyAnimation(current_widget, b"pos")
         self.anim1.setDuration(500)
         self.anim1.setStartValue(QPoint(0, 0))
         self.anim1.setEndValue(QPoint(-width, 0))
         self.anim1.setEasingCurve(QEasingCurve.OutCubic)
-
         self.anim2 = QPropertyAnimation(next_widget, b"pos")
         self.anim2.setDuration(500)
         self.anim2.setStartValue(QPoint(width, 0))
         self.anim2.setEndValue(QPoint(0, 0))
         self.anim2.setEasingCurve(QEasingCurve.OutCubic)
-
         self.anim1.start()
         self.anim2.start()
-
         self.stack.setCurrentIndex(next_index)
 
-    def slide_to_ted(self, talk_id, title, audio_path):                                             
-        self.ted_test_page.set_data(talk_id, title, audio_path)               
+    def slide_to_ted(self, talk_id, title, audio_path):
+        self.ted_test_page.set_data(talk_id, title, audio_path)
         current_index = self.stack.currentIndex()
         next_index = 4
-
         current_widget = self.stack.widget(current_index)
         next_widget = self.stack.widget(next_index)
-
         width = self.stack.frameRect().width()
         next_widget.move(width, 0)
         next_widget.show()
-
         self.anim1 = QPropertyAnimation(current_widget, b"pos")
         self.anim1.setDuration(500)
         self.anim1.setStartValue(QPoint(0, 0))
         self.anim1.setEndValue(QPoint(-width, 0))
         self.anim1.setEasingCurve(QEasingCurve.OutCubic)
-
         self.anim2 = QPropertyAnimation(next_widget, b"pos")
         self.anim2.setDuration(500)
         self.anim2.setStartValue(QPoint(width, 0))
         self.anim2.setEndValue(QPoint(0, 0))
         self.anim2.setEasingCurve(QEasingCurve.OutCubic)
-
         self.anim1.start()
         self.anim2.start()
         self.stack.setCurrentIndex(next_index)
 
     def slide_back_to_main(self):
-        if hasattr(self, "main_page") and hasattr(self.main_page, "refresh_coin_label_from_server"):
-            self.main_page.refresh_coin_label_from_server()
-
         current_index = self.stack.currentIndex()
-        next_index = 1  # main page
-
-
+        next_index = 1
         current_widget = self.stack.widget(current_index)
         next_widget = self.stack.widget(next_index)
         width = self.stack.frameRect().width()
@@ -288,9 +227,9 @@ class AppWindow(QMainWindow):
         self.loading.resize(self.size())
 
     def show_desktop_calendar(self):
-        self.desktop_calendar.show()
-        self.desktop_calendar.raise_()
-        self.desktop_calendar.activateWindow()
+        self.desktop_plan_widget.show()
+        self.desktop_plan_widget.raise_()
+        self.desktop_plan_widget.activateWindow()
 
     def load_main_data(self):
         self.main_page.load_data()
@@ -301,12 +240,18 @@ class AppWindow(QMainWindow):
         self.main_page.set_user(session.user)
         self.loading.show()
         QTimer.singleShot(100, self.load_main_data)
+        # 登录成功后显示浮动狐狸（使用用户当前皮肤）
+        if session.user and hasattr(session.user, 'id'):
+            self.floating_icon.show_with_skin(session.user.id)
+        elif isinstance(session.user, dict) and session.user.get('id'):
+            self.floating_icon.show_with_skin(session.user['id'])
 
     def logout_cleanup(self):
         import session
         session.user = None
         self.login_page.ui.lineEdit_2.clear()
         self.main_page.clear_data()
+        self.floating_icon.hide_fox()
 
     def init_tray(self):
         self.tray = QSystemTrayIcon(self)

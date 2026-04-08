@@ -62,9 +62,15 @@ class FilterRow(QWidget):
         icon_label = QLabel()
         icon_label.setFixedSize(18, 18)
         icon_label.setScaledContents(True)
-        if os.path.exists(icon_path):
-            icon_label.setPixmap(QPixmap(icon_path))
         icon_label.setStyleSheet("background: transparent;")
+        if os.path.exists(icon_path):
+            if icon_path.lower().endswith(".gif"):
+                movie = QMovie(icon_path)
+                movie.setScaledSize(icon_label.size())
+                icon_label.setMovie(movie)
+                movie.start()
+            else:
+                icon_label.setPixmap(QPixmap(icon_path))
         layout.addWidget(icon_label)
 
         title = QLabel(label)
@@ -111,9 +117,9 @@ class FilterRow(QWidget):
     @staticmethod
     def _btn_style(active: bool) -> str:
         if active:
-            return (f"QPushButton {{ background:{C_PRIMARY}; color:white; border:none; "
+            return (f"QPushButton {{ background:{C_PRIMARY}; color:white; border:1px solid {C_PRIMARY}; "
                     f"border-radius:13px; padding:0 12px; font-weight:bold; }}")
-        return (f"QPushButton {{ background:{C_TAG}; color:{C_PRIMARY}; border:none; "
+        return (f"QPushButton {{ background:{C_TAG}; color:{C_PRIMARY}; border:1px solid {C_BORDER}; "
                 f"border-radius:13px; padding:0 12px; }}"
                 f"QPushButton:hover {{ background:#EDD9C4; }}")
 
@@ -132,7 +138,7 @@ class RestaurantWidget(QWidget):
         self._movie_broccoli = None  # 空状态 gif
 
         self._icon_loc   = resource_path("resources/icons/land-layer-location.png")
-        self._icon_food  = resource_path("resources/icons/r_food.gif")
+        self._icon_food  = resource_path("resources/icons/restaurant.png")
         self._icon_spice = resource_path("resources/icons/pepper.png")
         self._gif_broccoli = resource_path("resources/icons/r_Broccoli.gif")
 
@@ -223,16 +229,16 @@ class RestaurantWidget(QWidget):
             f"QFrame#rc {{ background:{C_TAG}; border:none; border-radius:12px; }}")
         self._result_frame.setSizePolicy(
             QSizePolicy.Policy.Expanding,
-            QSizePolicy.Policy.Expanding
+            QSizePolicy.Policy.Minimum
         )
 
-        self._result_frame.setMinimumHeight(180)  # ✅ 保底高度
+        self._result_frame.setMinimumHeight(80)  # ✅ 保底高度
         rl = QVBoxLayout(self._result_frame)
         rl.setContentsMargins(14, 8, 14, 8)
         rl.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self._r_broccoli = QLabel()
-        self._r_broccoli.setFixedSize(64, 64)
+        self._r_broccoli.setFixedSize(128, 128)
         self._r_broccoli.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._r_broccoli.setStyleSheet("background:transparent;")
         if os.path.exists(self._gif_broccoli):
@@ -257,7 +263,8 @@ class RestaurantWidget(QWidget):
         self._r_fun.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._r_fun.setStyleSheet(f"color:{C_ACCENT}; background:transparent;")
 
-        rl.addWidget(self._r_broccoli)
+        # rl.addWidget(self._r_broccoli)
+        rl.addWidget(self._r_broccoli, alignment=Qt.AlignmentFlag.AlignCenter)
         rl.addWidget(self._r_name)
         rl.addWidget(self._r_detail)
         rl.addWidget(self._r_fun)

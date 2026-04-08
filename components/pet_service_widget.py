@@ -342,7 +342,7 @@ class PetServiceWidget(QWidget):
         if active:
             return """
                 QPushButton {
-                    background-color: #B3886B; color: white; border: none;
+                    background-color: #B3886B; color: white; border: 1px;
                     border-radius: 8px; padding: 0px 20px; margin: 0px;
                     font-size: 14px; font-weight: bold;
                     text-align: center;
