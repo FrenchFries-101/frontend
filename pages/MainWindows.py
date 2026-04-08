@@ -1,4 +1,15 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QFrame, QLabel, QHBoxLayout, QSizePolicy, QProgressBar, QTreeWidgetItem
+from PySide6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QPushButton,
+    QFrame,
+    QLabel,
+    QHBoxLayout,
+    QSizePolicy,
+    QProgressBar,
+    QTreeWidgetItem,
+    QStackedWidget,
+)
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Signal, QSize, Qt, QUrl
 from PySide6.QtGui import QPixmap, QIcon, QMovie
@@ -6,18 +17,16 @@ from PySide6.QtGui import QPixmap, QIcon, QMovie
 from pages.RecitePages import RecitePage
 from pages.ForumPages import ForumWindow
 from pages.SpeakingPage import SpeakingPanel
-from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks, get_user_rank
 from pages.RankPage import RankPage
-from pages.PetPages import PetHomePage, PetSkinPage
+from pages.PetPages import PetHomePage, PetSkinPage, PetExplorePage
 from pages.GroupPlazaPage import GroupPlazaPage
 from pages.GroupChatPage import GroupChatPage
-from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
-
-
+from pages.GroupTaskPage import GroupTaskPage
 from pages.WordGamePages import *
+from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks, get_user_rank
 from utils.path_utils import resource_path
 import session
-import random
+
 
 
 class MainWindow(QWidget):
@@ -56,8 +65,8 @@ class MainWindow(QWidget):
         self.init_rank_page()
         self.init_pet_pages()
         self.init_group_chat_page()
+        self.init_group_task_page()
         self.init_group_plaza_page()
-
 
         if hasattr(self.ui, "pushButton_8"):
             self.ui.pushButton_8.setText("TED Talk")
@@ -113,8 +122,12 @@ class MainWindow(QWidget):
             self.open_desktop_calendar()
         elif key == "services" and self.pet_home_page:
             self.ui.stackedWidget.setCurrentWidget(self.pet_home_page)
+            self.pet_home_page.status_widget.refresh()
         elif key == "skin_home" and self.pet_skin_page:
             self.ui.stackedWidget.setCurrentWidget(self.pet_skin_page)
+        elif key == "pet_explore" and self.pet_explore_page:
+            self.ui.stackedWidget.setCurrentWidget(self.pet_explore_page)
+            self.pet_explore_page.refresh()
         elif key in route:
             self.ui.stackedWidget.setCurrentIndex(route[key])
             if key == "listening":
@@ -177,7 +190,10 @@ class MainWindow(QWidget):
         p2 = QTreeWidgetItem(["Skin Home"])
         p2.setData(0, Qt.UserRole, "skin_home")
 
-        pets.addChildren([p1, p2])
+        p3 = QTreeWidgetItem(["Explore"])
+        p3.setData(0, Qt.UserRole, "pet_explore")
+
+        pets.addChildren([p1, p2, p3])
 
         tree.addTopLevelItems([learning, team, pets, rank])
         learning.setExpanded(True)
@@ -225,14 +241,21 @@ class MainWindow(QWidget):
         self.ui.stackedWidget.removeWidget(self.ui.GroupDiscuss)
         self.ui.stackedWidget.insertWidget(4, self.group_chat_page)
 
+    def init_group_task_page(self):
+        self.group_task_page = GroupTaskPage()
+        self.ui.stackedWidget.removeWidget(self.ui.GroupTask)
+        self.ui.stackedWidget.insertWidget(5, self.group_task_page)
+
     def init_group_plaza_page(self):
         self.group_plaza_page = GroupPlazaPage()
         self.ui.stackedWidget.removeWidget(self.ui.GroupPlaza)
         self.ui.stackedWidget.insertWidget(6, self.group_plaza_page)
 
+
     def init_pet_pages(self):
         self.pet_home_page = None
         self.pet_skin_page = None
+        self.pet_explore_page = None
 
     def start_test(self):
 
@@ -467,9 +490,18 @@ class MainWindow(QWidget):
             user_id = user.get("id", 0)
             print(f"[PetPages] Initializing pet pages for user_id={user_id}")
             self.pet_home_page = PetHomePage(user_id)
+            self.pet_home_page.points_changed.connect(self.update_coin_label)
             self.pet_skin_page = PetSkinPage(user_id)
+            self.pet_explore_page = PetExplorePage(user_id)
+            # 皮肤切换后刷新主页宠物展示
+            self.pet_skin_page.skin_changed.connect(
+                lambda skin_id: self.pet_home_page.pet_widget.load_pet_data()
+            )
+            # 服务使用后同步刷新探索页的活力值状态
+            self.pet_home_page.status_widget.refresh()
             self.ui.stackedWidget.addWidget(self.pet_home_page)
             self.ui.stackedWidget.addWidget(self.pet_skin_page)
+            self.ui.stackedWidget.addWidget(self.pet_explore_page)
 
     def update_coin_label(self, points: int):
         self.ui.coinValueLabel.setText(str(points))
@@ -480,6 +512,20 @@ class MainWindow(QWidget):
     def clear_data(self):
         # 清空用户名
         self.ui.label_13.setText("")
+
+        # 清空宠物页面，下次登录时用新 user_id 重建
+        if self.pet_home_page is not None:
+            self.ui.stackedWidget.removeWidget(self.pet_home_page)
+            self.pet_home_page.deleteLater()
+            self.pet_home_page = None
+        if self.pet_skin_page is not None:
+            self.ui.stackedWidget.removeWidget(self.pet_skin_page)
+            self.pet_skin_page.deleteLater()
+            self.pet_skin_page = None
+        if self.pet_explore_page is not None:
+            self.ui.stackedWidget.removeWidget(self.pet_explore_page)
+            self.pet_explore_page.deleteLater()
+            self.pet_explore_page = None
 
         # 清空 Cambridge 列表
         layout = self.ui.scrollAreaWidgetContents_2.layout()
@@ -561,13 +607,25 @@ class MainWindow(QWidget):
 
         if subtitle:
             subtitle_label = QLabel(subtitle)
+            subtitle_label.setObjectName("label_7")
+            subtitle_label.setWordWrap(True)
+            left_layout.addWidget(subtitle_label)
+
+
+        card_layout = QHBoxLayout(card)
+
+        left_layout = QVBoxLayout()
+        left_layout.setSpacing(6)
+
+        if subtitle:
+            subtitle_label = QLabel(subtitle)
             subtitle_label.setObjectName("label_7") 
             subtitle_label.setWordWrap(True)
             left_layout.addWidget(subtitle_label)
 
  
         title_label = QLabel(title)
-        title_label.setObjectName("label_8")  
+        title_label.setObjectName("label_8")
         left_layout.addWidget(title_label)
 
         open_btn = QPushButton("Open")

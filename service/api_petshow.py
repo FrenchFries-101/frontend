@@ -36,6 +36,20 @@ def modify_pet_name(user_id: int, new_name: str) -> dict:
         return {"success": False, "message": f"请求失败: {e}"}
 
 
+def get_pet_name(user_id: int) -> dict:
+    """获取宠物名字 GET /pet_module/pet/name?user_id={user_id}"""
+    try:
+        res = requests.get(
+            f"{PET_BASE_URL}/pet/name",
+            params={"user_id": user_id}
+        )
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("获取宠物名字失败:", e)
+        return {}
+
+
 def get_pet_quote(user_id: int) -> dict:
     """获取语录 GET /pet/quote?user_id={user_id}"""
     try:
