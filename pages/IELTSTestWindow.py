@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QLabel, QVBoxLayout,QPushButton
 
 from PySide6.QtCore import Signal,QEvent
 from PySide6.QtWidgets import QMessageBox
-from service.api import get_listening_material,submit_score
+from service.api import get_listening_material, submit_score, submit_group_activity
 import requests
 
 from pages.ExitDialog import ExitDialog
@@ -163,8 +163,19 @@ class IELTSTestWindow(QWidget):
 
         if result and result.get("status") == "success":
             print("提交成功")
+            group_id = getattr(session, "current_group_id", None)
+            if group_id is not None:
+                group_resp = submit_group_activity(
+                    group_id=group_id,
+                    user_id=user_id,
+                    activity_type="listening",
+                    amount=1,
+                )
+                if not (isinstance(group_resp, dict) and group_resp.get("success")):
+                    print("小组任务登记失败:", group_resp)
         else:
             print("提交失败")
+
 
         # ⏱ 停止计时器
         self.timer.stop()

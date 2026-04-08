@@ -85,7 +85,7 @@ class RegisterWindow(QWidget):
             self.ui.label_7.setText(str(e))
 
     def set_background(self):
-        path = resource_path("resources/images/login-picture2.jpg")
+        path = resource_path("resources/images/loginPage.png")
         print("Register 背景路径:", path)
         print("文件存在吗:", os.path.exists(path))
 

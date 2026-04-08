@@ -459,6 +459,21 @@ def get_group_my_stats(group_id, user_id):
         }
 
 
+def submit_group_activity(group_id, user_id, activity_type, amount):
+    try:
+        payload = {
+            "user_id": user_id,
+            "activity_type": activity_type,
+            "amount": amount,
+        }
+        res = requests.post(f"{BASE_URL}/groups/{group_id}/activity", json=payload)
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("提交小组活动失败:", e)
+        return {"success": False, "message": "提交小组活动失败"}
+
+
 def upload_group_icon(group_id, image_path=None, image_base64=None):
 
     try:

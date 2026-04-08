@@ -223,8 +223,12 @@ class AppWindow(QMainWindow):
         self.stack.setCurrentIndex(next_index)
 
     def slide_back_to_main(self):
+        if hasattr(self, "main_page") and hasattr(self.main_page, "refresh_coin_label_from_server"):
+            self.main_page.refresh_coin_label_from_server()
+
         current_index = self.stack.currentIndex()
         next_index = 1  # main page
+
 
         current_widget = self.stack.widget(current_index)
         next_widget = self.stack.widget(next_index)

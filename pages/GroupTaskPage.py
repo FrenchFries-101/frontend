@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -11,6 +12,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QFrame,
     QStackedLayout,
+    QScrollArea,
 )
 
 import session
@@ -21,10 +23,15 @@ from service.api import (
     get_group_ranking,
     get_group_my_stats,
     get_groups,
+    get_user_rank,
 )
+from utils.path_utils import resource_path
+
 
 
 class GroupTaskPage(QWidget):
+    coin_points_updated = Signal(int)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self._groups = []
@@ -50,27 +57,46 @@ class GroupTaskPage(QWidget):
         self.setStyleSheet(
             """
             QWidget {
-                background: #fff6ea;
+                background: #fffaf5;
                 color: #4a3b1f;
             }
             QFrame#sectionCard {
-                background: #fffaf0;
-                border: 1px solid #ffe08e;
-                border-radius: 10px;
+                background: #ffffff;
+                border: 1px solid #efcfb7;
+                border-radius: 12px;
             }
             QLabel {
-                background: transparent;
                 border: none;
             }
             QLabel#titleLine {
-                font-size: 15px;
-                font-weight: 700;
+                font-size: 19px;
+                font-weight: 800;
                 color: #3b2f18;
                 padding: 2px 0;
             }
             QLabel#metaText {
-                font-size: 12px;
+                font-size: 14px;
                 color: #7a6640;
+            }
+            QLabel#taskSectionTitle {
+                font-size: 16px;
+                font-weight: 700;
+                color: #4d3c1f;
+                padding-top: 4px;
+            }
+            QLabel#rankNameText {
+                font-size: 16px;
+                font-weight: 700;
+                color: #3f3118;
+            }
+            QLabel#rankScoreText {
+                font-size: 14px;
+                color: #7a6640;
+            }
+            QLabel#statusText {
+                font-size: 16px;
+                font-weight: 600;
+                color: #4a3b1f;
             }
             QLabel#fieldLabel {
                 font-size: 15px;
@@ -79,8 +105,8 @@ class GroupTaskPage(QWidget):
                 min-width: 120px;
             }
             QComboBox {
-                background: #fffdf7;
-                border: 1px solid #f1d38a;
+                background: #fff3e8;
+                border: 1px solid #efcfb7;
                 border-radius: 9px;
                 padding: 6px 34px 6px 10px;
                 min-height: 28px;
@@ -90,10 +116,10 @@ class GroupTaskPage(QWidget):
                 subcontrol-origin: padding;
                 subcontrol-position: top right;
                 width: 28px;
-                border-left: 1px solid #f1d38a;
+                border-left: 1px solid #efcfb7;
                 border-top-right-radius: 9px;
                 border-bottom-right-radius: 9px;
-                background: #fff1cf;
+                background: #fbe7d8;
             }
             QComboBox::down-arrow {
                 image: none;
@@ -105,28 +131,39 @@ class GroupTaskPage(QWidget):
                 margin-right: 9px;
             }
             QProgressBar {
-                border: 1px solid #f1d38a;
+                border: 1px solid #efcfb7;
                 border-radius: 8px;
-                background: #fffdf7;
+                background: #ffffff;
                 text-align: center;
                 color: #5b4518;
-                min-height: 16px;
+                min-height: 20px;
+                font-size: 13px;
             }
             QProgressBar::chunk {
                 border-radius: 7px;
                 background: #e7bf5f;
             }
             QPushButton {
-                border: 1px solid #f1d38a;
+                border: 1px solid #efcfb7;
                 border-radius: 8px;
                 padding: 8px 12px;
-                background: #ffe8a8;
+                background: #fff3e8;
                 color: #5b4518;
                 font-weight: 600;
             }
             QPushButton:hover {
-                background: #ffe08e;
-                border: 1px solid #dfb75b;
+                background: #ffe8d6;
+                border: 1px solid #e2b89a;
+            }
+            QPushButton#taskTabBtn {
+                min-height: 34px;
+                font-size: 14px;
+                font-weight: 700;
+                background: #fff0e3;
+            }
+            QPushButton#taskTabBtn:checked {
+                background: #ffe2cc;
+                border: 1px solid #e2b89a;
             }
             QPushButton#tinyBtn {
                 min-width: 36px;
@@ -139,7 +176,7 @@ class GroupTaskPage(QWidget):
                 font-weight: 700;
             }
             QPushButton#secondaryBtn {
-                background: #fff3d4;
+                background: #ffffff;
             }
             QPushButton#createTopBtn {
                 padding: 8px 14px;
@@ -185,14 +222,13 @@ class GroupTaskPage(QWidget):
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(12)
 
-        left_col = QVBoxLayout()
+        left_panel = QFrame()
+        left_panel.setObjectName("sectionCard")
+        left_col = QVBoxLayout(left_panel)
+        left_col.setContentsMargins(14, 12, 14, 12)
         left_col.setSpacing(10)
-        right_col = QVBoxLayout()
-        right_col.setSpacing(10)
 
-        weekly_title = QLabel("📊 Weekly Overview")
-        weekly_title.setObjectName("titleLine")
-        left_col.addWidget(weekly_title)
+        left_col.addWidget(self._build_title_row("Weekly Overview", "resources/icons/file.png"))
 
         weekly_row = QHBoxLayout()
         self.weekly_progress = QProgressBar()
@@ -200,59 +236,73 @@ class GroupTaskPage(QWidget):
         self.weekly_progress.setValue(0)
         self.weekly_progress.setFormat("%p%")
         self.weekly_percent = QLabel("0%")
-        self.weekly_percent.setObjectName("metaText")
+        self.weekly_percent.setObjectName("titleLine")
         weekly_row.addWidget(self.weekly_progress, 1)
         weekly_row.addWidget(self.weekly_percent)
         left_col.addLayout(weekly_row)
 
-        current_title = QLabel("📌 Current Tasks")
-        current_title.setObjectName("titleLine")
-        left_col.addWidget(current_title)
+        left_col.addWidget(self._build_title_row("Tasks", "resources/icons/to-do-list.png"))
 
-        self.word_task_card, self.word_task_bar, self.word_task_current, self.word_task_reward = self._build_task_card(
-            title="Word Task",
-            percent=0,
-            current_text="-- / --",
-            reward_text="Reward: -- coins",
-        )
-        self.listening_task_card, self.listening_task_bar, self.listening_task_current, self.listening_task_reward = self._build_task_card(
-            title="Listening Task",
-            percent=0,
-            current_text="-- / --",
-            reward_text="Reward: -- coins",
-        )
-        left_col.addWidget(self.word_task_card)
-        left_col.addWidget(self.listening_task_card)
-        left_col.addStretch(1)
+        tab_row = QHBoxLayout()
+        tab_row.setSpacing(8)
+        self.in_progress_btn = QPushButton("In Progress")
+        self.in_progress_btn.setObjectName("taskTabBtn")
+        self.in_progress_btn.setCheckable(True)
+        self.in_progress_btn.setChecked(True)
+        self.in_progress_btn.clicked.connect(lambda: self._switch_task_tab(0))
 
-        rank_title = QLabel("🏆 Leaderboard")
-        rank_title.setObjectName("titleLine")
-        right_col.addWidget(rank_title)
+        self.finished_btn = QPushButton("Finished")
+        self.finished_btn.setObjectName("taskTabBtn")
+        self.finished_btn.setCheckable(True)
+        self.finished_btn.clicked.connect(lambda: self._switch_task_tab(1))
+
+        tab_row.addWidget(self.in_progress_btn)
+        tab_row.addWidget(self.finished_btn)
+        tab_row.addStretch(1)
+        left_col.addLayout(tab_row)
+
+        task_stack_host = QWidget()
+        self.task_stack = QStackedLayout(task_stack_host)
+        self.task_stack.setContentsMargins(0, 0, 0, 0)
+
+        self.in_progress_page, self.unfinished_task_layout, self.completed_task_layout = self._make_task_tab_page(
+            include_completed_block=True
+        )
+        self.finished_page, self.finished_task_layout, _ = self._make_task_tab_page(include_completed_block=False)
+        self.task_stack.addWidget(self.in_progress_page)
+        self.task_stack.addWidget(self.finished_page)
+        self._switch_task_tab(0)
+
+        left_col.addWidget(task_stack_host, 1)
+
+
+        right_panel = QFrame()
+        right_panel.setObjectName("sectionCard")
+        right_col = QVBoxLayout(right_panel)
+        right_col.setContentsMargins(14, 12, 14, 12)
+        right_col.setSpacing(10)
+
+        right_col.addWidget(self._build_title_row("Leader Board", "resources/icons/winner.png"))
 
         rank_card = QFrame()
         rank_card.setObjectName("sectionCard")
         rank_layout = QVBoxLayout(rank_card)
-        rank_layout.setContentsMargins(10, 8, 10, 8)
-        rank_layout.setSpacing(6)
-        self.rank_labels = []
+        rank_layout.setContentsMargins(10, 10, 10, 10)
+        rank_layout.setSpacing(8)
+        self.rank_rows = []
         for i in range(5):
-            lb = QLabel(f"{i + 1}. --")
-            lb.setObjectName("metaText")
-            lb.setWordWrap(True)
-            self.rank_labels.append(lb)
-            rank_layout.addWidget(lb, 0)
-        right_col.addWidget(rank_card)
+            row = self._create_rank_row(i)
+            self.rank_rows.append(row)
+            rank_layout.addWidget(row["container"])
+        right_col.addWidget(rank_card, 1)
 
-
-        my_title = QLabel("👤 My Stats")
-        my_title.setObjectName("titleLine")
-        right_col.addWidget(my_title)
+        right_col.addWidget(self._build_title_row("My Status", "resources/icons/work-in-progress.png"))
 
         my_card = QFrame()
         my_card.setObjectName("sectionCard")
         my_layout = QVBoxLayout(my_card)
-        my_layout.setContentsMargins(10, 8, 10, 8)
-        my_layout.setSpacing(4)
+        my_layout.setContentsMargins(12, 10, 12, 10)
+        my_layout.setSpacing(8)
 
         self.my_word_label = QLabel("Word: --")
         self.my_listening_label = QLabel("Listening: --")
@@ -266,17 +316,126 @@ class GroupTaskPage(QWidget):
             self.my_coins_label,
             self.my_rank_label,
         ]:
-            w.setObjectName("metaText")
+            w.setObjectName("statusText")
             w.setWordWrap(True)
             my_layout.addWidget(w)
 
+        right_col.addWidget(my_card, 1)
 
-        right_col.addWidget(my_card)
-        right_col.addStretch(1)
-
-        root.addLayout(left_col, 3)
-        root.addLayout(right_col, 2)
+        root.addWidget(left_panel, 1)
+        root.addWidget(right_panel, 1)
         return page
+
+    def _build_title_row(self, text, icon_rel_path):
+        host = QWidget()
+        row = QHBoxLayout(host)
+        row.setContentsMargins(0, 0, 0, 0)
+        row.setSpacing(8)
+
+        icon_label = QLabel()
+        pix = self._load_icon_pixmap(icon_rel_path, 24)
+        if pix is not None:
+            icon_label.setPixmap(pix)
+            icon_label.setFixedSize(24, 24)
+
+        text_label = QLabel(text)
+        text_label.setObjectName("titleLine")
+
+        row.addWidget(icon_label, 0, Qt.AlignVCenter)
+        row.addWidget(text_label, 0, Qt.AlignVCenter)
+        row.addStretch(1)
+        return host
+
+    @staticmethod
+    def _load_icon_pixmap(icon_rel_path, size):
+        try:
+            pix = QPixmap(resource_path(icon_rel_path))
+            if pix.isNull():
+                return None
+            return pix.scaled(size, size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        except Exception:
+            return None
+
+    def _make_task_tab_page(self, include_completed_block=True):
+        page = QWidget()
+        page_layout = QVBoxLayout(page)
+        page_layout.setContentsMargins(0, 0, 0, 0)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        content = QWidget()
+        content_layout = QVBoxLayout(content)
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout.setSpacing(8)
+
+        first_title_text = "Unfinished" if include_completed_block else "Finished Tasks"
+        unfinished_title = QLabel(first_title_text)
+        unfinished_title.setObjectName("taskSectionTitle")
+        content_layout.addWidget(unfinished_title)
+
+
+        unfinished_layout = QVBoxLayout()
+        unfinished_layout.setSpacing(8)
+        content_layout.addLayout(unfinished_layout)
+
+        completed_layout = None
+        if include_completed_block:
+            completed_title = QLabel("Completed")
+            completed_title.setObjectName("taskSectionTitle")
+            content_layout.addWidget(completed_title)
+
+            completed_layout = QVBoxLayout()
+            completed_layout.setSpacing(8)
+            content_layout.addLayout(completed_layout)
+
+        content_layout.addStretch(1)
+        scroll.setWidget(content)
+        page_layout.addWidget(scroll)
+        return page, unfinished_layout, completed_layout
+
+    def _create_rank_row(self, index):
+        row = QFrame()
+        row.setObjectName("sectionCard")
+        row_layout = QHBoxLayout(row)
+        row_layout.setContentsMargins(8, 6, 8, 6)
+        row_layout.setSpacing(8)
+
+        icon_label = QLabel()
+        icon_label.setFixedSize(24, 24)
+        if index == 0:
+            icon_path = "resources/icons/first-rank.png"
+        elif index == 1:
+            icon_path = "resources/icons/second-rank.png"
+        elif index == 2:
+            icon_path = "resources/icons/third-rank.png"
+        else:
+            icon_path = ""
+
+        if icon_path:
+            pix = self._load_icon_pixmap(icon_path, 22)
+            if pix is not None:
+                icon_label.setPixmap(pix)
+
+        text_host = QWidget()
+        text_layout = QVBoxLayout(text_host)
+        text_layout.setContentsMargins(0, 0, 0, 0)
+        text_layout.setSpacing(2)
+
+        name_label = QLabel(f"{index + 1}. --")
+        name_label.setObjectName("rankNameText")
+        score_label = QLabel("Score: --")
+        score_label.setObjectName("rankScoreText")
+
+        text_layout.addWidget(name_label)
+        text_layout.addWidget(score_label)
+
+        row_layout.addWidget(icon_label)
+        row_layout.addWidget(text_host, 1)
+        return {"container": row, "name": name_label, "score": score_label}
+
 
     def _build_create_page(self):
         page = QWidget()
@@ -363,8 +522,8 @@ class GroupTaskPage(QWidget):
         lay.addLayout(action_row)
 
 
-        root.addWidget(card)
-        root.addStretch(1)
+        root.addWidget(card, 1)
+
 
         self._on_create_type_changed(0)
         return page
@@ -378,7 +537,7 @@ class GroupTaskPage(QWidget):
         lay.setSpacing(6)
 
         title_label = QLabel(title)
-        title_label.setObjectName("titleLine")
+        title_label.setObjectName("taskSectionTitle")
 
         bar = QProgressBar()
         bar.setRange(0, 100)
@@ -395,9 +554,46 @@ class GroupTaskPage(QWidget):
         lay.addWidget(bar)
         lay.addWidget(current_label)
         lay.addWidget(reward_label)
-        return card, bar, current_label, reward_label
+        return card
+
+    def _task_name(self, activity_type):
+        key = str(activity_type or "").lower()
+        if key in self._task_rules:
+            return str(self._task_rules[key].get("name") or key.title())
+        return key.replace("_", " ").title() if key else "Task"
+
+    def _task_unit(self, activity_type):
+        key = str(activity_type or "").lower()
+        if key in self._task_rules:
+            return str(self._task_rules[key].get("unit") or "times")
+        return "times"
+
+    @staticmethod
+    def _clear_layout_widgets(layout):
+        if layout is None:
+            return
+        while layout.count() > 0:
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+
+    @staticmethod
+    def _parse_iso_date(value):
+        if not value:
+            return None
+        try:
+            return datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        except Exception:
+            return None
+
+    def _switch_task_tab(self, index):
+        self.task_stack.setCurrentIndex(index)
+        self.in_progress_btn.setChecked(index == 0)
+        self.finished_btn.setChecked(index == 1)
 
     def _current_user_id(self):
+
         user = session.user
         if isinstance(user, dict):
             return user.get("user_id") or user.get("id")
@@ -464,20 +660,16 @@ class GroupTaskPage(QWidget):
         self.content_stack.setCurrentIndex(0)
 
     def _reset_task_cards(self):
-        self.word_task_bar.setValue(0)
-        self.word_task_current.setText("-- / --")
-        self.word_task_reward.setText("Reward: -- coins")
-
-        self.listening_task_bar.setValue(0)
-        self.listening_task_current.setText("-- / --")
-        self.listening_task_reward.setText("Reward: -- coins")
-
+        self._clear_layout_widgets(self.unfinished_task_layout)
+        self._clear_layout_widgets(self.completed_task_layout)
+        self._clear_layout_widgets(self.finished_task_layout)
         self.weekly_progress.setValue(0)
         self.weekly_percent.setText("0%")
 
     def _reset_right_panels(self):
-        for i, lb in enumerate(self.rank_labels):
-            lb.setText(f"{i + 1}. --")
+        for i, row in enumerate(self.rank_rows):
+            row["name"].setText(f"{i + 1}. --")
+            row["score"].setText("Score: --")
 
         self.my_word_label.setText("Word: --")
         self.my_listening_label.setText("Listening: --")
@@ -491,6 +683,17 @@ class GroupTaskPage(QWidget):
             return int(val)
         except Exception:
             return default
+
+    def _refresh_points_to_topbar(self):
+        user_id = self._current_user_id()
+        if user_id is None:
+            return
+        try:
+            rank_data = get_user_rank(user_id)
+            if isinstance(rank_data, dict) and rank_data.get("points") is not None:
+                self.coin_points_updated.emit(self._safe_int(rank_data.get("points"), 0))
+        except Exception:
+            return
 
     def refresh_task_cards(self):
         if not isinstance(self._current_group, dict):
@@ -509,10 +712,18 @@ class GroupTaskPage(QWidget):
 
         total_target = 0
         total_current = 0
+        unfinished_count = 0
+        completed_count = 0
+        finished_count = 0
+
+        now = datetime.now()
+
+        completed_layout = self.completed_task_layout
 
         for item in tasks:
             if not isinstance(item, dict):
                 continue
+
 
             activity_type = str(item.get("activity_type") or "")
             target = self._safe_int(item.get("target_amount"), 0)
@@ -524,14 +735,54 @@ class GroupTaskPage(QWidget):
             total_target += max(0, target)
             total_current += max(0, current)
 
-            if activity_type == "word":
-                self.word_task_bar.setValue(percent)
-                self.word_task_current.setText(f"{current} / {target}")
-                self.word_task_reward.setText(f"Reward: {reward} coins")
-            elif activity_type == "listening":
-                self.listening_task_bar.setValue(percent)
-                self.listening_task_current.setText(f"{current} / {target}")
-                self.listening_task_reward.setText(f"Reward: {reward} coins")
+            unit = self._task_unit(activity_type)
+            name = self._task_name(activity_type)
+            card = self._build_task_card(
+                title=f"{name} Task",
+                percent=percent,
+                current_text=f"{current} / {target} {unit}",
+                reward_text=f"Reward: {reward} coins",
+            )
+
+            completed = target > 0 and current >= target
+            status_text = str(item.get("status") or "").strip().lower()
+            end_at = self._parse_iso_date(item.get("end_date"))
+            is_ended = status_text in {"finished", "ended", "closed"}
+            if (not is_ended) and end_at is not None:
+                try:
+                    cmp_now = datetime.now(end_at.tzinfo) if end_at.tzinfo else now
+                    is_ended = cmp_now > end_at
+                except Exception:
+                    is_ended = False
+
+
+            if is_ended:
+                self.finished_task_layout.addWidget(card)
+                finished_count += 1
+            elif completed:
+                if completed_layout is not None:
+                    completed_layout.addWidget(card)
+                completed_count += 1
+
+            else:
+                self.unfinished_task_layout.addWidget(card)
+                unfinished_count += 1
+
+        if unfinished_count == 0:
+            empty_unfinished = QLabel("No unfinished tasks")
+            empty_unfinished.setObjectName("metaText")
+            self.unfinished_task_layout.addWidget(empty_unfinished)
+
+        if completed_count == 0 and completed_layout is not None:
+            empty_completed = QLabel("No completed tasks")
+            empty_completed.setObjectName("metaText")
+            completed_layout.addWidget(empty_completed)
+
+
+        if finished_count == 0:
+            empty_finished = QLabel("No finished tasks")
+            empty_finished.setObjectName("metaText")
+            self.finished_task_layout.addWidget(empty_finished)
 
         weekly_percent = int((total_current / total_target) * 100) if total_target > 0 else 0
         weekly_percent = max(0, min(100, weekly_percent))
@@ -539,19 +790,21 @@ class GroupTaskPage(QWidget):
         self.weekly_percent.setText(f"{weekly_percent}%")
 
         self.refresh_right_panels(group_id)
+        self._refresh_points_to_topbar()
 
     def refresh_right_panels(self, group_id):
         self._reset_right_panels()
 
         ranking = get_group_ranking(group_id)
         if isinstance(ranking, list):
-            for i, row in enumerate(ranking[: len(self.rank_labels)]):
+            for i, row in enumerate(ranking[: len(self.rank_rows)]):
                 if not isinstance(row, dict):
                     continue
                 rank = self._safe_int(row.get("rank"), i + 1)
                 username = str(row.get("username") or "Unknown")
                 total = self._safe_int(row.get("total_contribution"), 0)
-                self.rank_labels[i].setText(f"{rank}. {username}  ({total})")
+                self.rank_rows[i]["name"].setText(f"{rank}. {username}")
+                self.rank_rows[i]["score"].setText(f"Score: {total}")
 
         user_id = self._current_user_id()
         if user_id is None:
@@ -573,8 +826,8 @@ class GroupTaskPage(QWidget):
         )
         self.my_rank_label.setText(f"Rank: {self._safe_int(my_stats.get('rank_in_group'), 0)}")
 
-
     def _submit_create_task(self):
+
         if not isinstance(self._current_group, dict):
             self.create_feedback_label.setStyleSheet("color:#b23a2d;")
             self.create_feedback_label.setText("Please select a valid group")
@@ -657,6 +910,7 @@ class GroupTaskPage(QWidget):
             self.group_combo.blockSignals(False)
             self._set_create_task_visibility(None)
             self._current_group = None
+            session.current_group_id = None
             self.refresh_task_cards()
             return
 
@@ -684,6 +938,7 @@ class GroupTaskPage(QWidget):
             self.group_combo.blockSignals(False)
             self._set_create_task_visibility(None)
             self._current_group = None
+            session.current_group_id = None
             self.refresh_task_cards()
             return
 
@@ -704,6 +959,7 @@ class GroupTaskPage(QWidget):
         if index < 0:
             self._set_create_task_visibility(None)
             self._current_group = None
+            session.current_group_id = None
             self.refresh_task_cards()
             return
 
@@ -711,13 +967,16 @@ class GroupTaskPage(QWidget):
         if not isinstance(data, dict):
             self._current_group = None
             self._set_create_task_visibility(None)
+            session.current_group_id = None
             self.refresh_task_cards()
             return
 
         self._current_group = data
+        session.current_group_id = data.get("group_id")
         role = str(self.group_combo.itemData(index, Qt.UserRole + 1) or "member")
         self._set_create_task_visibility(role)
         self.refresh_task_cards()
+
 
     def _set_create_task_visibility(self, role):
         self._current_role = str(role or "")

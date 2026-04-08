@@ -165,6 +165,7 @@ class GroupChatPage(QWidget):
         self._all_groups = []
         self._messages = []
         self._current_group = None
+        session.current_group_id = None
         self._oldest_timestamp = None
         self.ui.listWidget.clear()
         self.ui.label_2.setText("Select a group")
@@ -258,6 +259,7 @@ class GroupChatPage(QWidget):
             return
 
         self._current_group = current.data(Qt.UserRole) or {}
+        session.current_group_id = self._current_group.get("group_id")
         group_name = str(self._current_group.get("group_name", "Group Chat"))
         group_id = self._current_group.get("group_id", "-")
 

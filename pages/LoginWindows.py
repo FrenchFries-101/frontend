@@ -25,7 +25,7 @@ class LoginWindow(QWidget):
 
         # ===== 背景图 QLabel =====
         self.bg_label = QLabel(self)
-        pixmap = QPixmap(resource_path("resources/images/login-picture2.jpg"))
+        pixmap = QPixmap(resource_path("resources/images/loginPage.png"))
         self.bg_label.setPixmap(pixmap)
         self.bg_label.setScaledContents(True)
         self.bg_label.lower()  # 放到最底层
@@ -74,7 +74,7 @@ class LoginWindow(QWidget):
             self.ui.label_5.setText(str(e))
 
     def load_qss(self):
-        bg_path = resource_path("resources/images/login-picture2.jpg").replace("\\", "/")
+        bg_path = resource_path("resources/images/loginPage.png").replace("\\", "/")
         import os
         print("背景图片路径:", bg_path)
         print("文件存在吗?", os.path.exists(bg_path))
