@@ -12,6 +12,8 @@ from PySide6.QtWidgets import QSystemTrayIcon, QMenu
 from PySide6.QtGui import QAction, QIcon
 from floating_icon import FloatingIcon
 from desktop_calendar import DesktopCalendar
+from desktop_plan_widget import DesktopPlanWidget
+
 from pages.TedTestWindow import TedTestWindow
 
 # ── 新增：导入 SplashScreen ──
@@ -56,6 +58,7 @@ class AppWindow(QMainWindow):
         self.loading.resize(self.size())
         self.init_tray()
         self.floating_icon = FloatingIcon(self)
+        self.desktop_plan_widget = DesktopPlanWidget()
 
     # ↓↓↓ 以下所有方法和你原来完全一样，无需修改 ↓↓↓
     def slide_to_main(self):
