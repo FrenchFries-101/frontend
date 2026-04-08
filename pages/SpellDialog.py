@@ -118,6 +118,7 @@ class SpellDialog(QDialog):
         btn_row.addStretch()
 
 
+        
 
         layout.addLayout(btn_row)
 

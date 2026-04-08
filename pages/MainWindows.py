@@ -489,6 +489,9 @@ class MainWindow(QWidget):
     def update_coin_label(self, points: int):
         self.ui.coinValueLabel.setText(str(points))
 
+    def update_coin_label(self, points: int):
+        self.ui.coinValueLabel.setText(str(points))
+
     def clear_data(self):
         # 清空用户名
         self.ui.label_13.setText("")
@@ -578,6 +581,18 @@ class MainWindow(QWidget):
             left_layout.addWidget(subtitle_label)
 
 
+        card_layout = QHBoxLayout(card)
+
+        left_layout = QVBoxLayout()
+        left_layout.setSpacing(6)
+
+        if subtitle:
+            subtitle_label = QLabel(subtitle)
+            subtitle_label.setObjectName("label_7") 
+            subtitle_label.setWordWrap(True)
+            left_layout.addWidget(subtitle_label)
+
+ 
         title_label = QLabel(title)
         title_label.setObjectName("label_8")
         left_layout.addWidget(title_label)

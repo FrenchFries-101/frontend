@@ -48,3 +48,25 @@ def get_pet_quote(user_id: int) -> dict:
     except Exception as e:
         print("获取语录失败:", e)
         return {}
+
+
+def get_level_config() -> list:
+    """获取所有等级配置 GET /pet/level_config"""
+    try:
+        res = requests.get(f"{PET_BASE_URL}/pet/level_config")
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("获取等级配置失败:", e)
+        return []
+
+
+def get_pet_types() -> list:
+    """获取所有宠物类型 GET /pet/types"""
+    try:
+        res = requests.get(f"{PET_BASE_URL}/pet/types")
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("获取宠物类型失败:", e)
+        return []

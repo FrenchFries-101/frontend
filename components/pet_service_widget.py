@@ -3,7 +3,8 @@
 #最新
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFrame
+    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFrame,
+    QMessageBox,
 )
 from PySide6.QtCore import Qt, QTimer, Signal
 
@@ -13,6 +14,8 @@ from service.api_pet_service import (
     apply_service,
     get_remaining_cooldown,
 )
+from service.api import PET_BASE_URL
+import requests
 
 DEFAULT_USER_ID = 1
 
@@ -193,11 +196,33 @@ class PetServiceWidget(QWidget):
         if remaining > 0:
             return  # 冷却中不响应
         result = apply_service(self.user_id, service_id)
-        if result["success"]:
+        print(f"[PetServiceWidget] user_id={self.user_id}, service_id={service_id}, result={result}")
+        svc_name, points_cost, _ = self._get_service_info(service_id)
+        if result.get("success"):
             self.service_applied.emit(result)
             self._refresh_cooldowns()
+            new_vitality = result.get("new_vitality", "?")
+            new_points = result.get("new_points", "?")
+            QMessageBox.information(
+                self, "Service Success",
+                f"{svc_name} used successfully!\n"
+                f"+{result.get('vitality_gained', '?')} Vitality  |  -{result.get('points_spent', points_cost)} Points\n"
+                f"Vitality: {new_vitality}  |  Points: {new_points}"
+            )
         else:
-            self._show_error_on_card(card, result.get("message", "操作失败"))
+            current_points = result.get("current_points")
+            if current_points is None:
+                try:
+                    r = requests.get(f"{PET_BASE_URL}/pet/status", params={"user_id": self.user_id}, timeout=3)
+                    current_points = r.json().get("points", "?")
+                except Exception:
+                    current_points = "?"
+            QMessageBox.warning(
+                self, "Service Failed",
+                f"{svc_name} failed.\n"
+                f"Current Points: {current_points}  |  Required: {points_cost}\n"
+                f"Reason: {result.get('message', 'Unknown error')}"
+            )
 
     def _show_error_on_card(self, card: QFrame, message: str):
         """在卡片上临时显示错误提示，2 秒后自动恢复"""
@@ -274,7 +299,7 @@ class PetServiceWidget(QWidget):
             svc_name, points_cost, vitality_effect = self._get_service_info(sid)
             if svc_name:
                 effect_label = card.layout().itemAt(0).layout().itemAt(1).widget()
-                effect_label.setText(f"+{vitality_effect} 活力值")
+                effect_label.setText(f"+{vitality_effect} vitality")
                 effect_label.setStyleSheet("color: #008A73; font-size: 11px; background: transparent;")
                 card.setStyleSheet(self._svc_card_style(active=True, cooldown=False))
 
