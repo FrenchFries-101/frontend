@@ -1,4 +1,15 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QFrame, QLabel, QHBoxLayout, QSizePolicy, QProgressBar, QTreeWidgetItem
+from PySide6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QPushButton,
+    QFrame,
+    QLabel,
+    QHBoxLayout,
+    QSizePolicy,
+    QProgressBar,
+    QTreeWidgetItem,
+    QStackedWidget,
+)
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Signal, QSize, Qt, QUrl
 from PySide6.QtGui import QPixmap, QIcon, QMovie
@@ -6,18 +17,16 @@ from PySide6.QtGui import QPixmap, QIcon, QMovie
 from pages.RecitePages import RecitePage
 from pages.ForumPages import ForumWindow
 from pages.SpeakingPage import SpeakingPanel
-from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks, get_user_rank
 from pages.RankPage import RankPage
 from pages.PetPages import PetHomePage, PetSkinPage, PetExplorePage
 from pages.GroupPlazaPage import GroupPlazaPage
 from pages.GroupChatPage import GroupChatPage
-from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
-
-
+from pages.GroupTaskPage import GroupTaskPage
 from pages.WordGamePages import *
+from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks, get_user_rank
 from utils.path_utils import resource_path
 import session
-import random
+
 
 
 class MainWindow(QWidget):
@@ -56,8 +65,8 @@ class MainWindow(QWidget):
         self.init_rank_page()
         self.init_pet_pages()
         self.init_group_chat_page()
+        self.init_group_task_page()
         self.init_group_plaza_page()
-
 
         if hasattr(self.ui, "pushButton_8"):
             self.ui.pushButton_8.setText("TED Talk")
@@ -232,10 +241,16 @@ class MainWindow(QWidget):
         self.ui.stackedWidget.removeWidget(self.ui.GroupDiscuss)
         self.ui.stackedWidget.insertWidget(4, self.group_chat_page)
 
+    def init_group_task_page(self):
+        self.group_task_page = GroupTaskPage()
+        self.ui.stackedWidget.removeWidget(self.ui.GroupTask)
+        self.ui.stackedWidget.insertWidget(5, self.group_task_page)
+
     def init_group_plaza_page(self):
         self.group_plaza_page = GroupPlazaPage()
         self.ui.stackedWidget.removeWidget(self.ui.GroupPlaza)
         self.ui.stackedWidget.insertWidget(6, self.group_plaza_page)
+
 
     def init_pet_pages(self):
         self.pet_home_page = None
@@ -592,13 +607,25 @@ class MainWindow(QWidget):
 
         if subtitle:
             subtitle_label = QLabel(subtitle)
+            subtitle_label.setObjectName("label_7")
+            subtitle_label.setWordWrap(True)
+            left_layout.addWidget(subtitle_label)
+
+
+        card_layout = QHBoxLayout(card)
+
+        left_layout = QVBoxLayout()
+        left_layout.setSpacing(6)
+
+        if subtitle:
+            subtitle_label = QLabel(subtitle)
             subtitle_label.setObjectName("label_7") 
             subtitle_label.setWordWrap(True)
             left_layout.addWidget(subtitle_label)
 
  
         title_label = QLabel(title)
-        title_label.setObjectName("label_8")  
+        title_label.setObjectName("label_8")
         left_layout.addWidget(title_label)
 
         open_btn = QPushButton("Open")

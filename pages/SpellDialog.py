@@ -117,6 +117,7 @@ class SpellDialog(QDialog):
         btn_row.addWidget(self.check_btn, alignment=Qt.AlignCenter)
         btn_row.addStretch()
 
+
         
 
         layout.addLayout(btn_row)
