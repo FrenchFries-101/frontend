@@ -9,8 +9,7 @@ class FloatingIcon(QWidget):
         super().__init__()
         self.main_window = main_window
 
-        # 窗口大小设置为 GIF 大小
-        self.setFixedSize(80, 80)
+        # 窗口大小将根据 GIF 自动调整
         # 无边框 + 置顶 + 不显示在任务栏
         self.setWindowFlags(
             Qt.FramelessWindowHint |
@@ -36,7 +35,12 @@ class FloatingIcon(QWidget):
         self.movie = QMovie(self.fox_gifs[self.current_gif_index])
         # 连接帧变化信号
         self.movie.frameChanged.connect(self.update)
+        # 连接加载完成信号
+        self.movie.finished.connect(self.on_movie_finished)
         self.movie.start()
+        
+        # 初始时隐藏窗口，直到 GIF 加载完成
+        self.hide()
         
         # 定时器，每隔一段时间随机切换 fox gif
         self.switch_timer = QTimer()
@@ -44,21 +48,31 @@ class FloatingIcon(QWidget):
         # 随机设置切换时间（10-30秒）
         self.switch_interval = random.randint(10000, 30000)
         self.switch_timer.start(self.switch_interval)
-
-        self.show()
     
     def paintEvent(self, event):
         painter = QPainter(self)
+        # 设置抗锯齿，使绘制更平滑
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform)
+        
+        # 完全清除背景为透明
         painter.fillRect(self.rect(), Qt.transparent)
 
         pixmap = self.movie.currentPixmap()
         if not pixmap.isNull():
-            # 直接绘制，不做任何额外处理
-            painter.drawPixmap(
-                (self.width() - pixmap.width())//2,
-                (self.height() - pixmap.height())//2,
-                pixmap
-            )
+            # 直接绘制，覆盖整个窗口
+            painter.drawPixmap(0, 0, pixmap)
+    
+    def on_movie_finished(self):
+        # 当 GIF 加载完成后，调整窗口大小并显示
+        self.adjust_window_size()
+        self.show()
+    
+    def adjust_window_size(self):
+        # 调整窗口大小以适应 GIF
+        pixmap = self.movie.currentPixmap()
+        if not pixmap.isNull():
+            self.setFixedSize(pixmap.width(), pixmap.height())
     
     def switch_fox_gif(self):
         # 随机选择一个新的 fox gif（避免选择同一个）
@@ -71,9 +85,13 @@ class FloatingIcon(QWidget):
         # 停止当前动画
         self.movie.stop()
         
+        # 隐藏窗口，直到新 GIF 加载完成
+        self.hide()
+        
         # 加载新的 gif
         self.movie = QMovie(self.fox_gifs[self.current_gif_index])
         self.movie.frameChanged.connect(self.update)
+        self.movie.finished.connect(self.on_movie_finished)
         self.movie.start()
         
         # 随机设置下一次切换时间（10-30秒）
