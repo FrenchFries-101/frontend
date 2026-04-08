@@ -84,12 +84,14 @@ class MainWindow(QWidget):
         self.join_page = JoinPage(self)
         self.board_page = BoardPage(self)
         self.instruction_page = InstructionPage(self)
+        self.single_board_page = SingleBoardPage(self)
 
         self.ui.stackedWidget.addWidget(self.game_menu)
         self.ui.stackedWidget.addWidget(self.start_page)
         self.ui.stackedWidget.addWidget(self.join_page)
         self.ui.stackedWidget.addWidget(self.board_page)
         self.ui.stackedWidget.addWidget(self.instruction_page)
+        self.ui.stackedWidget.addWidget(self.single_board_page)
 
         # 如果你保留了 Exit_button 就连上；删掉也不会报错
         if hasattr(self.ui, "Exit_button"):
@@ -665,3 +667,5 @@ class MainWindow(QWidget):
             self.ui.stackedWidget.setCurrentWidget(self.board_page)
         elif page == "instruction":
             self.ui.stackedWidget.setCurrentWidget(self.instruction_page)
+        elif page == "single_board":
+            self.ui.stackedWidget.setCurrentWidget(self.single_board_page)
