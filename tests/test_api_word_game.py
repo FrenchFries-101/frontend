@@ -92,3 +92,88 @@ def test_get_quiz_question_calls_correct_endpoint(monkeypatch):
     assert called["url"] == "http://127.0.0.1:8000/wordgame/quiz-question"
     assert called["params"] == {"user_id": 11}
     assert result == {"question": "test"}
+
+
+def test_single_start_calls_correct_endpoint(monkeypatch):
+    called = {}
+
+    def fake_post(url, params=None):
+        called["url"] = url
+        called["params"] = params
+        return DummyResponse({"game": {"id": 1}})
+
+    monkeypatch.setattr(api_word_game.requests, "post", fake_post)
+
+    result = api_word_game.single_start(21)
+
+    assert called["url"] == "http://127.0.0.1:8000/wordgame/single/start"
+    assert called["params"] == {"user_id": 21}
+    assert result == {"game": {"id": 1}}
+
+
+def test_single_status_calls_correct_endpoint(monkeypatch):
+    called = {}
+
+    def fake_get(url, params=None):
+        called["url"] = url
+        called["params"] = params
+        return DummyResponse({"game": {"current_position": 0}})
+
+    monkeypatch.setattr(api_word_game.requests, "get", fake_get)
+
+    result = api_word_game.single_status(21)
+
+    assert called["url"] == "http://127.0.0.1:8000/wordgame/single/status"
+    assert called["params"] == {"user_id": 21}
+    assert result == {"game": {"current_position": 0}}
+
+
+def test_single_gain_roll_calls_correct_endpoint(monkeypatch):
+    called = {}
+
+    def fake_post(url, params=None):
+        called["url"] = url
+        called["params"] = params
+        return DummyResponse({"message": "roll gained"})
+
+    monkeypatch.setattr(api_word_game.requests, "post", fake_post)
+
+    result = api_word_game.single_gain_roll(21)
+
+    assert called["url"] == "http://127.0.0.1:8000/wordgame/single/gain-roll"
+    assert called["params"] == {"user_id": 21}
+    assert result == {"message": "roll gained"}
+
+
+def test_single_roll_calls_correct_endpoint(monkeypatch):
+    called = {}
+
+    def fake_post(url, params=None):
+        called["url"] = url
+        called["params"] = params
+        return DummyResponse({"step": 3, "current_position": 3})
+
+    monkeypatch.setattr(api_word_game.requests, "post", fake_post)
+
+    result = api_word_game.single_roll(21)
+
+    assert called["url"] == "http://127.0.0.1:8000/wordgame/single/roll"
+    assert called["params"] == {"user_id": 21}
+    assert result == {"step": 3, "current_position": 3}
+
+
+def test_single_get_quiz_question_calls_correct_endpoint(monkeypatch):
+    called = {}
+
+    def fake_get(url, params=None):
+        called["url"] = url
+        called["params"] = params
+        return DummyResponse({"question": "single test"})
+
+    monkeypatch.setattr(api_word_game.requests, "get", fake_get)
+
+    result = api_word_game.single_get_quiz_question(21)
+
+    assert called["url"] == "http://127.0.0.1:8000/wordgame/single/quiz-question"
+    assert called["params"] == {"user_id": 21}
+    assert result == {"question": "single test"}
