@@ -8,7 +8,7 @@ from pages.ForumPages import ForumWindow
 from pages.SpeakingPage import SpeakingPanel
 from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks, get_user_rank
 from pages.RankPage import RankPage
-from pages.PetPages import PetHomePage, PetSkinPage
+from pages.PetPages import PetHomePage, PetSkinPage, PetExplorePage
 from pages.GroupPlazaPage import GroupPlazaPage
 from pages.GroupChatPage import GroupChatPage
 from service.api import get_cambridge_list, get_tests, get_sections, get_ted_talks
@@ -113,8 +113,12 @@ class MainWindow(QWidget):
             self.open_desktop_calendar()
         elif key == "services" and self.pet_home_page:
             self.ui.stackedWidget.setCurrentWidget(self.pet_home_page)
+            self.pet_home_page.status_widget.refresh()
         elif key == "skin_home" and self.pet_skin_page:
             self.ui.stackedWidget.setCurrentWidget(self.pet_skin_page)
+        elif key == "pet_explore" and self.pet_explore_page:
+            self.ui.stackedWidget.setCurrentWidget(self.pet_explore_page)
+            self.pet_explore_page.refresh()
         elif key in route:
             self.ui.stackedWidget.setCurrentIndex(route[key])
             if key == "listening":
@@ -177,7 +181,10 @@ class MainWindow(QWidget):
         p2 = QTreeWidgetItem(["Skin Home"])
         p2.setData(0, Qt.UserRole, "skin_home")
 
-        pets.addChildren([p1, p2])
+        p3 = QTreeWidgetItem(["Explore"])
+        p3.setData(0, Qt.UserRole, "pet_explore")
+
+        pets.addChildren([p1, p2, p3])
 
         tree.addTopLevelItems([learning, team, pets, rank])
         learning.setExpanded(True)
@@ -233,6 +240,7 @@ class MainWindow(QWidget):
     def init_pet_pages(self):
         self.pet_home_page = None
         self.pet_skin_page = None
+        self.pet_explore_page = None
 
     def start_test(self):
 
@@ -469,8 +477,12 @@ class MainWindow(QWidget):
             self.pet_home_page = PetHomePage(user_id)
             self.pet_home_page.points_changed.connect(self.update_coin_label)
             self.pet_skin_page = PetSkinPage(user_id)
+            self.pet_explore_page = PetExplorePage(user_id)
+            # 服务使用后同步刷新探索页的活力值状态
+            self.pet_home_page.status_widget.refresh()
             self.ui.stackedWidget.addWidget(self.pet_home_page)
             self.ui.stackedWidget.addWidget(self.pet_skin_page)
+            self.ui.stackedWidget.addWidget(self.pet_explore_page)
 
     def update_coin_label(self, points: int):
         self.ui.coinValueLabel.setText(str(points))
@@ -491,6 +503,10 @@ class MainWindow(QWidget):
             self.ui.stackedWidget.removeWidget(self.pet_skin_page)
             self.pet_skin_page.deleteLater()
             self.pet_skin_page = None
+        if self.pet_explore_page is not None:
+            self.ui.stackedWidget.removeWidget(self.pet_explore_page)
+            self.pet_explore_page.deleteLater()
+            self.pet_explore_page = None
 
         # 清空 Cambridge 列表
         layout = self.ui.scrollAreaWidgetContents_2.layout()
