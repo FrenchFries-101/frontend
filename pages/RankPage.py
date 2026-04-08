@@ -1,70 +1,99 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QHeaderView, QFrame, QHBoxLayout, QStyle
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QHeaderView, QFrame, QHBoxLayout, QStyle, QPushButton, QStackedWidget
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor, QFont
+from PySide6.QtGui import QColor, QFont, QPainter
+from PySide6.QtCharts import QChart, QChartView, QLineSeries, QValueAxis, QBarSeries, QBarSet
 from service.api import get_rank_list, get_user_rank
 import session
 
 class RankPage(QWidget):
     def __init__(self):
         super().__init__()
+        self.current_view = "table"
+        self.rank_list = []
         self.init_ui()
         self.load_rank_data()
     
     def init_ui(self):
+        self.setStyleSheet("background-color: #FFF3E8;")
+        
         layout = QVBoxLayout()
         layout.setSpacing(20)
         layout.setContentsMargins(20, 20, 20, 20)
         
-        # 标题
-        title = QLabel("Leaderboard")
+        title = QLabel("🏆 Leaderboard")
         title.setObjectName("rank_title")
         title.setAlignment(Qt.AlignCenter)
-        title.setFont(QFont("Arial", 20, QFont.Bold))
+        title.setFont(QFont("Arial", 24, QFont.Bold))
+        title.setStyleSheet("color: #333333; padding: 10px;")
         layout.addWidget(title)
         
-        # 排行榜表格
-        self.table = QTableWidget()
-        self.table.setColumnCount(3)
-        self.table.setHorizontalHeaderLabels(["Rank", "Username", "Points"])
+        # 切换按钮
+        button_layout = QHBoxLayout()
         
-        # 设置列宽
-        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
-        
-        # 设置表格不可点击
-        self.table.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.table.setSelectionMode(QTableWidget.NoSelection)
-        
-        # 设置表格样式
-        self.table.setAlternatingRowColors(True)
-        self.table.setStyleSheet("""
-            QTableWidget {
-                background-color: #f5f5f5;
+        self.table_btn = QPushButton("📊 Table")
+        self.table_btn.setStyleSheet("""
+            QPushButton {
+                background: #F28D40;
+                border: none;
                 border-radius: 8px;
-                border: 1px solid #ddd;
-            }
-            QTableWidget::item {
-                padding: 10px;
-            }
-            QHeaderView::section {
-                background-color: #F28D40;
                 color: white;
-                padding: 8px;
+                font-size: 14px;
+                padding: 10px 20px;
                 font-weight: bold;
             }
+            QPushButton:hover {
+                background: #D77A35;
+            }
         """)
+        self.table_btn.clicked.connect(lambda: self.switch_view("table"))
         
-        layout.addWidget(self.table)
+        self.chart_btn = QPushButton("📈 Chart")
+        self.chart_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255, 255, 255, 0.5);
+                border: 2px solid #F28D40;
+                border-radius: 8px;
+                color: #333333;
+                font-size: 14px;
+                padding: 10px 20px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background: rgba(255, 255, 255, 0.8);
+            }
+        """)
+        self.chart_btn.clicked.connect(lambda: self.switch_view("chart"))
+        
+        button_layout.addStretch()
+        button_layout.addWidget(self.table_btn)
+        button_layout.addWidget(self.chart_btn)
+        button_layout.addStretch()
+        
+        layout.addLayout(button_layout)
+        
+        # 堆叠视图
+        self.stacked_widget = QStackedWidget()
+        
+        # 创建表格视图
+        self.table_widget = QWidget()
+        self.create_table_view()
+        self.stacked_widget.addWidget(self.table_widget)
+        
+        # 创建图表视图
+        self.chart_widget = QWidget()
+        self.create_chart_view()
+        self.stacked_widget.addWidget(self.chart_widget)
+        
+        layout.addWidget(self.stacked_widget)
         
         # 个人排名信息
         self.user_info_frame = QFrame()
         self.user_info_frame.setStyleSheet("""
             QFrame {
-                background-color: #FFF3E0;
-                border-radius: 8px;
-                border: 1px solid #F28D40;
-                padding: 10px;
+                background-color: #FFF3E8;
+                border-radius: 12px;
+                border: 2px solid #F28D40;
+                padding: 15px;
             }
         """)
         user_info_layout = QHBoxLayout()
@@ -88,16 +117,200 @@ class RankPage(QWidget):
         
         self.setLayout(layout)
     
+    def create_table_view(self):
+        table_layout = QVBoxLayout()
+        
+        # 排行榜表格
+        self.table = QTableWidget()
+        self.table.setColumnCount(3)
+        self.table.setHorizontalHeaderLabels(["Rank", "Username", "Points"])
+        
+        # 设置列宽
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        
+        # 隐藏行号
+        self.table.verticalHeader().setVisible(False)
+        
+        # 设置表格不可点击
+        self.table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.table.setSelectionMode(QTableWidget.NoSelection)
+        
+        # 设置表格样式
+        self.table.setAlternatingRowColors(True)
+        self.table.setStyleSheet("""
+            QTableWidget {
+                background-color: white;
+                border-radius: 12px;
+                border: 2px solid rgba(0, 0, 0, 0.1);
+            }
+            QTableWidget::item {
+                padding: 12px;
+                font-size: 14px;
+                color: #333333;
+            }
+            QTableWidget::item:alternate {
+                background-color: #FFF8F0;
+            }
+            QHeaderView::section {
+                background-color: #FFF3E8;
+                color: #333333;
+                padding: 12px;
+                font-weight: bold;
+                font-size: 14px;
+                border: none;
+            }
+            QTableView QTableCornerButton::section {
+                background-color: #FFF3E8;
+                border: none;
+            }
+        """)
+        
+        table_layout.addWidget(self.table)
+        self.table_widget.setLayout(table_layout)
+    
+    def create_chart_view(self):
+        chart_layout = QVBoxLayout()
+        
+        # 创建图表
+        self.chart = QChart()
+        self.chart.setTitle("Top 50 Users Points")
+        self.chart.setAnimationOptions(QChart.SeriesAnimations)
+        self.chart.setBackgroundBrush(QColor("#FFF3E8"))
+        self.chart.setTitleBrush(QColor("#333333"))
+        
+        self.chart_view = QChartView(self.chart)
+        self.chart_view.setRenderHint(QPainter.Antialiasing)
+        self.chart_view.setStyleSheet("""
+            QChartView {
+                background: white;
+                border-radius: 12px;
+                border: 2px solid rgba(0, 0, 0, 0.1);
+            }
+        """)
+        
+        chart_layout.addWidget(self.chart_view)
+        self.chart_widget.setLayout(chart_layout)
+    
+    def switch_view(self, view_type):
+        self.current_view = view_type
+        
+        if view_type == "table":
+            self.table_btn.setStyleSheet("""
+                QPushButton {
+                    background: #F28D40;
+                    border: none;
+                    border-radius: 8px;
+                    color: white;
+                    font-size: 14px;
+                    padding: 10px 20px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background: #D77A35;
+                }
+            """)
+            self.chart_btn.setStyleSheet("""
+                QPushButton {
+                    background: rgba(255, 255, 255, 0.5);
+                    border: 2px solid #F28D40;
+                    border-radius: 8px;
+                    color: #333333;
+                    font-size: 14px;
+                    padding: 10px 20px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background: rgba(255, 255, 255, 0.8);
+                }
+            """)
+            self.stacked_widget.setCurrentWidget(self.table_widget)
+        else:
+            self.table_btn.setStyleSheet("""
+                QPushButton {
+                    background: rgba(255, 255, 255, 0.5);
+                    border: 2px solid #F28D40;
+                    border-radius: 8px;
+                    color: #333333;
+                    font-size: 14px;
+                    padding: 10px 20px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background: rgba(255, 255, 255, 0.8);
+                }
+            """)
+            self.chart_btn.setStyleSheet("""
+                QPushButton {
+                    background: #F28D40;
+                    border: none;
+                    border-radius: 8px;
+                    color: white;
+                    font-size: 14px;
+                    padding: 10px 20px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background: #D77A35;
+                }
+            """)
+            self.update_chart()
+            self.stacked_widget.setCurrentWidget(self.chart_widget)
+    
+    def update_chart(self):
+        # 清除旧的系列和坐标轴
+        self.chart.removeAllSeries()
+        # 移除所有坐标轴
+        for axis in self.chart.axes():
+            self.chart.removeAxis(axis)
+        
+        # 创建柱状图系列
+        bar_set = QBarSet("Points")
+        top_20 = self.rank_list[:20]
+        
+        for user in top_20:
+            bar_set.append(user["points"])
+        
+        bar_series = QBarSeries()
+        bar_series.append(bar_set)
+        bar_series.setLabelsVisible(True)
+        
+        self.chart.addSeries(bar_series)
+        
+        # 设置X轴
+        axis_x = QValueAxis()
+        axis_x.setRange(0, len(top_20))
+        axis_x.setTitleText("Rank")
+        axis_x.setLabelFormat("%d")
+        self.chart.addAxis(axis_x, Qt.AlignBottom)
+        bar_series.attachAxis(axis_x)
+        
+        # 设置Y轴
+        axis_y = QValueAxis()
+        if top_20:
+            max_points = max(user["points"] for user in top_20)
+            axis_y.setRange(0, max_points * 1.1)
+        else:
+            axis_y.setRange(0, 100)
+        axis_y.setTitleText("Points")
+        self.chart.addAxis(axis_y, Qt.AlignLeft)
+        bar_series.attachAxis(axis_y)
+        
+        # 设置柱子颜色
+        bar_set.setColor(QColor("#F28D40"))
+        bar_set.setBorderColor(QColor("#D77A35"))
+    
     def load_rank_data(self):
-        rank_list = get_rank_list()
+        self.rank_list = get_rank_list()
         current_user = session.user
         
-        print("Rank list data:", rank_list)
+        print("Rank list data:", self.rank_list)
         print("Current user:", current_user)
         
-        # 只显示前10名
-        top_10 = rank_list[:10]
-        self.table.setRowCount(len(top_10))
+        # 显示前50名
+        top_50 = self.rank_list[:50]
+        self.table.setRowCount(len(top_50))
         
         # 查找当前用户的排名
         user_rank = -1
@@ -128,8 +341,8 @@ class RankPage(QWidget):
             self.user_name_label.setText(f"Username: {user_name}")
             self.user_points_label.setText(f"Points: {user_points}")
         
-        # 填充前10名数据
-        for i, user in enumerate(top_10):
+        # 填充前50名数据
+        for i, user in enumerate(top_50):
             # 排名
             rank_item = QTableWidgetItem(str(i + 1))
             rank_item.setTextAlignment(Qt.AlignCenter)
@@ -167,6 +380,10 @@ class RankPage(QWidget):
                 points_item.setForeground(QColor("#1976D2"))
             
             self.table.setItem(i, 2, points_item)
+        
+        # 更新图表
+        if self.current_view == "chart":
+            self.update_chart()
     
     def set_user(self, user):
         # 当用户登录成功后，重新加载排行榜数据

@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QMovie, QFont, QPixmap
 from PySide6.QtCore import Qt, QTimer, QSize
 import requests
-from service.api_petshow import get_current_skin, modify_pet_name, get_pet_quote
+from service.api_petshow import get_current_skin, modify_pet_name, get_pet_quote, get_pet_name
 from service.api import BASE_URL
 from utils.path_utils import resource_path
 
@@ -204,12 +204,17 @@ class PetWidget(QWidget):
         self.timer.start(5000)
 
     def load_pet_data(self):
-        """加载宠物数据"""
-        data = get_current_skin(self.user_id)
-        self.skin_id = data.get("skin_id")
-        self.name_label.setText(data.get("name", ""))
-        self.set_gif(data.get("gif_url", ""), self.skin_id)
+        """加载宠物数据（皮肤 + 名字 + 语录）"""
+        # 获取皮肤信息
+        skin_data = get_current_skin(self.user_id)
+        self.skin_id = skin_data.get("skin_id")
+        self.set_gif(skin_data.get("gif_url", ""), self.skin_id)
         self.update_quote()
+        # 通过专用接口获取宠物名字（不使用皮肤接口返回的 name）
+        name_data = get_pet_name(self.user_id)
+        pet_name = name_data.get("name", "")
+        if pet_name:
+            self.name_label.setText(pet_name)
 
     def set_gif(self, gif_url: str, skin_id: int = 1):
         """加载图片/GIF，优先后端URL，失败回退本地"""

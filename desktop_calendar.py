@@ -17,6 +17,7 @@ class DesktopCalendar(QWidget):
     def init_ui(self):
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setAttribute(Qt.WA_NoSystemBackground)
         self.setMinimumSize(400, 500)
         
         # 主容器
@@ -25,7 +26,7 @@ class DesktopCalendar(QWidget):
             QFrame {
                 background: #FFF3E8;
                 border-radius: 15px;
-                border: 2px solid rgba(255, 255, 255, 0.3);
+                border: none;
             }
         """)
         

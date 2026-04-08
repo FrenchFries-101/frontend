@@ -18,7 +18,7 @@ from pages.RecitePages import RecitePage
 from pages.ForumPages import ForumWindow
 from pages.SpeakingPage import SpeakingPanel
 from pages.RankPage import RankPage
-from pages.PetPages import PetHomePage, PetSkinPage
+from pages.PetPages import PetHomePage, PetSkinPage, PetExplorePage
 from pages.GroupPlazaPage import GroupPlazaPage
 from pages.GroupChatPage import GroupChatPage
 from pages.GroupTaskPage import GroupTaskPage
@@ -84,12 +84,14 @@ class MainWindow(QWidget):
         self.join_page = JoinPage(self)
         self.board_page = BoardPage(self)
         self.instruction_page = InstructionPage(self)
+        self.single_board_page = SingleBoardPage(self)
 
         self.ui.stackedWidget.addWidget(self.game_menu)
         self.ui.stackedWidget.addWidget(self.start_page)
         self.ui.stackedWidget.addWidget(self.join_page)
         self.ui.stackedWidget.addWidget(self.board_page)
         self.ui.stackedWidget.addWidget(self.instruction_page)
+        self.ui.stackedWidget.addWidget(self.single_board_page)
 
         # 如果你保留了 Exit_button 就连上；删掉也不会报错
         if hasattr(self.ui, "Exit_button"):
@@ -122,12 +124,21 @@ class MainWindow(QWidget):
             self.open_desktop_calendar()
         elif key == "services" and self.pet_home_page:
             self.ui.stackedWidget.setCurrentWidget(self.pet_home_page)
+            self.pet_home_page.status_widget.refresh()
         elif key == "skin_home" and self.pet_skin_page:
             self.ui.stackedWidget.setCurrentWidget(self.pet_skin_page)
+        elif key == "pet_explore" and self.pet_explore_page:
+            self.ui.stackedWidget.setCurrentWidget(self.pet_explore_page)
+            self.pet_explore_page.refresh()
         elif key in route:
             self.ui.stackedWidget.setCurrentIndex(route[key])
             if key == "listening":
                 self._show_ielts_mode()
+            elif key == "task_board" and hasattr(self, "group_task_page"):
+                self.group_task_page.refresh_groups()
+                self.refresh_coin_label_from_server()
+
+
         elif key == "game_menu":
             self.ui.stackedWidget.setCurrentWidget(self.game_menu)
 
@@ -186,7 +197,10 @@ class MainWindow(QWidget):
         p2 = QTreeWidgetItem(["Skin Home"])
         p2.setData(0, Qt.UserRole, "skin_home")
 
-        pets.addChildren([p1, p2])
+        p3 = QTreeWidgetItem(["Explore"])
+        p3.setData(0, Qt.UserRole, "pet_explore")
+
+        pets.addChildren([p1, p2, p3])
 
         tree.addTopLevelItems([learning, team, pets, rank])
         learning.setExpanded(True)
@@ -238,6 +252,8 @@ class MainWindow(QWidget):
         self.group_task_page = GroupTaskPage()
         self.ui.stackedWidget.removeWidget(self.ui.GroupTask)
         self.ui.stackedWidget.insertWidget(5, self.group_task_page)
+        self.group_task_page.coin_points_updated.connect(self.update_coin_label)
+
 
     def init_group_plaza_page(self):
         self.group_plaza_page = GroupPlazaPage()
@@ -248,6 +264,7 @@ class MainWindow(QWidget):
     def init_pet_pages(self):
         self.pet_home_page = None
         self.pet_skin_page = None
+        self.pet_explore_page = None
 
     def start_test(self):
 
@@ -468,11 +485,8 @@ class MainWindow(QWidget):
         self.user = user
         self.user_name = user['username']
         self.ui.label_13.setText(self.user_name)
-        try:
-            rank_data = get_user_rank(user['id'])
-            self.update_coin_label(rank_data.get("points", 0))
-        except Exception:
-            pass
+        self.refresh_coin_label_from_server()
+
         # 更新排行榜页面的用户信息
         if hasattr(self, 'rank_page') and hasattr(self.rank_page, 'set_user'):
             print("MainWindow set_user called, updating rank page")
@@ -482,16 +496,71 @@ class MainWindow(QWidget):
             user_id = user.get("id", 0)
             print(f"[PetPages] Initializing pet pages for user_id={user_id}")
             self.pet_home_page = PetHomePage(user_id)
+            self.pet_home_page.points_changed.connect(self.update_coin_label)
             self.pet_skin_page = PetSkinPage(user_id)
+            self.pet_explore_page = PetExplorePage(user_id)
+            # 皮肤切换后刷新主页宠物展示
+            self.pet_skin_page.skin_changed.connect(
+                lambda skin_id: self.pet_home_page.pet_widget.load_pet_data()
+            )
+            self.pet_skin_page.skin_changed.connect(self._update_floating_skin)
+            # 服务使用后同步刷新探索页的活力值状态
+            self.pet_home_page.status_widget.refresh()
             self.ui.stackedWidget.addWidget(self.pet_home_page)
             self.ui.stackedWidget.addWidget(self.pet_skin_page)
+            self.ui.stackedWidget.addWidget(self.pet_explore_page)
+
+    def _save_floating_ref(self):
+        """缓存浮动狐狸引用，用于皮肤切换时更新"""
+        top = self
+        while top.parent():
+            top = top.parent()
+        # top 应该是 AppWindow(QMainWindow)
+        self._app_window = top
+
+    def _update_floating_skin(self, skin_id):
+        """皮肤切换后更新浮动狐狸"""
+        if hasattr(self, '_app_window') and hasattr(self._app_window, 'floating_icon'):
+            self._app_window.floating_icon.show_with_skin(self.user['id'])
 
     def update_coin_label(self, points: int):
         self.ui.coinValueLabel.setText(str(points))
 
+    def update_coin_label(self, points: int):
+        self.ui.coinValueLabel.setText(str(points))
+
+    def refresh_coin_label_from_server(self):
+        user = getattr(session, "user", None)
+        if not isinstance(user, dict):
+            return
+        user_id = user.get("id") or user.get("user_id")
+        if user_id is None:
+            return
+        try:
+            rank_data = get_user_rank(user_id)
+            if isinstance(rank_data, dict):
+                self.update_coin_label(rank_data.get("points", 0))
+        except Exception:
+            return
+
     def clear_data(self):
+
         # 清空用户名
         self.ui.label_13.setText("")
+
+        # 清空宠物页面，下次登录时用新 user_id 重建
+        if self.pet_home_page is not None:
+            self.ui.stackedWidget.removeWidget(self.pet_home_page)
+            self.pet_home_page.deleteLater()
+            self.pet_home_page = None
+        if self.pet_skin_page is not None:
+            self.ui.stackedWidget.removeWidget(self.pet_skin_page)
+            self.pet_skin_page.deleteLater()
+            self.pet_skin_page = None
+        if self.pet_explore_page is not None:
+            self.ui.stackedWidget.removeWidget(self.pet_explore_page)
+            self.pet_explore_page.deleteLater()
+            self.pet_explore_page = None
 
         # 清空 Cambridge 列表
         layout = self.ui.scrollAreaWidgetContents_2.layout()
@@ -508,18 +577,39 @@ class MainWindow(QWidget):
                 item.widget().deleteLater()
 
     def init_top_bar(self):
-    # 连续学习文案
         self.ui.streakLabel.setText("Learning 2 days")
 
-    # 金币 GIF
+        top_layout = self.ui.widget_4.layout()
+        if top_layout is not None and not hasattr(self, "center_top_icon"):
+            old_item = top_layout.takeAt(1)
+            if old_item is not None and old_item.spacerItem() is not None:
+                del old_item
+
+            top_layout.insertStretch(1, 1)
+
+            self.center_top_icon = QLabel()
+            self.center_top_icon.setObjectName("centerTopIconLabel")
+            pix = QPixmap(resource_path("resources/icons/work-in-progress (1).png"))
+            if not pix.isNull():
+                self.center_top_icon.setPixmap(
+                    pix.scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                )
+            self.center_top_icon.setFixedSize(52, 52)
+
+
+            self.center_top_icon.setAlignment(Qt.AlignCenter)
+            top_layout.insertWidget(2, self.center_top_icon)
+
+            top_layout.insertStretch(3, 1)
+
         self.coin_movie = QMovie(resource_path("resources/icons/Coin.gif"))
         self.ui.coinGifLabel.setMovie(self.coin_movie)
         self.ui.coinGifLabel.setFixedSize(50, 50)
         self.ui.coinGifLabel.setScaledContents(True)
         self.coin_movie.start()
 
-    # 金币数量
-        self.ui.coinValueLabel.setText("200")
+        self.ui.coinValueLabel.setText("--")
+
 
 
     def _show_ielts_mode(self):
@@ -578,6 +668,18 @@ class MainWindow(QWidget):
             left_layout.addWidget(subtitle_label)
 
 
+        card_layout = QHBoxLayout(card)
+
+        left_layout = QVBoxLayout()
+        left_layout.setSpacing(6)
+
+        if subtitle:
+            subtitle_label = QLabel(subtitle)
+            subtitle_label.setObjectName("label_7") 
+            subtitle_label.setWordWrap(True)
+            left_layout.addWidget(subtitle_label)
+
+ 
         title_label = QLabel(title)
         title_label.setObjectName("label_8")
         left_layout.addWidget(title_label)
@@ -604,3 +706,5 @@ class MainWindow(QWidget):
             self.ui.stackedWidget.setCurrentWidget(self.board_page)
         elif page == "instruction":
             self.ui.stackedWidget.setCurrentWidget(self.instruction_page)
+        elif page == "single_board":
+            self.ui.stackedWidget.setCurrentWidget(self.single_board_page)

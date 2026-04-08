@@ -3,9 +3,11 @@
 #最新
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFrame
+    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFrame,
+    QMessageBox, QDialog,
 )
 from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtGui import QFont, QMovie
 
 from service.api_pet_service import (
     get_service_categories,
@@ -13,8 +15,23 @@ from service.api_pet_service import (
     apply_service,
     get_remaining_cooldown,
 )
+from service.api import PET_BASE_URL
+from utils.path_utils import resource_path
+import requests
+import os
 
 DEFAULT_USER_ID = 1
+
+# 分类名 → GIF 文件名映射（匹配 fox_clean.gif / fox_food.gif / fox_play.gif）
+_CATEGORY_GIF_MAP = {
+    "food": "fox_food.gif",
+    "clean": "fox_clean.gif",
+    "play": "fox_play.gif",
+    "groom": "fox_clean.gif",
+    "feed": "fox_food.gif",
+    "entertain": "fox_play.gif",
+    "exercise": "fox_play.gif",
+}
 
 
 class PetServiceWidget(QWidget):
@@ -44,6 +61,8 @@ class PetServiceWidget(QWidget):
         super().__init__(parent)
         self.user_id = user_id
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        # service_id → category_name 映射
+        self._service_category = {}
 
         # 当前选中的分类
         self._current_category_id = None
@@ -100,6 +119,7 @@ class PetServiceWidget(QWidget):
 
         categories = get_service_categories()
         for cat in categories:
+            cat_name = cat.get("name", "").lower()
             btn = QPushButton(cat["name"])
             btn.setFixedHeight(36)
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -116,16 +136,18 @@ class PetServiceWidget(QWidget):
     def _on_category_clicked(self, category_id: int):
         """切换分类"""
         self._current_category_id = category_id
-
-        # 更新分类按钮样式
+        # 找到分类名
+        cat_name = ""
         for btn in self._cat_buttons:
             is_active = btn.property("category_id") == category_id
             btn.setStyleSheet(self._cat_btn_style(active=is_active))
+            if is_active:
+                cat_name = btn.text().lower()
 
         # 加载该分类下的服务
-        self._load_services(category_id)
+        self._load_services(category_id, cat_name)
 
-    def _load_services(self, category_id: int):
+    def _load_services(self, category_id: int, category_name: str = ""):
         """加载某分类下的服务卡片列表"""
         # 清空旧卡片
         for sid, card in self._service_buttons.items():
@@ -135,6 +157,8 @@ class PetServiceWidget(QWidget):
 
         services = get_services_by_category(category_id)
         for svc in services:
+            # 记录该服务所属分类名
+            self._service_category[svc["service_id"]] = category_name
             card = self._create_service_button(svc)
             self.service_list_layout.addWidget(card)
             self._service_buttons[svc["service_id"]] = card
@@ -193,11 +217,36 @@ class PetServiceWidget(QWidget):
         if remaining > 0:
             return  # 冷却中不响应
         result = apply_service(self.user_id, service_id)
-        if result["success"]:
+        print(f"[PetServiceWidget] user_id={self.user_id}, service_id={service_id}, result={result}")
+        svc_name, points_cost, _ = self._get_service_info(service_id)
+        if result.get("success"):
             self.service_applied.emit(result)
             self._refresh_cooldowns()
+            new_vitality = result.get("new_vitality", "?")
+            new_points = result.get("new_points", "?")
+            category_name = self._service_category.get(service_id, "")
+            self._show_success_dialog(
+                svc_name=svc_name,
+                category_name=category_name,
+                vitality_gained=result.get('vitality_gained', '?'),
+                points_spent=result.get('points_spent', points_cost),
+                new_vitality=new_vitality,
+                new_points=new_points,
+            )
         else:
-            self._show_error_on_card(card, result.get("message", "操作失败"))
+            current_points = result.get("current_points")
+            if current_points is None:
+                try:
+                    r = requests.get(f"{PET_BASE_URL}/pet/status", params={"user_id": self.user_id}, timeout=3)
+                    current_points = r.json().get("points", "?")
+                except Exception:
+                    current_points = "?"
+            QMessageBox.warning(
+                self, "Service Failed",
+                f"{svc_name} failed.\n"
+                f"Current Points: {current_points}  |  Required: {points_cost}\n"
+                f"Reason: {result.get('message', 'Unknown error')}"
+            )
 
     def _show_error_on_card(self, card: QFrame, message: str):
         """在卡片上临时显示错误提示，2 秒后自动恢复"""
@@ -274,7 +323,7 @@ class PetServiceWidget(QWidget):
             svc_name, points_cost, vitality_effect = self._get_service_info(sid)
             if svc_name:
                 effect_label = card.layout().itemAt(0).layout().itemAt(1).widget()
-                effect_label.setText(f"+{vitality_effect} 活力值")
+                effect_label.setText(f"+{vitality_effect} vitality")
                 effect_label.setStyleSheet("color: #008A73; font-size: 11px; background: transparent;")
                 card.setStyleSheet(self._svc_card_style(active=True, cooldown=False))
 
@@ -293,7 +342,7 @@ class PetServiceWidget(QWidget):
         if active:
             return """
                 QPushButton {
-                    background-color: #B3886B; color: white; border: none;
+                    background-color: #B3886B; color: white; border: 1px;
                     border-radius: 8px; padding: 0px 20px; margin: 0px;
                     font-size: 14px; font-weight: bold;
                     text-align: center;
@@ -350,6 +399,97 @@ class PetServiceWidget(QWidget):
         """
 
     # ============ 公共方法 ============
+
+    def _get_gif_for_category(self, category_name: str) -> str:
+        """根据分类名匹配 GIF 文件路径"""
+        lower = category_name.lower()
+        for key, gif_name in _CATEGORY_GIF_MAP.items():
+            if key in lower:
+                path = resource_path(f"resources/icons/{gif_name}")
+                if os.path.exists(path):
+                    return path
+        return ""
+
+    def _show_success_dialog(self, svc_name, category_name, vitality_gained, points_spent, new_vitality, new_points):
+        """自定义成功弹窗：左侧 GIF + 右侧信息"""
+        dlg = QDialog(self)
+        dlg.setWindowTitle("Service Success")
+        dlg.setFixedSize(420, 240)
+        dlg.setStyleSheet(f"""
+            QDialog {{
+                background-color: #FFF6EA;
+                border: 1px solid #F0E0D0;
+                border-radius: 16px;
+            }}
+        """)
+        dlg.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
+
+        root = QVBoxLayout(dlg)
+        root.setContentsMargins(24, 20, 24, 20)
+        root.setSpacing(12)
+
+        body = QHBoxLayout()
+        body.setSpacing(20)
+
+        # 左侧 GIF
+        gif_label = QLabel()
+        gif_label.setFixedSize(140, 140)
+        gif_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        gif_label.setStyleSheet("background: transparent; border-radius: 14px;")
+
+        gif_path = self._get_gif_for_category(category_name)
+        if gif_path:
+            movie = QMovie(gif_path)
+            movie.setScaledSize(gif_label.size())
+            gif_label.setMovie(movie)
+            movie.start()
+        body.addWidget(gif_label)
+
+        # 右侧文字
+        right = QVBoxLayout()
+        right.setSpacing(8)
+
+        title = QLabel(f"{svc_name} Success!")
+        title.setFont(QFont("", 15, QFont.Weight.Bold))
+        title.setStyleSheet("color: #B3886B; background: transparent;")
+        right.addWidget(title)
+
+        sep = QFrame()
+        sep.setFixedHeight(1)
+        sep.setStyleSheet("background: #F0E0D0; border: none;")
+        right.addWidget(sep)
+
+        effect_lbl = QLabel(f"+{vitality_gained} Vitality  |  -{points_spent} Points")
+        effect_lbl.setFont(QFont("", 12))
+        effect_lbl.setStyleSheet("color: #444444; background: transparent;")
+        right.addWidget(effect_lbl)
+
+        detail_lbl = QLabel(f"Vitality: {new_vitality}  |  Points: {new_points}")
+        detail_lbl.setFont(QFont("", 11))
+        detail_lbl.setStyleSheet("color: #999999; background: transparent;")
+        right.addWidget(detail_lbl)
+
+        right.addStretch()
+        body.addLayout(right, stretch=1)
+
+        root.addLayout(body)
+
+        # 关闭按钮
+        btn = QPushButton("OK")
+        btn.setFixedHeight(36)
+        btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn.setFont(QFont("", 12, QFont.Weight.Bold))
+        btn.setStyleSheet("""
+            QPushButton {
+                background-color: #B3886B; color: white; border: none;
+                border-radius: 18px; padding: 0 40px;
+            }
+            QPushButton:hover { background-color: #9A7055; }
+        """)
+        btn.clicked.connect(dlg.accept)
+        root.addWidget(btn, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        dlg.exec()
 
     def refresh(self):
         """刷新整个组件数据"""

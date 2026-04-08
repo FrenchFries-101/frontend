@@ -138,17 +138,20 @@ class QuizChallengeDialog(QDialog):
         self.question_label.setWordWrap(True)
         root.addWidget(self.question_label)
 
-        self.answer_hint_label = QLabel("Test Answer: -")
-        self.answer_hint_label.setObjectName("answerHint")
-        self.answer_hint_label.setWordWrap(True)
-        root.addWidget(self.answer_hint_label)
+        # =========================
+        # Test
+        # =========================
+        # self.answer_hint_label = QLabel("Test Answer: -")
+        # self.answer_hint_label.setObjectName("answerHint")
+        # self.answer_hint_label.setWordWrap(True)
+        # root.addWidget(self.answer_hint_label)
 
         self.input_label = QLabel("Type the word:")
         self.input_label.setObjectName("sub")
         root.addWidget(self.input_label)
 
         self.answer_input = QLineEdit()
-        self.answer_input.setPlaceholderText("Enter the English word here")
+        self.answer_input.setPlaceholderText("Enter the answer here")
         self.answer_input.returnPressed.connect(self.submit_answer)
         root.addWidget(self.answer_input)
 
@@ -188,12 +191,14 @@ class QuizChallengeDialog(QDialog):
 
         self.progress_label.setText(f"Progress: {self.current_streak} / {self.target_streak}")
         self.question_label.setText(
-            "According to the following English explanation, type the word:\n\n"
+            "Type the answer according to the explanation:\n\n"
             f"{data.get('question', '-')}"
         )
 
-        # 测试阶段直接显示答案
-        self.answer_hint_label.setText(f"Test Answer: {self.current_answer}")
+        # =========================
+        # Test
+        # =========================
+        # self.answer_hint_label.setText(f"Test Answer: {self.current_answer}")
 
         self.answer_input.clear()
         self.answer_input.setFocus()
@@ -220,11 +225,14 @@ class QuizChallengeDialog(QDialog):
             )
             self.load_next_question()
         else:
+            # Show correct answer
             self.status_label.setText(
                 f"Wrong answer. Correct answer: {self.current_answer}\n"
-                "The streak is reset. Please try again next time."
+                "The streak is reset. Click Quit to close."
             )
-            self.reject()
+            self.submit_btn.setEnabled(False)
+            self.answer_input.setEnabled(False)
+            self.next_btn.setText("Quit")
 
     def fail_and_close(self):
         self.status_label.setText("Quiz closed. The streak is reset.")
