@@ -44,12 +44,12 @@ class DesktopPlanWidget(QWidget):
             QFrame {
                 background: rgba(255, 243, 232, 230);
                 border-radius: 15px;
-                border: 2px solid rgba(242, 141, 64, 0.3);
+                border: none;
             }
         """)
         
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.main_frame)
         
         # 主布局
@@ -108,6 +108,10 @@ class DesktopPlanWidget(QWidget):
         
         main_layout.addStretch()
     
+    def get_task_file_path(self):
+        # 获取任务文件路径（与日历组件相同）
+        return os.path.join(os.path.expanduser("~"), ".desktop_calendar_tasks.json")
+    
     def load_today_plan(self):
         # 清除现有的任务
         for i in reversed(range(self.tasks_layout.count())):
@@ -115,7 +119,6 @@ class DesktopPlanWidget(QWidget):
         
         # 获取今日日期
         today = QDate.currentDate().toString("yyyy-MM-dd")
-        tasks_file = "tasks.json"
         
         # 默认任务
         default_tasks = [
@@ -126,14 +129,13 @@ class DesktopPlanWidget(QWidget):
             "Review grammar"
         ]
         
-        # 读取任务文件
+        # 读取任务文件（使用与日历相同的文件）
         tasks = {}
-        if os.path.exists(tasks_file):
-            try:
-                with open(tasks_file, "r", encoding="utf-8") as f:
-                    tasks = json.load(f)
-            except:
-                pass
+        try:
+            with open(self.get_task_file_path(), "r", encoding="utf-8") as f:
+                tasks = json.load(f)
+        except:
+            pass
         
         # 获取今日任务
         if today in tasks and tasks[today].strip():

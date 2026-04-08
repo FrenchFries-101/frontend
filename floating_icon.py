@@ -19,6 +19,7 @@ class FloatingIcon(QWidget):
         )
         # 透明背景 - 这是关键
         self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setAttribute(Qt.WA_NoSystemBackground)
 
         # Fox GIF 列表
         self.fox_gifs = [
@@ -47,19 +48,17 @@ class FloatingIcon(QWidget):
         self.show()
     
     def paintEvent(self, event):
-        # 直接在窗口上绘制 GIF 帧
         painter = QPainter(self)
-        # 确保使用抗锯齿
-        painter.setRenderHint(QPainter.SmoothPixmapTransform)
-        
-        # 获取当前帧
-        current_pixmap = self.movie.currentPixmap()
-        if not current_pixmap.isNull():
-            # 计算居中位置
-            x = (self.width() - current_pixmap.width()) // 2
-            y = (self.height() - current_pixmap.height()) // 2
-            # 直接绘制 pixmap
-            painter.drawPixmap(x, y, current_pixmap)
+        painter.fillRect(self.rect(), Qt.transparent)
+
+        pixmap = self.movie.currentPixmap()
+        if not pixmap.isNull():
+            # 直接绘制，不做任何额外处理
+            painter.drawPixmap(
+                (self.width() - pixmap.width())//2,
+                (self.height() - pixmap.height())//2,
+                pixmap
+            )
     
     def switch_fox_gif(self):
         # 随机选择一个新的 fox gif（避免选择同一个）

@@ -259,8 +259,11 @@ class RankPage(QWidget):
             self.stacked_widget.setCurrentWidget(self.chart_widget)
     
     def update_chart(self):
-        # 清除旧的系列
+        # 清除旧的系列和坐标轴
         self.chart.removeAllSeries()
+        # 移除所有坐标轴
+        for axis in self.chart.axes():
+            self.chart.removeAxis(axis)
         
         # 创建柱状图系列
         bar_set = QBarSet("Points")
