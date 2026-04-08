@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QLabel, QMenu
 from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QCursor,QAction,QMovie
+from utils.path_utils import resource_path
 
 
 class FloatingIcon(QWidget):
@@ -21,7 +22,7 @@ class FloatingIcon(QWidget):
         self.label = QLabel(self)
         self.label.setFixedSize(80, 80)
         self.label.setAlignment(Qt.AlignCenter)
-        self.movie = QMovie("resources/icons/Sweet run cycle.gif")
+        self.movie = QMovie(resource_path("resources/icons/Sweet run cycle.gif"))
         self.movie.setScaledSize(self.label.size())
         self.label.setMovie(self.movie)
         self.movie.start()

@@ -7,6 +7,7 @@ from pages.MainWindows import MainWindow
 from pages.RegisterWindow import RegisterWindow
 from pages.IELTSTestWindow import IELTSTestWindow
 from utils.loading_overlay import LoadingOverlay
+from utils.path_utils import resource_path
 from PySide6.QtWidgets import QSystemTrayIcon, QMenu
 from PySide6.QtGui import QAction, QIcon
 from floating_icon import FloatingIcon
@@ -188,7 +189,7 @@ class AppWindow(QMainWindow):
 
     def load_qss(self):
         try:
-            with open("styles/style.qss", "r", encoding="utf-8") as f:
+            with open(resource_path("styles/style.qss"), "r", encoding="utf-8") as f:
                 self.setStyleSheet(f.read())
         except:
             print("QSS not found")
@@ -247,7 +248,7 @@ class AppWindow(QMainWindow):
 
     def init_tray(self):
         self.tray = QSystemTrayIcon(self)
-        self.tray.setIcon(QIcon("resources/icons/unicorn.png"))
+        self.tray.setIcon(QIcon(resource_path("resources/icons/unicorn.png")))
         menu = QMenu()
         open_action   = QAction("Open")
         main_action   = QAction("Main Menu")

@@ -2,6 +2,7 @@
 import sys
 import math
 import random
+from utils.path_utils import resource_path
 from PySide6.QtWidgets import QApplication, QWidget, QLabel
 from PySide6.QtCore import (Qt, QTimer, QPointF, QRectF, QThread, Signal)
 from PySide6.QtGui import (QPainter, QColor, QPen, QBrush, QRadialGradient,
@@ -144,7 +145,7 @@ class SplashScreen(QWidget):
 
         # ── Fox GIF ──
         self._fox_label = QLabel(self)
-        self._fox_movie = QMovie("resources/icons/fox_1.gif")
+        self._fox_movie = QMovie(resource_path("resources/icons/fox_1.gif"))
         self._fox_label.setMovie(self._fox_movie)
         self._fox_label.setScaledContents(True)
         self._fox_label.setFixedSize(144, 244)
