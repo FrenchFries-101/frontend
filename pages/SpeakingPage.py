@@ -13,12 +13,14 @@ from PySide6.QtWidgets import (
 )
 
 import session
+from service.api import submit_group_activity
 from service.api_speaking import (
     get_sample_topics,
     start_speaking,
     finalize_speaking,
     abort_speaking,
 )
+
 
 
 class AudioRecorder:
@@ -691,6 +693,19 @@ class SpeakingPanel(QWidget):
         self.has_submitted = True
         self.set_state("finished")
         self.update_buttons()
+
+        user_id = session.user.get("id") if session.user else None
+        group_id = getattr(session, "current_group_id", None)
+        if user_id is not None and group_id is not None:
+            group_resp = submit_group_activity(
+                group_id=group_id,
+                user_id=user_id,
+                activity_type="speaking",
+                amount=1,
+            )
+            if not (isinstance(group_resp, dict) and group_resp.get("success")):
+                print("口语 activity 登记失败:", group_resp)
+
 
 
     def on_submit_failed(self, error_message):

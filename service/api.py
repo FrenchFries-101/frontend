@@ -364,16 +364,34 @@ def upload_group_images(images_base64):
         if not images_base64:
             return {"success": False, "message": "未选择图片"}
 
-        data = [("images", item) for item in images_base64 if item]
-        if not data:
+        valid_images = [item for item in images_base64 if item]
+        if not valid_images:
             return {"success": False, "message": "图片数据为空"}
 
-        res = requests.post(f"{BASE_URL}/groups/upload_images", data=data)
-        res.raise_for_status()
-        return res.json()
+        url = f"{BASE_URL}/groups/upload_images"
+
+        # 后端已支持 JSON 传输，优先使用 JSON，避免 multipart 的 part_size 限制
+        res = requests.post(
+            url,
+            json={"images": valid_images},
+            timeout=90,
+        )
+        if res.ok:
+            return res.json()
+
+        try:
+            detail = res.json().get("detail")
+        except Exception:
+            detail = res.text
+        return {"success": False, "message": f"HTTP {res.status_code}: {detail or '上传小组介绍图片失败'}"}
+
     except Exception as e:
         print("上传小组介绍图片失败:", e)
-        return {"success": False, "message": "上传小组介绍图片失败"}
+        return {"success": False, "message": f"上传小组介绍图片失败: {e}"}
+
+
+
+
 
 
 
@@ -457,6 +475,21 @@ def get_group_my_stats(group_id, user_id):
             "coins_earned_this_week": 0,
             "rank_in_group": 0,
         }
+
+
+def submit_group_activity(group_id, user_id, activity_type, amount):
+    try:
+        payload = {
+            "user_id": user_id,
+            "activity_type": activity_type,
+            "amount": amount,
+        }
+        res = requests.post(f"{BASE_URL}/groups/{group_id}/activity", json=payload)
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        print("提交小组活动失败:", e)
+        return {"success": False, "message": "提交小组活动失败"}
 
 
 def upload_group_icon(group_id, image_path=None, image_base64=None):

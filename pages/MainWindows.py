@@ -134,6 +134,11 @@ class MainWindow(QWidget):
             self.ui.stackedWidget.setCurrentIndex(route[key])
             if key == "listening":
                 self._show_ielts_mode()
+            elif key == "task_board" and hasattr(self, "group_task_page"):
+                self.group_task_page.refresh_groups()
+                self.refresh_coin_label_from_server()
+
+
         elif key == "game_menu":
             self.ui.stackedWidget.setCurrentWidget(self.game_menu)
 
@@ -247,6 +252,8 @@ class MainWindow(QWidget):
         self.group_task_page = GroupTaskPage()
         self.ui.stackedWidget.removeWidget(self.ui.GroupTask)
         self.ui.stackedWidget.insertWidget(5, self.group_task_page)
+        self.group_task_page.coin_points_updated.connect(self.update_coin_label)
+
 
     def init_group_plaza_page(self):
         self.group_plaza_page = GroupPlazaPage()
@@ -478,12 +485,8 @@ class MainWindow(QWidget):
         self.user = user
         self.user_name = user['username']
         self.ui.label_13.setText(self.user_name)
-        self._save_floating_ref()
-        try:
-            rank_data = get_user_rank(user['id'])
-            self.update_coin_label(rank_data.get("points", 0))
-        except Exception:
-            pass
+        self.refresh_coin_label_from_server()
+
         # 更新排行榜页面的用户信息
         if hasattr(self, 'rank_page') and hasattr(self.rank_page, 'set_user'):
             print("MainWindow set_user called, updating rank page")
@@ -496,7 +499,7 @@ class MainWindow(QWidget):
             self.pet_home_page.points_changed.connect(self.update_coin_label)
             self.pet_skin_page = PetSkinPage(user_id)
             self.pet_explore_page = PetExplorePage(user_id)
-            # 皮肤切换后刷新主页宠物展示 + 浮动狐狸
+            # 皮肤切换后刷新主页宠物展示
             self.pet_skin_page.skin_changed.connect(
                 lambda skin_id: self.pet_home_page.pet_widget.load_pet_data()
             )
@@ -526,7 +529,22 @@ class MainWindow(QWidget):
     def update_coin_label(self, points: int):
         self.ui.coinValueLabel.setText(str(points))
 
+    def refresh_coin_label_from_server(self):
+        user = getattr(session, "user", None)
+        if not isinstance(user, dict):
+            return
+        user_id = user.get("id") or user.get("user_id")
+        if user_id is None:
+            return
+        try:
+            rank_data = get_user_rank(user_id)
+            if isinstance(rank_data, dict):
+                self.update_coin_label(rank_data.get("points", 0))
+        except Exception:
+            return
+
     def clear_data(self):
+
         # 清空用户名
         self.ui.label_13.setText("")
 
@@ -559,18 +577,39 @@ class MainWindow(QWidget):
                 item.widget().deleteLater()
 
     def init_top_bar(self):
-    # 连续学习文案
         self.ui.streakLabel.setText("Learning 2 days")
 
-    # 金币 GIF
+        top_layout = self.ui.widget_4.layout()
+        if top_layout is not None and not hasattr(self, "center_top_icon"):
+            old_item = top_layout.takeAt(1)
+            if old_item is not None and old_item.spacerItem() is not None:
+                del old_item
+
+            top_layout.insertStretch(1, 1)
+
+            self.center_top_icon = QLabel()
+            self.center_top_icon.setObjectName("centerTopIconLabel")
+            pix = QPixmap(resource_path("resources/icons/work-in-progress (1).png"))
+            if not pix.isNull():
+                self.center_top_icon.setPixmap(
+                    pix.scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                )
+            self.center_top_icon.setFixedSize(52, 52)
+
+
+            self.center_top_icon.setAlignment(Qt.AlignCenter)
+            top_layout.insertWidget(2, self.center_top_icon)
+
+            top_layout.insertStretch(3, 1)
+
         self.coin_movie = QMovie(resource_path("resources/icons/Coin.gif"))
         self.ui.coinGifLabel.setMovie(self.coin_movie)
         self.ui.coinGifLabel.setFixedSize(50, 50)
         self.ui.coinGifLabel.setScaledContents(True)
         self.coin_movie.start()
 
-    # 金币数量
-        self.ui.coinValueLabel.setText("200")
+        self.ui.coinValueLabel.setText("--")
+
 
 
     def _show_ielts_mode(self):

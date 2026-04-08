@@ -25,7 +25,7 @@ class LoginWindow(QWidget):
 
         # ===== 背景图 QLabel =====
         self.bg_label = QLabel(self)
-        pixmap = QPixmap(resource_path("resources/images/login-picture2.jpg"))
+        pixmap = QPixmap(resource_path("resources/images/loginPage.png"))
         self.bg_label.setPixmap(pixmap)
         self.bg_label.setScaledContents(True)
         self.bg_label.lower()  # 放到最底层
@@ -34,20 +34,24 @@ class LoginWindow(QWidget):
         layout.addWidget(self.ui)
         self.setLayout(layout)
 
+        self.error_label = self.ui.findChild(QLabel, "label_5")
+
         self.ui.pushButton.clicked.connect(self.login)
+
 
     def login(self):
         # 1️⃣ 获取输入
         username = self.ui.lineEdit.text().strip()
         password = self.ui.lineEdit_2.text().strip()
 
-        self.ui.label_5.setText("")
+        self.set_error_message("")
+
 
         # 2️⃣ 判空
         if not username or not password:
-            self.ui.label_5.setStyleSheet("color: red;")
-            self.ui.label_5.setText("username or password cannot be empty")
+            self.set_error_message("username or password cannot be empty")
             return
+
 
         try:
             # 3️⃣ 调用后端 API
@@ -70,11 +74,21 @@ class LoginWindow(QWidget):
             self.login_success.emit()
 
         except Exception as e:
-            self.ui.label_5.setStyleSheet("color: red;")
-            self.ui.label_5.setText(str(e))
+            self.set_error_message(str(e))
+
+
+    def set_error_message(self, text: str):
+        if self.error_label is not None:
+            self.error_label.setStyleSheet("color: red;")
+            self.error_label.setText(text)
+            return
+
+        if text:
+            QMessageBox.warning(self, "Login Failed", text)
 
     def load_qss(self):
-        bg_path = resource_path("resources/images/login-picture2.jpg").replace("\\", "/")
+
+        bg_path = resource_path("resources/images/loginPage.png").replace("\\", "/")
         import os
         print("背景图片路径:", bg_path)
         print("文件存在吗?", os.path.exists(bg_path))
