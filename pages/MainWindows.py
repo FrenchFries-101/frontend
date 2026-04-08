@@ -476,6 +476,7 @@ class MainWindow(QWidget):
         self.user = user
         self.user_name = user['username']
         self.ui.label_13.setText(self.user_name)
+        self._save_floating_ref()
         try:
             rank_data = get_user_rank(user['id'])
             self.update_coin_label(rank_data.get("points", 0))
@@ -493,15 +494,29 @@ class MainWindow(QWidget):
             self.pet_home_page.points_changed.connect(self.update_coin_label)
             self.pet_skin_page = PetSkinPage(user_id)
             self.pet_explore_page = PetExplorePage(user_id)
-            # 皮肤切换后刷新主页宠物展示
+            # 皮肤切换后刷新主页宠物展示 + 浮动狐狸
             self.pet_skin_page.skin_changed.connect(
                 lambda skin_id: self.pet_home_page.pet_widget.load_pet_data()
             )
+            self.pet_skin_page.skin_changed.connect(self._update_floating_skin)
             # 服务使用后同步刷新探索页的活力值状态
             self.pet_home_page.status_widget.refresh()
             self.ui.stackedWidget.addWidget(self.pet_home_page)
             self.ui.stackedWidget.addWidget(self.pet_skin_page)
             self.ui.stackedWidget.addWidget(self.pet_explore_page)
+
+    def _save_floating_ref(self):
+        """缓存浮动狐狸引用，用于皮肤切换时更新"""
+        top = self
+        while top.parent():
+            top = top.parent()
+        # top 应该是 AppWindow(QMainWindow)
+        self._app_window = top
+
+    def _update_floating_skin(self, skin_id):
+        """皮肤切换后更新浮动狐狸"""
+        if hasattr(self, '_app_window') and hasattr(self._app_window, 'floating_icon'):
+            self._app_window.floating_icon.show_with_skin(self.user['id'])
 
     def update_coin_label(self, points: int):
         self.ui.coinValueLabel.setText(str(points))

@@ -11,7 +11,6 @@ from utils.path_utils import resource_path
 from PySide6.QtWidgets import QSystemTrayIcon, QMenu
 from PySide6.QtGui import QAction, QIcon
 from floating_icon import FloatingIcon
-from desktop_calendar import DesktopCalendar
 from desktop_plan_widget import DesktopPlanWidget
 
 from pages.TedTestWindow import TedTestWindow
@@ -26,7 +25,7 @@ class AppWindow(QMainWindow):
         super().__init__()
         self.test_page = IELTSTestWindow()
         self.ted_test_page = TedTestWindow()
-        self.desktop_calendar = DesktopCalendar()
+        self.desktop_plan_widget = DesktopPlanWidget()
 
         self.stack = QStackedWidget()
 
@@ -58,7 +57,6 @@ class AppWindow(QMainWindow):
         self.loading.resize(self.size())
         self.init_tray()
         self.floating_icon = FloatingIcon(self)
-        self.desktop_plan_widget = DesktopPlanWidget()
 
     # ↓↓↓ 以下所有方法和你原来完全一样，无需修改 ↓↓↓
     def slide_to_main(self):
@@ -229,9 +227,9 @@ class AppWindow(QMainWindow):
         self.loading.resize(self.size())
 
     def show_desktop_calendar(self):
-        self.desktop_calendar.show()
-        self.desktop_calendar.raise_()
-        self.desktop_calendar.activateWindow()
+        self.desktop_plan_widget.show()
+        self.desktop_plan_widget.raise_()
+        self.desktop_plan_widget.activateWindow()
 
     def load_main_data(self):
         self.main_page.load_data()
@@ -242,12 +240,18 @@ class AppWindow(QMainWindow):
         self.main_page.set_user(session.user)
         self.loading.show()
         QTimer.singleShot(100, self.load_main_data)
+        # 登录成功后显示浮动狐狸（使用用户当前皮肤）
+        if session.user and hasattr(session.user, 'id'):
+            self.floating_icon.show_with_skin(session.user.id)
+        elif isinstance(session.user, dict) and session.user.get('id'):
+            self.floating_icon.show_with_skin(session.user['id'])
 
     def logout_cleanup(self):
         import session
         session.user = None
         self.login_page.ui.lineEdit_2.clear()
         self.main_page.clear_data()
+        self.floating_icon.hide_fox()
 
     def init_tray(self):
         self.tray = QSystemTrayIcon(self)
