@@ -269,6 +269,20 @@ class RestaurantWidget(QWidget):
         rl.addWidget(self._r_detail)
         rl.addWidget(self._r_fun)
 
+        # 地图图片
+        self._map_label = QLabel()
+        self._map_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._map_label.setStyleSheet("background: transparent; border: none;")
+        map_path = resource_path("resources/icons/Map.png")
+        if os.path.exists(map_path):
+            self._map_pixmap = QPixmap(map_path)
+            self._map_label.setPixmap(self._map_pixmap.scaled(
+                460, 220,
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation
+            ))
+        rl.addWidget(self._map_label, alignment=Qt.AlignmentFlag.AlignCenter)
+
         root.addWidget(self._result_frame, stretch=1)
 
     # ──── 数据 ────
