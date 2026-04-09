@@ -668,26 +668,14 @@ class MainWindow(QWidget):
             subtitle_label.setWordWrap(True)
             left_layout.addWidget(subtitle_label)
 
-
-        card_layout = QHBoxLayout(card)
-
-        left_layout = QVBoxLayout()
-        left_layout.setSpacing(6)
-
-        if subtitle:
-            subtitle_label = QLabel(subtitle)
-            subtitle_label.setObjectName("label_7") 
-            subtitle_label.setWordWrap(True)
-            left_layout.addWidget(subtitle_label)
-
- 
         title_label = QLabel(title)
         title_label.setObjectName("label_8")
         left_layout.addWidget(title_label)
 
         open_btn = QPushButton("Open")
         open_btn.clicked.connect(
-            lambda _, tid=talk_id, t=title, a=audio_path: self.start_ted_signal.emit(tid, t, a)
+            lambda _, tid=talk_id, t=title, a=audio_path:
+            self.start_ted_signal.emit(tid, t, a)
         )
 
         card_layout.addLayout(left_layout)
@@ -695,7 +683,6 @@ class MainWindow(QWidget):
         card_layout.addWidget(open_btn)
 
         return card
-
     def goto(self, page):
         if page == "game_menu":
             self.ui.stackedWidget.setCurrentWidget(self.game_menu)
