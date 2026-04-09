@@ -326,14 +326,30 @@ class InstructionPage(BasePage):
         super().__init__(parent, "Instruction")
 
         info = QLabel(
-            "1. A match requires exactly 4 players.\n\n"
-            "2. Before the match is formed, players may cancel matching.\n\n"
-            "3. Once 4 players are matched and the game starts, the match is locked to these 4 players only.\n\n"
-            "4. No new player can join or replace them until the match ends.\n\n"
-            "5. Players can operate at any time.\n\n"
-            "6. A team can move only when it has available rolls.\n\n"
-            "7. In the current stage, 'Gain 1 Roll' is only a temporary demo action.\n\n"
-            "8. The match ends only when one team reaches the goal."
+            "=== Game Instructions ===\n\n"
+
+            "[Single Mode]\n"
+            "- Play alone without teaming up\n"
+            "- Answer quiz questions to gain rolls\n"
+            "  (5 correct in a row = 1 roll, wrong resets)\n"
+            "- Max 3 rolls per day (no limit on attempts)\n"
+            "- Roll dice (1–6) to move forward\n"
+            "- Reach the final cell to win\n\n"
+
+            "[Multiplayer Mode]\n"
+            "- A match requires exactly 4 players\n"
+            "- Players are divided into 2 teams (2 vs 2)\n"
+            "- Each team shares one position and roll pool\n"
+            "- Gain rolls the same way as Single Mode\n"
+            "- Teams move using shared rolls\n"
+            "- Players act asynchronously\n"
+            "- First team to reach the goal wins\n\n"
+
+            "[Rules]\n"
+            "- Max 3 rolls per player per day\n"
+            "- Game cannot be restarted once started\n"
+            "- Leaving the interface will NOT exit the game\n"
+            "- A new game can be started after the current one ends"
         )
         info.setObjectName("infoBox")
         info.setWordWrap(True)
