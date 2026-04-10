@@ -1,4 +1,5 @@
 import sys
+import ctypes
 from PySide6.QtWidgets import QApplication, QMainWindow, QStackedWidget
 from PySide6.QtCore import QPropertyAnimation, QEasingCurve, QPoint, QTimer, Qt
 from PySide6.QtWidgets import QWidget, QVBoxLayout
@@ -23,7 +24,10 @@ class AppWindow(QMainWindow):
     # ↓↓↓ 这里完全不用改，和你原来一模一样 ↓↓↓
     def __init__(self):
         super().__init__()
+        self.setWindowTitle("Agile English")
+        self.setWindowIcon(QIcon(resource_path("resources/icons/arctic-fox.png")))
         self.test_page = IELTSTestWindow()
+
         self.ted_test_page = TedTestWindow()
         self.desktop_plan_widget = DesktopPlanWidget()
 
@@ -59,6 +63,8 @@ class AppWindow(QMainWindow):
         self.setWindowIcon(QIcon(resource_path("resources/icons/arctic-fox.png")))
         self.init_tray()
         self.floating_icon = FloatingIcon(self)
+        QTimer.singleShot(0, self.apply_native_title_bar_style)
+
 
     # ↓↓↓ 以下所有方法和你原来完全一样，无需修改 ↓↓↓
     def slide_to_main(self):
@@ -228,10 +234,54 @@ class AppWindow(QMainWindow):
         super().resizeEvent(event)
         self.loading.resize(self.size())
 
+    def apply_native_title_bar_style(self):
+        if sys.platform != "win32":
+            return
+
+        try:
+            hwnd = int(self.winId())
+            dwmapi = ctypes.windll.dwmapi
+            DWMWA_BORDER_COLOR = 34
+            DWMWA_CAPTION_COLOR = 35
+            DWMWA_TEXT_COLOR = 36
+
+            def to_colorref(hex_color):
+                hex_color = hex_color.lstrip("#")
+                r = int(hex_color[0:2], 16)
+                g = int(hex_color[2:4], 16)
+                b = int(hex_color[4:6], 16)
+                return ctypes.c_uint32(r | (g << 8) | (b << 16))
+
+            caption_color = to_colorref("#736451")
+            text_color = to_colorref("#ffffff")
+            border_color = to_colorref("#736451")
+
+            dwmapi.DwmSetWindowAttribute(
+                hwnd,
+                DWMWA_CAPTION_COLOR,
+                ctypes.byref(caption_color),
+                ctypes.sizeof(caption_color),
+            )
+            dwmapi.DwmSetWindowAttribute(
+                hwnd,
+                DWMWA_TEXT_COLOR,
+                ctypes.byref(text_color),
+                ctypes.sizeof(text_color),
+            )
+            dwmapi.DwmSetWindowAttribute(
+                hwnd,
+                DWMWA_BORDER_COLOR,
+                ctypes.byref(border_color),
+                ctypes.sizeof(border_color),
+            )
+        except Exception:
+            pass
+
     def show_desktop_calendar(self):
         self.desktop_plan_widget.show()
         self.desktop_plan_widget.raise_()
         self.desktop_plan_widget.activateWindow()
+
 
     def load_main_data(self):
         self.main_page.load_data()
@@ -309,7 +359,17 @@ from splash_screen import SplashScreen
 # ════════════════════════════════
 #  底部启动入口 —— 替换原来的5行
 # ════════════════════════════════
+if sys.platform == "win32":
+    try:
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("AgileEnglish.ArcticFox")
+    except Exception:
+        pass
+
 app = QApplication(sys.argv)
+app.setApplicationName("Agile English")
+app.setWindowIcon(QIcon(resource_path("resources/icons/arctic-fox.png")))
+
+
 
 # 1. 先显示 Splash
 splash = SplashScreen()

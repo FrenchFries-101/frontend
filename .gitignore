@@ -6,3 +6,12 @@ __pycache__/
 
 # PyCharm 项目文件（也建议加上）
 .idea/
+
+# Build artifacts
+build/
+dist/
+*.pkg
+*.zip
+
+# Local executables
+.exe
