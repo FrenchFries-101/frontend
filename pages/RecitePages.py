@@ -6,7 +6,9 @@ from PySide6.QtWidgets import (
 from utils.path_utils import resource_path
 from PySide6.QtCore import Qt, QSize, Signal
 from PySide6.QtGui import QPixmap, QIcon, QColor
-from service.api_word import get_categories, get_subcategories, get_words, add_user_points
+from service.api_word import get_categories, get_subcategories, get_words
+from service.api import submit_group_activity
+
 from PySide6.QtGui import QMovie
 from pages.SpellDialog import SpellDialog
 from datetime import datetime
@@ -14,7 +16,9 @@ import session
 
 
 class RecitePage(QWidget):
-    points_changed = Signal(int)   # emits new points total after a word is memorized
+    points_changed = Signal(int)   # 兼容旧逻辑，当前不再用于背词加金币
+    group_activity_submitted = Signal()
+
     def __init__(self):
         super().__init__()
         print("开始加载背单词界面")
@@ -649,12 +653,22 @@ QWidget#WordCard * {
                 ts_label.setText(f"finished at {ts}")
                 ts_label.setVisible(True)
 
+
             if is_new:
                 user_id = session.user["id"] if session.user else None
-                if user_id:
-                    result = add_user_points(user_id)
-                    if result and result.get("points") is not None:
-                        self.points_changed.emit(result["points"])
+                group_id = getattr(session, "current_group_id", None)
+                if user_id and group_id:
+                    result = submit_group_activity(
+                        group_id=group_id,
+                        user_id=user_id,
+                        activity_type="word",
+                        amount=1,
+                    )
+                    if isinstance(result, dict) and result.get("success"):
+                        self.group_activity_submitted.emit()
+                    else:
+                        print("背词 activity 登记失败:", result)
+
 
 
 if __name__ == "__main__":
@@ -664,5 +678,4 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = RecitePage()
     window.resize(800, 600)
-    window.show()
-    sys.exit(app.exec())
+    window.sh

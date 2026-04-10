@@ -29,7 +29,7 @@
 /* ============================= */
 
 QWidget#Form {
-    border-image: url(resources/images/loginPage.png) 0 0 0 0 stretch stretch;
+    border-image: none;
 }
 
 

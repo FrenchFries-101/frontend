@@ -167,16 +167,11 @@ class MainWindow(QWidget):
         ds = QTreeWidgetItem(["Discussion"])
         ds.setData(0, Qt.UserRole, "discussion")
 
-        dc = QTreeWidgetItem(["Calendar"])
-        dc.setData(0, Qt.UserRole, "desktop_calendar")
-
-        rk = QTreeWidgetItem(["Leaderboard"])
-        rk.setData(0, Qt.UserRole, "rank")
-
         game = QTreeWidgetItem(["Game"])
         game.setData(0, Qt.UserRole, "game_menu")
 
-        learning.addChildren([wl, li, sp, ds, dc, rk, game])
+        learning.addChildren([wl, li, sp, ds, game])
+
 
         my_group = QTreeWidgetItem(["My Group"])
         group_plaza = QTreeWidgetItem(["Group Plaza"])
@@ -253,6 +248,9 @@ class MainWindow(QWidget):
         self.ui.stackedWidget.removeWidget(self.ui.GroupTask)
         self.ui.stackedWidget.insertWidget(5, self.group_task_page)
         self.group_task_page.coin_points_updated.connect(self.update_coin_label)
+        if hasattr(self, "recite_page") and hasattr(self.recite_page, "group_activity_submitted"):
+            self.recite_page.group_activity_submitted.connect(self.group_task_page.refresh_task_cards)
+
 
 
     def init_group_plaza_page(self):
@@ -668,14 +666,26 @@ class MainWindow(QWidget):
             subtitle_label.setWordWrap(True)
             left_layout.addWidget(subtitle_label)
 
+
+        card_layout = QHBoxLayout(card)
+
+        left_layout = QVBoxLayout()
+        left_layout.setSpacing(6)
+
+        if subtitle:
+            subtitle_label = QLabel(subtitle)
+            subtitle_label.setObjectName("label_7") 
+            subtitle_label.setWordWrap(True)
+            left_layout.addWidget(subtitle_label)
+
+ 
         title_label = QLabel(title)
         title_label.setObjectName("label_8")
         left_layout.addWidget(title_label)
 
         open_btn = QPushButton("Open")
         open_btn.clicked.connect(
-            lambda _, tid=talk_id, t=title, a=audio_path:
-            self.start_ted_signal.emit(tid, t, a)
+            lambda _, tid=talk_id, t=title, a=audio_path: self.start_ted_signal.emit(tid, t, a)
         )
 
         card_layout.addLayout(left_layout)
@@ -683,6 +693,7 @@ class MainWindow(QWidget):
         card_layout.addWidget(open_btn)
 
         return card
+
     def goto(self, page):
         if page == "game_menu":
             self.ui.stackedWidget.setCurrentWidget(self.game_menu)

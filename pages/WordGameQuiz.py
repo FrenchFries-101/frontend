@@ -141,10 +141,10 @@ class QuizChallengeDialog(QDialog):
         # =========================
         # Test
         # =========================
-        # self.answer_hint_label = QLabel("Test Answer: -")
-        # self.answer_hint_label.setObjectName("answerHint")
-        # self.answer_hint_label.setWordWrap(True)
-        # root.addWidget(self.answer_hint_label)
+        self.answer_hint_label = QLabel("Test Answer: -")
+        self.answer_hint_label.setObjectName("answerHint")
+        self.answer_hint_label.setWordWrap(True)
+        root.addWidget(self.answer_hint_label)
 
         self.input_label = QLabel("Type the word:")
         self.input_label.setObjectName("sub")
@@ -198,7 +198,7 @@ class QuizChallengeDialog(QDialog):
         # =========================
         # Test
         # =========================
-        # self.answer_hint_label.setText(f"Test Answer: {self.current_answer}")
+        self.answer_hint_label.setText(f"Test Answer: {self.current_answer}")
 
         self.answer_input.clear()
         self.answer_input.setFocus()
