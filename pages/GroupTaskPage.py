@@ -34,7 +34,9 @@ class GroupTaskPage(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setObjectName("groupTaskPage")
         self._groups = []
+
         self._current_group = None
         self._current_role = None
         self._current_target_amount = 0
@@ -56,18 +58,28 @@ class GroupTaskPage(QWidget):
 
         self.setStyleSheet(
             """
-            QWidget {
-                background: #fffaf5;
+            QWidget#groupTaskPage {
+                background: #fff3e8;
                 color: #4a3b1f;
             }
             QFrame#sectionCard {
                 background: #ffffff;
                 border: 1px solid #efcfb7;
-                border-radius: 12px;
+                border-radius: 0px;
             }
+
             QLabel {
+                background: transparent;
                 border: none;
             }
+            QScrollArea {
+                background: transparent;
+                border: none;
+            }
+            QScrollArea > QWidget > QWidget {
+                background: transparent;
+            }
+
             QLabel#titleLine {
                 font-size: 19px;
                 font-weight: 800;
@@ -85,10 +97,11 @@ class GroupTaskPage(QWidget):
                 padding-top: 4px;
             }
             QLabel#rankNameText {
-                font-size: 16px;
+                font-size: 14px;
                 font-weight: 700;
                 color: #3f3118;
             }
+
             QLabel#rankScoreText {
                 font-size: 14px;
                 color: #7a6640;
@@ -228,7 +241,8 @@ class GroupTaskPage(QWidget):
         left_col.setContentsMargins(14, 12, 14, 12)
         left_col.setSpacing(10)
 
-        left_col.addWidget(self._build_title_row("Weekly Overview", "resources/icons/file.png"))
+        left_col.addWidget(self._build_title_row("Weekly Overview", resource_path("resources/icons/file.png")))
+
 
         weekly_row = QHBoxLayout()
         self.weekly_progress = QProgressBar()
@@ -241,7 +255,8 @@ class GroupTaskPage(QWidget):
         weekly_row.addWidget(self.weekly_percent)
         left_col.addLayout(weekly_row)
 
-        left_col.addWidget(self._build_title_row("Tasks", "resources/icons/to-do-list.png"))
+        left_col.addWidget(self._build_title_row("Tasks", resource_path("resources/icons/to-do-list.png")))
+
 
         tab_row = QHBoxLayout()
         tab_row.setSpacing(8)
@@ -282,7 +297,8 @@ class GroupTaskPage(QWidget):
         right_col.setContentsMargins(14, 12, 14, 12)
         right_col.setSpacing(10)
 
-        right_col.addWidget(self._build_title_row("Leader Board", "resources/icons/winner.png"))
+        right_col.addWidget(self._build_title_row("Leader Board", resource_path("resources/icons/winner.png")))
+
 
         rank_card = QFrame()
         rank_card.setObjectName("sectionCard")
@@ -296,7 +312,8 @@ class GroupTaskPage(QWidget):
             rank_layout.addWidget(row["container"])
         right_col.addWidget(rank_card, 1)
 
-        right_col.addWidget(self._build_title_row("My Status", "resources/icons/work-in-progress.png"))
+        right_col.addWidget(self._build_title_row("My Status", resource_path("resources/icons/work-in-progress.png")))
+
 
         my_card = QFrame()
         my_card.setObjectName("sectionCard")
@@ -406,11 +423,12 @@ class GroupTaskPage(QWidget):
         icon_label = QLabel()
         icon_label.setFixedSize(24, 24)
         if index == 0:
-            icon_path = "resources/icons/first-rank.png"
+            icon_path = resource_path("resources/icons/first-rank.png")
         elif index == 1:
-            icon_path = "resources/icons/second-rank.png"
+            icon_path = resource_path("resources/icons/second-rank.png")
         elif index == 2:
-            icon_path = "resources/icons/third-rank.png"
+            icon_path = resource_path("resources/icons/third-rank.png")
+
         else:
             icon_path = ""
 

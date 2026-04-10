@@ -167,16 +167,11 @@ class MainWindow(QWidget):
         ds = QTreeWidgetItem(["Discussion"])
         ds.setData(0, Qt.UserRole, "discussion")
 
-        dc = QTreeWidgetItem(["Calendar"])
-        dc.setData(0, Qt.UserRole, "desktop_calendar")
-
-        rk = QTreeWidgetItem(["Leaderboard"])
-        rk.setData(0, Qt.UserRole, "rank")
-
         game = QTreeWidgetItem(["Game"])
         game.setData(0, Qt.UserRole, "game_menu")
 
-        learning.addChildren([wl, li, sp, ds, dc, rk, game])
+        learning.addChildren([wl, li, sp, ds, game])
+
 
         my_group = QTreeWidgetItem(["My Group"])
         group_plaza = QTreeWidgetItem(["Group Plaza"])
@@ -253,6 +248,9 @@ class MainWindow(QWidget):
         self.ui.stackedWidget.removeWidget(self.ui.GroupTask)
         self.ui.stackedWidget.insertWidget(5, self.group_task_page)
         self.group_task_page.coin_points_updated.connect(self.update_coin_label)
+        if hasattr(self, "recite_page") and hasattr(self.recite_page, "group_activity_submitted"):
+            self.recite_page.group_activity_submitted.connect(self.group_task_page.refresh_task_cards)
+
 
 
     def init_group_plaza_page(self):
@@ -504,6 +502,7 @@ class MainWindow(QWidget):
                 lambda skin_id: self.pet_home_page.pet_widget.load_pet_data()
             )
             self.pet_skin_page.skin_changed.connect(self._update_floating_skin)
+            self._save_floating_ref()
             # 服务使用后同步刷新探索页的活力值状态
             self.pet_home_page.status_widget.refresh()
             self.ui.stackedWidget.addWidget(self.pet_home_page)
